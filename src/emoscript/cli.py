@@ -1,7 +1,7 @@
 """Command-line interface.
 
-    copyaxis fit                     # build the axis from the bundled corpus -> axis.npz
-    copyaxis score "Just ship it."   # score taglines against a fitted axis
+    emoscript fit                     # build the axis from the bundled corpus -> axis.npz
+    emoscript score "Just ship it."   # score taglines against a fitted axis
 """
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ def cmd_score(args) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
-    ap = argparse.ArgumentParser(prog="copyaxis", description=__doc__)
+    ap = argparse.ArgumentParser(prog="emoscript", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p_fit = sub.add_parser("fit", help="fit the axis from the corpus")

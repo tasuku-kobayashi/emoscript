@@ -1,6 +1,6 @@
-# copyaxis
+# emoscript
 
-**Find the direction of great ad copy.** copyaxis estimates the "great tagline"
+**Find the direction of great ad copy.** emoscript estimates the "great tagline"
 direction in sentence-embedding space from a corpus of famous advertising
 slogans, then scores any new line by cosine similarity against that direction.
 
@@ -46,15 +46,15 @@ downloads on first use and then runs fully offline.
 
 ```bash
 # Fit the axis from the bundled corpus
-copyaxis fit --out axis.npz
+emoscript fit --out axis.npz
 
 # Score your own taglines (higher = more great-copy-like)
-copyaxis score "Think fresh." "We sell high quality furniture at low prices."
+emoscript score "Think fresh." "We sell high quality furniture at low prices."
 ```
 
 ```python
-from copyaxis import embed_texts, fit_diff_axis, l2_normalize
-from copyaxis.dataio import load_split
+from emoscript import embed_texts, fit_diff_axis, l2_normalize
+from emoscript.dataio import load_split
 
 pos = [r["text"] for r in load_split("slogans_train")]
 neg = [r["text"] for r in load_split("negatives_hard_train")] + \
@@ -71,8 +71,8 @@ print(float(E_new @ axis))
 ## Repository layout
 
 ```
-src/copyaxis/            the package (embed, axis, dataio, cli)
-src/copyaxis/data/       corpora as JSONL, one {"text": ...} per line
+src/emoscript/            the package (embed, axis, dataio, cli)
+src/emoscript/data/       corpora as JSONL, one {"text": ...} per line
 experiments/validate_axis.py   held-out evaluation (AUC + ranking)
 tests/                   unit tests
 ```

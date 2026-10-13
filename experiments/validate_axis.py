@@ -16,9 +16,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import numpy as np
 
-from copyaxis.axis import auc, fit_diff_axis, fit_mean_axis, l2_normalize
-from copyaxis.dataio import load_split
-from copyaxis.embed import embed_texts, get_model
+from emoscript.axis import auc, fit_diff_axis, fit_mean_axis, l2_normalize
+from emoscript.dataio import load_split
+from emoscript.embed import embed_texts, get_model
 
 PROBES = [
     "Think fresh.",                       # coined, punchy

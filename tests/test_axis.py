@@ -1,6 +1,6 @@
 import numpy as np
 
-from copyaxis.axis import auc, fit_diff_axis, fit_mean_axis, l2_normalize, score
+from emoscript.axis import auc, fit_diff_axis, fit_mean_axis, l2_normalize, score
 
 
 def test_l2_normalize_rows_are_unit_norm():

@@ -1,11 +1,11 @@
-# Contributing to copyaxis
+# Contributing to emoscript
 
 Thanks for your interest! The corpus is the heart of this project — better
 data beats cleverer code.
 
 ## Adding famous taglines (positives)
 
-- Edit `src/copyaxis/data/slogans_train.jsonl` (or `slogans_test.jsonl` if you
+- Edit `src/emoscript/data/slogans_train.jsonl` (or `slogans_test.jsonl` if you
   are adding evaluation data — never let a line appear in both).
 - One JSON object per line: `{"text": "...", "brand": "...", "year": 1959}`.
 - Only taglines that are genuinely famous and documented in published sources

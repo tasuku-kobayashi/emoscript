@@ -1,4 +1,4 @@
-"""copyaxis — score ad copy against a 'great tagline' semantic axis."""
+"""emoscript — score ad copy against a 'great tagline' semantic axis."""
 
 from .axis import auc, fit_diff_axis, fit_mean_axis, l2_normalize
 from .embed import embed_texts, get_model
