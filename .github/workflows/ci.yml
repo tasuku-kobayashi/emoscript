@@ -1,0 +1,78 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FASTEMBED_CACHE_PATH: ${{ github.workspace }}/.fastembed_cache
+
+jobs:
+  test:
+    # Model-free: lint, unit tests (fake embedder), corpus integrity. Fast.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check src tests experiments
+      - run: ruff format --check src tests experiments
+      - run: pytest
+      - run: emoscript corpus-check
+
+  evaluate:
+    # Real embeddings: fits on the train splits, reports held-out metrics,
+    # publishes the report and the fitted axes as workflow artifacts.
+    needs: test
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Cache embedding model
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.FASTEMBED_CACHE_PATH }}
+          key: fastembed-multilingual-e5-large-${{ runner.os }}
+      - run: python -m pip install -e ".[dev,embed]"
+      - name: Held-out validation (M1 / M2 / M3 / multi-axis k=2..4)
+        run: python experiments/validate_axis.py --k 1,2,3,4 --json validation.json | tee validation.txt
+      - name: Fit shippable axes
+        run: |
+          emoscript fit --k 1 --out axis-k1.npz
+          emoscript fit --k 3 --out axis-k3.npz
+          emoscript eval --axis axis-k1.npz | tee -a eval.txt
+          emoscript eval --axis axis-k3.npz | tee -a eval.txt
+      - name: Summary
+        run: |
+          {
+            echo '## emoscript held-out evaluation'
+            echo '```'
+            sed -n '1,/^Held-out ranking/p' validation.txt | sed '$d'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-${{ github.sha }}
+          path: |
+            validation.json
+            validation.txt
+            eval.txt
+            axis-k1.npz
+            axis-k3.npz
+          retention-days: 30

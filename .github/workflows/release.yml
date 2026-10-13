@@ -1,0 +1,54 @@
+name: release
+
+# On a version tag (v0.2.0, ...): build the sdist/wheel, fit the prebuilt axes
+# with the default embedding model and attach everything to the GitHub Release.
+# Manual runs produce the same files as a workflow artifact without publishing.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FASTEMBED_CACHE_PATH: ${{ github.workspace }}/.fastembed_cache
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Cache embedding model
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.FASTEMBED_CACHE_PATH }}
+          key: fastembed-multilingual-e5-large-${{ runner.os }}
+      - run: python -m pip install -e ".[dev,embed]" build
+      - run: pytest
+      - run: python -m build
+      - name: Fit prebuilt axes
+        run: |
+          mkdir -p release
+          emoscript fit --k 1 --out release/emoscript-axis-k1-multilingual-e5-large.npz
+          emoscript fit --k 3 --out release/emoscript-axis-k3-multilingual-e5-large.npz
+          emoscript eval --axis release/emoscript-axis-k1-multilingual-e5-large.npz --json > release/eval-k1.json
+          emoscript eval --axis release/emoscript-axis-k3-multilingual-e5-large.npz --json > release/eval-k3.json
+          python experiments/validate_axis.py --no-ranking --json release/validation.json > release/validation.txt
+          cp dist/* release/
+          (cd release && sha256sum * > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: release/
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true

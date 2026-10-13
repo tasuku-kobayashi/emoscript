@@ -1,81 +1,227 @@
 """Held-out validation of the great-copy axis.
 
-Fits three axis variants on the *_train splits and evaluates rank AUC on the
-*_test splits (never used for fitting):
-  M1  positive centroid only
-  M2  diff axis: positives - (hard + generic negatives)   [recommended]
-  M3  diff axis: positives - hard negatives only
+Everything is fitted on the *_train splits and evaluated on the *_test splits
+(never used for fitting). Variants:
 
-Run from the repo root:
-    python experiments/validate_axis.py
+  M1  positive centroid only
+  M2  diff axis: positives - (hard + generic negatives)        [default, k=1]
+  M3  diff axis: positives - hard negatives only
+  Mk  multi-axis: k-means over positives, one diff axis each, max over axes
+
+Reports, per variant: AUC of held-out taglines vs hard negatives, vs generic
+prose, vs *topic-matched* bland rewrites of the same taglines (the style-vs-
+topic control), the paired win rate on those rewrites, an AUC breakdown by
+tagline length, and (via cross-fitted calibration on train) probability
+quality on the held-out set.
+
+    python experiments/validate_axis.py [--model NAME] [--k 1,2,3,4] [--casing lower] [--json out.json]
+
+``--casing lower`` embeds everything lower-cased: famous taglines are written
+in Title Case and the negatives in sentence case, so this run shows how much
+of the separation survives once that typographic cue is removed.
 """
+
+from __future__ import annotations
+
+import argparse
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from emoscript.axis import auc, fit_diff_axis, fit_mean_axis, l2_normalize
-from emoscript.dataio import load_split
-from emoscript.embed import embed_texts, get_model
+from emoscript.axis import (  # noqa: E402
+    accuracy,
+    auc,
+    brier,
+    fit_diff_axis,
+    fit_mean_axis,
+    l2_normalize,
+    log_loss,
+    score,
+)
+from emoscript.dataio import DATA_DIR, load_corpus, texts  # noqa: E402
+from emoscript.embed import DEFAULT_MODEL, make_embed_fn  # noqa: E402
+from emoscript.pipeline import fit_from_embeddings  # noqa: E402
+from emoscript.text import CASINGS, normalizer  # noqa: E402
 
 PROBES = [
-    "Think fresh.",                       # coined, punchy
-    "We sell high quality furniture at low prices.",  # bland ad-speak
-    "To be or not to be, that is the question.",  # great writing, not ad copy
+    ("Think fresh.", "coined, punchy"),
+    ("We sell high quality furniture at low prices.", "bland ad-speak"),
+    ("To be or not to be, that is the question.", "great writing, not ad copy"),
+    ("Melts in your mouth, not in your funnel.", "parody of a famous line"),
 ]
 
 
-def main():
-    model = get_model()
-    texts, groups = [], []
+def length_bucket(t: str) -> str:
+    n = len(t.split())
+    return "short<=4w" if n <= 4 else ("mid5-7w" if n < 8 else "long>=8w")
 
-    def add(rows, group):
-        for r in rows:
-            texts.append(r["text"])
-            groups.append(group)
 
-    add(load_split("slogans_train"), "pos_tr")
-    add(load_split("negatives_hard_train"), "hard_tr")
-    add(load_split("negatives_generic_train"), "gen_tr")
-    add(load_split("slogans_test"), "pos_te")
-    add(load_split("negatives_hard_test"), "hard_te")
-    add(load_split("negatives_generic_test"), "gen_te")
-    add([{"text": t} for t in PROBES], "probe")
+def run(model_name: str, ks: list[int], data_dir: Path, embed_fn=None, casing: str = "none") -> dict:
+    corpus = load_corpus(data_dir)
+    embed_fn = embed_fn or make_embed_fn(model_name)
+    norm = normalizer(casing)
 
-    E = l2_normalize(embed_texts(texts, model=model))
-    idx = {g: [i for i, x in enumerate(groups) if x == g] for g in set(groups)}
-    P = E[idx["pos_tr"]]
-    H = E[idx["hard_tr"]]
-    G = E[idx["gen_tr"]]
-    N_all = np.vstack([H, G])
+    groups = {
+        "pos_tr": texts(corpus.pos_train),
+        "hard_tr": texts(corpus.hard_train),
+        "gen_tr": texts(corpus.generic_train),
+        "pos_te": texts(corpus.pos_test),
+        "hard_te": texts(corpus.hard_test),
+        "gen_te": texts(corpus.generic_test),
+        "topic_te": [r["bland"] for r in corpus.contrast],
+        "probe": [p for p, _ in PROBES],
+    }
+    all_texts = norm([t for g in groups.values() for t in g])
+    E_all = l2_normalize(embed_fn(all_texts))
+    E: dict[str, np.ndarray] = {}
+    i = 0
+    for g, ts in groups.items():
+        E[g] = E_all[i : i + len(ts)]
+        i += len(ts)
 
-    axes = {
-        "M1 centroid": fit_mean_axis(P),
-        "M2 diff (hard+generic)": fit_diff_axis(P, N_all),
-        "M3 diff (hard only)": fit_diff_axis(P, H),
+    N_all = np.vstack([E["hard_tr"], E["gen_tr"]])
+    variants: dict[str, dict] = {}
+
+    def add_variant(name: str, axes: np.ndarray, calibrator=None, oof=None):
+        s = {g: score(E[g], axes) for g in ("pos_te", "hard_te", "gen_te", "topic_te", "probe")}
+        famous_score = dict(zip(groups["pos_te"], s["pos_te"], strict=True))
+        wins = [famous_score[r["famous"]] > sc for r, sc in zip(corpus.contrast, s["topic_te"], strict=True)]
+        buckets = {}
+        for b in ("short<=4w", "mid5-7w", "long>=8w"):
+            m = np.array([length_bucket(t) == b for t in groups["pos_te"]])
+            if m.any():
+                buckets[b] = {"n": int(m.sum()), "auc_vs_hard": auc(s["pos_te"][m], s["hard_te"])}
+        v = {
+            "k": int(np.atleast_2d(axes).shape[0]),
+            "auc_vs_hard": auc(s["pos_te"], s["hard_te"]),
+            "auc_vs_generic": auc(s["pos_te"], s["gen_te"]),
+            "auc_vs_topic_bland": auc(s["pos_te"], s["topic_te"]),
+            "topic_pair_win_rate": float(np.mean(wins)),
+            "by_length": buckets,
+            "mean": {g: float(sc.mean()) for g, sc in s.items()},
+            "min_pos": float(s["pos_te"].min()),
+            "max_hard": float(s["hard_te"].max()),
+            "probes": {p: float(sc) for p, sc in zip(groups["probe"], s["probe"], strict=True)},
+            "lowest_famous": [
+                {"text": groups["pos_te"][j], "score": float(s["pos_te"][j])}
+                for j in np.argsort(s["pos_te"])[:5]
+            ],
+            "highest_bland": [
+                {"text": groups["hard_te"][j], "score": float(s["hard_te"][j])}
+                for j in np.argsort(-s["hard_te"])[:3]
+            ],
+        }
+        if calibrator is not None:
+            negs = np.concatenate([s["hard_te"], s["gen_te"]])
+            p = calibrator.predict_proba(np.concatenate([s["pos_te"], negs]))
+            y = np.concatenate([np.ones(len(s["pos_te"])), np.zeros(len(negs))])
+            v["calibration"] = {
+                "oof_train": oof,
+                "test_log_loss": log_loss(p, y),
+                "test_brier": brier(p, y),
+                "test_accuracy@0.5": accuracy(p, y),
+                "threshold@0.5": calibrator.score_at(0.5),
+            }
+        variants[name] = v
+        return s
+
+    add_variant("M1 centroid", fit_mean_axis(E["pos_tr"]))
+    add_variant("M3 diff (hard only)", fit_diff_axis(E["pos_tr"], E["hard_tr"]))
+    ranking_scores = None
+    for k in ks:
+        m = fit_from_embeddings(E["pos_tr"], N_all, k=k, calibrate=True, model_name=model_name)
+        name = "M2 diff (hard+generic)" if k == 1 else f"M2 multi-axis k={k}"
+        s = add_variant(name, m.axes, m.calibrator, m.meta.get("oof"))
+        variants[name]["cluster_sizes"] = m.meta["cluster_sizes"]
+        if ranking_scores is None:
+            ranking_scores = s
+
+    return {
+        "model": model_name,
+        "casing": casing,
+        "n": {g: len(ts) for g, ts in groups.items()},
+        "variants": variants,
+        "_ranking": {
+            "pos_te": list(zip(groups["pos_te"], map(float, ranking_scores["pos_te"]), strict=True)),
+            "hard_te": list(zip(groups["hard_te"], map(float, ranking_scores["hard_te"]), strict=True)),
+            "gen_te": list(zip(groups["gen_te"], map(float, ranking_scores["gen_te"]), strict=True)),
+            "topic_te": list(zip(groups["topic_te"], map(float, ranking_scores["topic_te"]), strict=True)),
+            "probe": list(zip(groups["probe"], map(float, ranking_scores["probe"]), strict=True)),
+        },
     }
 
-    for name, axis in axes.items():
-        s_pos = E[idx["pos_te"]] @ axis
-        s_hard = E[idx["hard_te"]] @ axis
-        s_gen = E[idx["gen_te"]] @ axis
-        print(f"\n[{name}]")
-        print(f"  held-out taglines     mean cos {s_pos.mean():+.4f} (min {s_pos.min():+.4f})")
-        print(f"  held-out hard neg.    mean cos {s_hard.mean():+.4f} (max {s_hard.max():+.4f})")
-        print(f"  held-out generic neg. mean cos {s_gen.mean():+.4f} (max {s_gen.max():+.4f})")
-        print(f"  AUC vs hard negatives:    {auc(s_pos, s_hard):.3f}")
-        print(f"  AUC vs generic negatives: {auc(s_pos, s_gen):.3f}")
 
-    axis = axes["M2 diff (hard+generic)"]
-    rows = [(texts[i], groups[i], E[i] @ axis) for i in range(len(texts)) if groups[i].endswith("_te") or groups[i] == "probe"]
-    rows.sort(key=lambda r: -r[2])
-    label = {"pos_te": "FAMOUS", "hard_te": "bland ", "gen_te": "prose ", "probe": "probe "}
-    print("\nHeld-out ranking by M2 axis (highest first):")
-    for rank, (t, g, s) in enumerate(rows, 1):
-        print(f"  {rank:2d}. [{label[g]}] {s:+.4f}  {t}")
+def print_report(res: dict, show_ranking: bool = True) -> None:
+    n = res["n"]
+    print(f"model: {res['model']}   casing: {res.get('casing', 'none')}")
+    print(
+        f"train: {n['pos_tr']} taglines / {n['hard_tr']} hard / {n['gen_tr']} generic   "
+        f"test: {n['pos_te']} taglines / {n['hard_te']} hard / {n['gen_te']} generic / "
+        f"{n['topic_te']} topic-matched"
+    )
+    for name, v in res["variants"].items():
+        print(f"\n[{name}]")
+        print(
+            f"  AUC vs hard {v['auc_vs_hard']:.3f}   vs generic {v['auc_vs_generic']:.3f}   "
+            f"vs topic-matched bland {v['auc_vs_topic_bland']:.3f}   "
+            f"pair win rate {v['topic_pair_win_rate']:.3f}"
+        )
+        print(
+            "  by length: "
+            + "   ".join(f"{b} n={d['n']} AUC {d['auc_vs_hard']:.3f}" for b, d in v["by_length"].items())
+        )
+        print(
+            f"  held-out taglines mean {v['mean']['pos_te']:+.4f} (min {v['min_pos']:+.4f})   "
+            f"hard mean {v['mean']['hard_te']:+.4f} (max {v['max_hard']:+.4f})"
+        )
+        if "cluster_sizes" in v:
+            print(f"  cluster sizes: {v['cluster_sizes']}")
+        if "calibration" in v:
+            c = v["calibration"]
+            print(
+                f"  calibration (test): log-loss {c['test_log_loss']:.3f}  brier {c['test_brier']:.3f}  "
+                f"acc@0.5 {c['test_accuracy@0.5']:.3f}  threshold {c['threshold@0.5']:+.4f}"
+            )
+        lowest = "; ".join(f"{d['score']:+.3f} {d['text'][:50]}" for d in v["lowest_famous"][:3])
+        print(f"  lowest-scoring famous: {lowest}")
+        print("  probes: " + "; ".join(f"{s:+.3f} {p}" for p, s in v["probes"].items()))
+
+    if show_ranking:
+        r = res["_ranking"]
+        label = {
+            "pos_te": "FAMOUS",
+            "hard_te": "bland ",
+            "gen_te": "prose ",
+            "topic_te": "topic ",
+            "probe": "probe ",
+        }
+        rows = sorted(((t, g, s) for g, rows_ in r.items() for t, s in rows_), key=lambda x: -x[2])
+        print("\nHeld-out ranking by the default M2 axis (highest first):")
+        for rank, (t, g, s) in enumerate(rows, 1):
+            print(f"  {rank:3d}. [{label[g]}] {s:+.4f}  {t}")
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--model", default=DEFAULT_MODEL)
+    ap.add_argument("--k", default="1,2,3,4", help="comma list of multi-axis sizes to evaluate")
+    ap.add_argument("--data-dir", default=str(DATA_DIR))
+    ap.add_argument("--json", help="write the full report to this path")
+    ap.add_argument("--no-ranking", action="store_true")
+    ap.add_argument("--casing", choices=CASINGS, default="none", help="normalize case before embedding")
+    args = ap.parse_args(argv)
+    ks = [int(x) for x in args.k.split(",") if x.strip()]
+    res = run(args.model, ks, Path(args.data_dir), casing=args.casing)
+    print_report(res, show_ranking=not args.no_ranking)
+    if args.json:
+        Path(args.json).write_text(json.dumps(res, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"\nreport written to {args.json}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
