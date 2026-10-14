@@ -43,8 +43,8 @@ def test_fit_from_corpus_end_to_end_with_fake_embedder(fake_embed_fn, tmp_path):
         assert np.allclose(s2, s_pos) and np.allclose(p2, p_pos)
         assert loaded.meta["k"] == k and "emoscript_version" in loaded.meta
 
-        report = evaluate(loaded, fake_embed_fn)
-        assert set(report["auc"]) == {"hard", "generic", "topic_bland"}
+        report = evaluate(loaded, fake_embed_fn, n_boot=20)
+        assert set(report["auc"]) == {"hard", "generic", "topic_bland", "quotes"}
         assert 0 <= report["contrast_pair_win_rate"] <= 1
         assert "calibration" in report and "auc_vs_hard_by_length" in report
 
@@ -67,6 +67,39 @@ def test_casing_is_persisted_and_removes_title_case_signal(fake_embed_fn, tmp_pa
             assert np.allclose(s_up, s_pos)
     # the fake embedder's strongest cue is Title Case; lower-casing must weaken it
     assert aucs["lower"] < aucs["none"]
+
+
+def test_exemplars_explain_and_cluster_summary(fake_embed_fn, tmp_path):
+    corpus = load_corpus()
+    model = fit_from_corpus(fake_embed_fn, k=2, model_name="fake")
+    assert model.exemplars is not None and len(model.exemplar_texts) == len(corpus.pos_train)
+    assert len(model.meta["clusters"]) == 2
+    assert sum(c["size"] for c in model.meta["clusters"]) == len(corpus.pos_train)
+    assert all(1 <= len(c["exemplars"]) <= 5 for c in model.meta["clusters"])
+    # a training tagline's nearest exemplar is itself
+    t = corpus.pos_train[3]["text"]
+    ex = model.explain(model.embed([t], fake_embed_fn), n=2)[0]
+    assert ex["nearest"][0][0] == t and ex["nearest"][0][1] > 0.999
+    assert ex["axis"] in (0, 1) and len(ex["per_axis"]) == 2
+    assert ex["score"] == max(ex["per_axis"])
+
+    model.save(tmp_path / "m.npz")
+    loaded = AxisModel.load(tmp_path / "m.npz")
+    assert loaded.exemplar_texts == model.exemplar_texts
+    assert np.allclose(loaded.exemplars, model.exemplars, atol=1e-6)
+    assert loaded.explain(loaded.embed([t], fake_embed_fn))[0]["nearest"][0][0] == t
+
+    slim = fit_from_corpus(fake_embed_fn, model_name="fake", keep_exemplars=False)
+    assert slim.exemplars is None and slim.explain(slim.embed([t], fake_embed_fn))[0]["nearest"] == []
+    assert "clusters" in slim.meta
+
+
+def test_evaluate_reports_quotes_control_and_ci(fake_embed_fn):
+    model = fit_from_corpus(fake_embed_fn, model_name="fake")
+    report = evaluate(model, fake_embed_fn, n_boot=50)
+    assert "quotes" in report["auc"] and report["n"]["quotes"] >= 20
+    for g, (lo, hi) in report["auc_ci95"].items():
+        assert lo <= report["auc"][g] <= hi
 
 
 def test_uncalibrated_model(fake_embed_fn, tmp_path):

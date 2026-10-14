@@ -2,6 +2,7 @@
 
 emoscript fit --k 3 --out axis.npz        # fit axes (+ calibrator) from the bundled corpus
 emoscript score "Just ship it." --axis axis.npz
+emoscript score "Just ship it." --explain      # + nearest famous taglines, matched axis
 emoscript score --file candidates.txt --sort --json
 emoscript eval --axis axis.npz            # held-out AUC / calibration report
 emoscript corpus-check                    # corpus integrity (no model needed)
@@ -75,12 +76,16 @@ def cmd_score(args) -> int:
     texts = _read_texts(args)
     embed_fn = make_embed_fn(model.model_name, model.prefix)
     scores, probs = score_texts(model, texts, embed_fn)
+    explanations = model.explain(model.embed(texts, embed_fn), n=args.neighbors) if args.explain else None
     rows = []
     for i, t in enumerate(texts):
         row = {"text": t, "score": float(scores[i])}
         if probs is not None:
             row["prob"] = float(probs[i])
             row["pass"] = bool(probs[i] >= args.threshold)
+        if explanations is not None:
+            row["axis"] = explanations[i]["axis"]
+            row["nearest"] = [{"text": a, "cos": b} for a, b in explanations[i]["nearest"]]
         rows.append(row)
     if args.sort:
         rows.sort(key=lambda r: -r["score"])
@@ -92,6 +97,10 @@ def cmd_score(args) -> int:
             print(f"{r['score']:+.4f}  p={r['prob']:.2f}  {'PASS' if r['pass'] else 'fail'}  {r['text']}")
         else:
             print(f"{r['score']:+.4f}  {r['text']}")
+        if "nearest" in r:
+            axis_note = f" (axis {r['axis']})" if model.k > 1 else ""
+            near = "; ".join(f"{n['text']} ({n['cos']:.2f})" for n in r["nearest"])
+            print(f"          nearest famous{axis_note}: {near}")
     return 0
 
 
@@ -107,7 +116,8 @@ def cmd_eval(args) -> int:
         return 0
     print(f"[{args.axis}] k={model.k} model={model.model_name}")
     for g, v in report["auc"].items():
-        print(f"  AUC held-out taglines vs {g:<12s} {v:.3f}  (n={report['n'][g]})")
+        lo, hi = report["auc_ci95"][g]
+        print(f"  AUC held-out taglines vs {g:<12s} {v:.3f}  [{lo:.3f}, {hi:.3f}]  (n={report['n'][g]})")
     if "contrast_pair_win_rate" in report:
         print(f"  topic-matched pair win rate      {report['contrast_pair_win_rate']:.3f}")
     for name, v in report.get("auc_vs_hard_by_length", {}).items():
@@ -143,6 +153,7 @@ def cmd_info(args) -> int:
         "casing": model.casing,
         "calibrated": model.calibrator is not None,
         "threshold@0.5": model.threshold_for(0.5),
+        "exemplars": len(model.exemplar_texts),
         "meta": model.meta,
     }
     _print_json(info)
@@ -215,6 +226,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--json", action="store_true")
     p.add_argument("--sort", action="store_true", help="highest score first")
     p.add_argument("--threshold", type=float, default=0.5, help="probability for PASS")
+    p.add_argument("--explain", action="store_true", help="show the nearest famous taglines and matched axis")
+    p.add_argument("--neighbors", type=int, default=3, help="how many nearest taglines with --explain")
     p.set_defaults(fn=cmd_score)
 
     p = sub.add_parser("eval", help="evaluate a fitted axis on the held-out splits")

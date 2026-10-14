@@ -22,6 +22,7 @@ from .axis import (
     Calibrator,
     accuracy,
     auc,
+    auc_bootstrap_ci,
     brier,
     fit_multi_axis,
     l2_normalize,
@@ -46,10 +47,44 @@ class AxisModel:
     calibrator: Calibrator | None = None
     meta: dict = field(default_factory=dict)
     casing: str = "none"  # text normalization applied before embedding (see emoscript.text)
+    # Training positives kept for explanations: (n, dim) unit vectors, their texts and cluster ids.
+    exemplars: np.ndarray | None = None
+    exemplar_texts: list[str] = field(default_factory=list)
+    exemplar_labels: np.ndarray | None = None
 
     @property
     def k(self) -> int:
         return int(self.axes.shape[0])
+
+    def best_axis(self, E: np.ndarray) -> np.ndarray:
+        """Index of the axis each row matches best (all zeros for k=1)."""
+        return self.score_per_axis(E).argmax(axis=1)
+
+    def nearest(self, E: np.ndarray, n: int = 3) -> list[list[tuple[str, float]]]:
+        """For each row of E, the n most similar training taglines as (text, cosine)."""
+        if self.exemplars is None or not self.exemplar_texts:
+            return [[] for _ in range(np.atleast_2d(E).shape[0])]
+        sims = np.atleast_2d(np.asarray(E, dtype=np.float64)) @ self.exemplars.T
+        out = []
+        for row in sims:
+            idx = np.argsort(-row)[:n]
+            out.append([(self.exemplar_texts[i], float(row[i])) for i in idx])
+        return out
+
+    def explain(self, E: np.ndarray, n: int = 3) -> list[dict]:
+        """Per row: headline score, best axis, per-axis scores and nearest famous taglines."""
+        E = np.atleast_2d(np.asarray(E, dtype=np.float64))
+        per_axis = self.score_per_axis(E)
+        near = self.nearest(E, n)
+        return [
+            {
+                "score": float(per_axis[i].max()),
+                "axis": int(per_axis[i].argmax()),
+                "per_axis": [float(x) for x in per_axis[i]],
+                "nearest": near[i],
+            }
+            for i in range(len(E))
+        ]
 
     def embed(self, texts_: list[str], embed_fn: EmbedFn) -> np.ndarray:
         """Normalize casing the way the model was fitted, embed, L2-normalize."""
@@ -84,6 +119,13 @@ class AxisModel:
         }
         if self.calibrator is not None:
             arrays.update(self.calibrator.to_arrays())
+        if self.exemplars is not None and self.exemplar_texts:
+            arrays["ex_E"] = np.asarray(self.exemplars, dtype=np.float32)
+            arrays["ex_texts"] = np.asarray(self.exemplar_texts)
+            labels = self.exemplar_labels
+            arrays["ex_labels"] = np.asarray(
+                labels if labels is not None else np.zeros(len(self.exemplar_texts)), dtype=np.int32
+            )
         np.savez_compressed(path, **arrays)
 
     @classmethod
@@ -100,8 +142,22 @@ class AxisModel:
         meta = json.loads(str(blob["meta"])) if "meta" in blob else {}
         calibrator = Calibrator.from_arrays(blob) if "calib_w" in blob else None
         casing = str(blob["casing"]) if "casing" in blob else "none"
+        exemplars = exemplar_labels = None
+        exemplar_texts: list[str] = []
+        if "ex_E" in blob:
+            exemplars = np.asarray(blob["ex_E"], dtype=np.float64)
+            exemplar_texts = [str(t) for t in blob["ex_texts"]]
+            exemplar_labels = np.asarray(blob["ex_labels"], dtype=int)
         return cls(
-            axes=axes, model_name=model_name, prefix=prefix, calibrator=calibrator, meta=meta, casing=casing
+            axes=axes,
+            model_name=model_name,
+            prefix=prefix,
+            calibrator=calibrator,
+            meta=meta,
+            casing=casing,
+            exemplars=exemplars,
+            exemplar_texts=exemplar_texts,
+            exemplar_labels=exemplar_labels,
         )
 
 
@@ -155,10 +211,19 @@ def fit_from_embeddings(
     prefix: str = "",
     casing: str = "none",
     meta: dict | None = None,
+    pos_texts: list[str] | None = None,
+    keep_exemplars: bool = True,
 ) -> AxisModel:
-    """Fit axes (and a cross-fitted calibrator) from already-normalized embeddings."""
+    """Fit axes (and a cross-fitted calibrator) from already-normalized embeddings.
+
+    When ``pos_texts`` is given the training positives are kept in the model as
+    exemplars (for ``explain`` / nearest-tagline output) and each cluster is
+    summarised in ``meta["clusters"]`` by the taglines closest to its centroid.
+    """
     E_pos = l2_normalize(E_pos)
     E_neg = l2_normalize(E_neg)
+    if pos_texts is not None and len(pos_texts) != len(E_pos):
+        raise ValueError("pos_texts must align with E_pos")
     axes, labels = fit_multi_axis(E_pos, E_neg, k, seed=seed)
     info: dict = {
         "k": int(k),
@@ -167,6 +232,20 @@ def fit_from_embeddings(
         "cluster_sizes": np.bincount(labels, minlength=k).tolist(),
         **(meta or {}),
     }
+    if pos_texts is not None:
+        clusters = []
+        for c in range(k):
+            members = np.flatnonzero(labels == c)
+            centroid = l2_normalize(E_pos[members].mean(axis=0))
+            order = members[np.argsort(-(E_pos[members] @ centroid))]
+            clusters.append(
+                {
+                    "size": int(len(members)),
+                    "mean_words": float(np.mean([len(pos_texts[i].split()) for i in members])),
+                    "exemplars": [pos_texts[i] for i in order[:5]],
+                }
+            )
+        info["clusters"] = clusters
     calibrator = None
     if calibrate:
         oof_pos, oof_neg = cross_fit_scores(E_pos, E_neg, k, n_folds=n_folds, seed=seed)
@@ -182,8 +261,17 @@ def fit_from_embeddings(
             "pos_score_mean": float(oof_pos.mean()),
             "neg_score_mean": float(oof_neg.mean()),
         }
+    keep = keep_exemplars and pos_texts is not None
     return AxisModel(
-        axes=axes, model_name=model_name, prefix=prefix, calibrator=calibrator, meta=info, casing=casing
+        axes=axes,
+        model_name=model_name,
+        prefix=prefix,
+        calibrator=calibrator,
+        meta=info,
+        casing=casing,
+        exemplars=E_pos if keep else None,
+        exemplar_texts=list(pos_texts) if keep else [],
+        exemplar_labels=labels if keep else None,
     )
 
 
@@ -199,11 +287,13 @@ def fit_from_corpus(
     model_name: str = DEFAULT_MODEL,
     prefix: str | None = None,
     casing: str = "none",
+    keep_exemplars: bool = True,
 ) -> AxisModel:
     """Fit from the bundled (or a custom) corpus: train splits only."""
     corpus = load_corpus(data_dir)
     norm = normalizer(casing)
-    pos = norm(texts(corpus.pos_train))
+    pos_raw = texts(corpus.pos_train)
+    pos = norm(pos_raw)
     neg = norm(texts(corpus.negatives_train(negatives)))
     if not pos or not neg:
         raise ValueError("fit_from_corpus: need at least one positive and one negative")
@@ -220,6 +310,8 @@ def fit_from_corpus(
         prefix=prefix_for(model_name) if prefix is None else prefix,
         casing=casing,
         meta={"negatives": list(negatives), "data_dir": str(Path(data_dir))},
+        pos_texts=pos_raw,
+        keep_exemplars=keep_exemplars,
     )
 
 
@@ -233,19 +325,29 @@ def score_texts(
 
 
 # --------------------------------------------------------------------------- evaluation
-def evaluate(model: AxisModel, embed_fn: EmbedFn, data_dir: str | Path = DATA_DIR) -> dict:
-    """Held-out evaluation on the *_test splits (never used for fitting)."""
+def evaluate(
+    model: AxisModel, embed_fn: EmbedFn, data_dir: str | Path = DATA_DIR, *, n_boot: int = 1000
+) -> dict:
+    """Held-out evaluation on the *_test splits (never used for fitting).
+
+    ``auc["quotes"]`` is the quotability control: famous taglines vs famous
+    non-advertising lines. Near 0.5 means the axis measures memorability in
+    general rather than anything specific to advertising.
+    """
     corpus = load_corpus(data_dir)
     groups = {
         "pos": texts(corpus.pos_test),
         "hard": texts(corpus.hard_test),
         "generic": texts(corpus.generic_test),
         "topic_bland": [r["bland"] for r in corpus.contrast],
+        "quotes": texts(corpus.quotes),
     }
     S = {g: model.score(model.embed(t, embed_fn)) for g, t in groups.items() if t}
+    neg_groups = [g for g in ("hard", "generic", "topic_bland", "quotes") if g in S]
     out: dict = {
         "n": {g: len(t) for g, t in groups.items()},
-        "auc": {g: auc(S["pos"], S[g]) for g in ("hard", "generic", "topic_bland") if g in S},
+        "auc": {g: auc(S["pos"], S[g]) for g in neg_groups},
+        "auc_ci95": {g: auc_bootstrap_ci(S["pos"], S[g], n_boot=n_boot) for g in neg_groups},
         "score_mean": {g: float(s.mean()) for g, s in S.items()},
     }
     if corpus.contrast and "topic_bland" in S:

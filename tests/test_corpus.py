@@ -10,6 +10,7 @@ from emoscript.dataio import (
 )
 
 MIN_COUNTS = {
+    "quotes_test": 20,
     "slogans_train": 100,
     "slogans_test": 40,
     "negatives_hard_train": 40,

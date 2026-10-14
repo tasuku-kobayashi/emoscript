@@ -7,6 +7,8 @@ Files are JSONL, one object per line:
 - ``negatives_generic_{train,test}.jsonl``{"text", "note"}            original plain prose
 - ``contrast_pairs_test.jsonl``           {"famous", "bland", "brand"} same-topic bland
   rewrite of every held-out tagline (for the topic-vs-style experiment)
+- ``quotes_test.jsonl``                   {"text", "source"}          famous proverbs and
+  literary / historical lines that are not advertising (quotability control)
 """
 
 from __future__ import annotations
@@ -26,7 +28,8 @@ NEGATIVE_SPLITS = (
     "negatives_generic_test",
 )
 CONTRAST_SPLIT = "contrast_pairs_test"
-ALL_SPLITS = POSITIVE_SPLITS + NEGATIVE_SPLITS + (CONTRAST_SPLIT,)
+QUOTES_SPLIT = "quotes_test"  # famous lines that are *not* ads: the quotability control
+ALL_SPLITS = POSITIVE_SPLITS + NEGATIVE_SPLITS + (CONTRAST_SPLIT, QUOTES_SPLIT)
 
 NEAR_DUPLICATE_JACCARD = 0.7
 
@@ -63,6 +66,7 @@ class Corpus:
     hard_test: list[dict]
     generic_test: list[dict]
     contrast: list[dict] = field(default_factory=list)
+    quotes: list[dict] = field(default_factory=list)
 
     def negatives_train(self, kinds: tuple[str, ...] = ("hard", "generic")) -> list[dict]:
         out: list[dict] = []
@@ -76,6 +80,7 @@ class Corpus:
 def load_corpus(data_dir: str | Path = DATA_DIR) -> Corpus:
     data_dir = Path(data_dir)
     contrast_path = data_dir / f"{CONTRAST_SPLIT}.jsonl"
+    quotes_path = data_dir / f"{QUOTES_SPLIT}.jsonl"
     return Corpus(
         pos_train=load_split("slogans_train", data_dir),
         hard_train=load_split("negatives_hard_train", data_dir),
@@ -84,6 +89,7 @@ def load_corpus(data_dir: str | Path = DATA_DIR) -> Corpus:
         hard_test=load_split("negatives_hard_test", data_dir),
         generic_test=load_split("negatives_generic_test", data_dir),
         contrast=load_jsonl(contrast_path) if contrast_path.exists() else [],
+        quotes=load_jsonl(quotes_path) if quotes_path.exists() else [],
     )
 
 
@@ -152,6 +158,11 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
     for name in NEGATIVE_SPLITS:
         check_rows(name, ("text",))
     check_rows(CONTRAST_SPLIT, ("famous", "bland", "brand"), text_key="bland")
+    check_rows(QUOTES_SPLIT, ("text", "source"))
+    positives = {r.get("text") for n in POSITIVE_SPLITS for r in splits.get(n, [])}
+    for r in splits.get(QUOTES_SPLIT, []):
+        if r.get("text") in positives:
+            problems.append(f"{QUOTES_SPLIT}: quote is also a tagline: {r['text']!r}")
 
     def cross_check(train: str, test: str) -> None:
         tr = [r["text"] for r in splits.get(train, []) if isinstance(r.get("text"), str)]

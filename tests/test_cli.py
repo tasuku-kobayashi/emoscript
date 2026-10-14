@@ -20,6 +20,13 @@ def test_fit_score_eval_info_roundtrip(patched_backend, tmp_path, capsys):
     lines = capsys.readouterr().out.strip().splitlines()
     assert len(lines) == 2 and all(("PASS" in ln or "fail" in ln) for ln in lines)
 
+    assert cli.main(["score", "Just Do It.", "--axis", str(out), "--explain", "--neighbors", "2"]) == 0
+    out_text = capsys.readouterr().out
+    assert "nearest famous (axis" in out_text and "Just Do It." in out_text
+    assert cli.main(["score", "Just Do It.", "--axis", str(out), "--explain", "--json"]) == 0
+    row = json.loads(capsys.readouterr().out)[0]
+    assert row["nearest"][0]["text"] == "Just Do It." and row["axis"] in (0, 1)
+
     f = tmp_path / "c.txt"
     f.write_text("Think fresh.\n\nWe sell furniture at low prices.\n", encoding="utf-8")
     assert cli.main(["score", "--file", str(f), "--axis", str(out), "--json", "--sort"]) == 0

@@ -121,6 +121,20 @@ def test_calibrator_survives_perfectly_separable_data():
     assert accuracy(p, np.r_[np.ones(20), np.zeros(20)]) == 1.0
 
 
+def test_auc_bootstrap_ci_brackets_point_estimate_and_narrows_with_n():
+    from emoscript.axis import auc_bootstrap_ci
+
+    rng = np.random.default_rng(0)
+    small_p, small_n = rng.normal(0.3, 0.1, 15), rng.normal(0.1, 0.1, 10)
+    big_p, big_n = rng.normal(0.3, 0.1, 300), rng.normal(0.1, 0.1, 200)
+    for p, n in ((small_p, small_n), (big_p, big_n)):
+        lo, hi = auc_bootstrap_ci(p, n, n_boot=300)
+        assert 0 <= lo <= auc(p, n) <= hi <= 1
+    lo_s, hi_s = auc_bootstrap_ci(small_p, small_n, n_boot=300)
+    lo_b, hi_b = auc_bootstrap_ci(big_p, big_n, n_boot=300)
+    assert (hi_b - lo_b) < (hi_s - lo_s)
+
+
 def test_metric_sanity():
     y = np.array([1, 1, 0, 0])
     perfect = np.array([1.0, 1.0, 0.0, 0.0])

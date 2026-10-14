@@ -171,6 +171,27 @@ def auc(pos_scores: np.ndarray, neg_scores: np.ndarray) -> float:
     return float((p > n).mean() + 0.5 * (p == n).mean())
 
 
+def auc_bootstrap_ci(
+    pos_scores: np.ndarray,
+    neg_scores: np.ndarray,
+    *,
+    n_boot: int = 1000,
+    alpha: float = 0.05,
+    seed: int = 0,
+) -> tuple[float, float]:
+    """Percentile bootstrap confidence interval for :func:`auc` (resampling both groups)."""
+    p = np.asarray(pos_scores, dtype=np.float64)
+    n = np.asarray(neg_scores, dtype=np.float64)
+    rng = np.random.default_rng(seed)
+    vals = np.empty(n_boot)
+    for i in range(n_boot):
+        pb = p[rng.integers(len(p), size=len(p))]
+        nb = n[rng.integers(len(n), size=len(n))]
+        vals[i] = auc(pb, nb)
+    lo, hi = np.quantile(vals, [alpha / 2, 1 - alpha / 2])
+    return float(lo), float(hi)
+
+
 def _sigmoid(z: np.ndarray) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-np.clip(z, -500, 500)))
 

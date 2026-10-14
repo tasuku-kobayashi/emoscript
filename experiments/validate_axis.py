@@ -35,6 +35,7 @@ import numpy as np  # noqa: E402
 from emoscript.axis import (  # noqa: E402
     accuracy,
     auc,
+    auc_bootstrap_ci,
     brier,
     fit_diff_axis,
     fit_mean_axis,
@@ -60,7 +61,14 @@ def length_bucket(t: str) -> str:
     return "short<=4w" if n <= 4 else ("mid5-7w" if n < 8 else "long>=8w")
 
 
-def run(model_name: str, ks: list[int], data_dir: Path, embed_fn=None, casing: str = "none") -> dict:
+def run(
+    model_name: str,
+    ks: list[int],
+    data_dir: Path,
+    embed_fn=None,
+    casing: str = "none",
+    n_boot: int = 1000,
+) -> dict:
     corpus = load_corpus(data_dir)
     embed_fn = embed_fn or make_embed_fn(model_name)
     norm = normalizer(casing)
@@ -73,8 +81,10 @@ def run(model_name: str, ks: list[int], data_dir: Path, embed_fn=None, casing: s
         "hard_te": texts(corpus.hard_test),
         "gen_te": texts(corpus.generic_test),
         "topic_te": [r["bland"] for r in corpus.contrast],
+        "quotes": texts(corpus.quotes),
         "probe": [p for p, _ in PROBES],
     }
+    groups = {g: ts for g, ts in groups.items() if ts}
     all_texts = norm([t for g in groups.values() for t in g])
     E_all = l2_normalize(embed_fn(all_texts))
     E: dict[str, np.ndarray] = {}
@@ -87,7 +97,11 @@ def run(model_name: str, ks: list[int], data_dir: Path, embed_fn=None, casing: s
     variants: dict[str, dict] = {}
 
     def add_variant(name: str, axes: np.ndarray, calibrator=None, oof=None):
-        s = {g: score(E[g], axes) for g in ("pos_te", "hard_te", "gen_te", "topic_te", "probe")}
+        s = {
+            g: score(E[g], axes)
+            for g in ("pos_te", "hard_te", "gen_te", "topic_te", "quotes", "probe")
+            if g in E
+        }
         famous_score = dict(zip(groups["pos_te"], s["pos_te"], strict=True))
         wins = [famous_score[r["famous"]] > sc for r, sc in zip(corpus.contrast, s["topic_te"], strict=True)]
         buckets = {}
@@ -100,6 +114,12 @@ def run(model_name: str, ks: list[int], data_dir: Path, embed_fn=None, casing: s
             "auc_vs_hard": auc(s["pos_te"], s["hard_te"]),
             "auc_vs_generic": auc(s["pos_te"], s["gen_te"]),
             "auc_vs_topic_bland": auc(s["pos_te"], s["topic_te"]),
+            "auc_vs_quotes": auc(s["pos_te"], s["quotes"]) if "quotes" in s else None,
+            "auc_ci95": {
+                g: auc_bootstrap_ci(s["pos_te"], s[g], n_boot=n_boot)
+                for g in ("hard_te", "gen_te", "topic_te", "quotes")
+                if g in s
+            },
             "topic_pair_win_rate": float(np.mean(wins)),
             "by_length": buckets,
             "mean": {g: float(sc.mean()) for g, sc in s.items()},
@@ -150,6 +170,9 @@ def run(model_name: str, ks: list[int], data_dir: Path, embed_fn=None, casing: s
             "hard_te": list(zip(groups["hard_te"], map(float, ranking_scores["hard_te"]), strict=True)),
             "gen_te": list(zip(groups["gen_te"], map(float, ranking_scores["gen_te"]), strict=True)),
             "topic_te": list(zip(groups["topic_te"], map(float, ranking_scores["topic_te"]), strict=True)),
+            "quotes": list(
+                zip(groups.get("quotes", []), map(float, ranking_scores.get("quotes", [])), strict=True)
+            ),
             "probe": list(zip(groups["probe"], map(float, ranking_scores["probe"]), strict=True)),
         },
     }
@@ -165,11 +188,19 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
     )
     for name, v in res["variants"].items():
         print(f"\n[{name}]")
-        print(
-            f"  AUC vs hard {v['auc_vs_hard']:.3f}   vs generic {v['auc_vs_generic']:.3f}   "
-            f"vs topic-matched bland {v['auc_vs_topic_bland']:.3f}   "
-            f"pair win rate {v['topic_pair_win_rate']:.3f}"
+        ci = v["auc_ci95"]
+
+        def fmt(key, g, v=v, ci=ci):
+            lo, hi = ci[g]
+            return f"{v[key]:.3f} [{lo:.2f},{hi:.2f}]"
+
+        line = (
+            f"  AUC vs hard {fmt('auc_vs_hard', 'hard_te')}   generic {fmt('auc_vs_generic', 'gen_te')}   "
+            f"topic-matched {fmt('auc_vs_topic_bland', 'topic_te')}   pair win {v['topic_pair_win_rate']:.3f}"
         )
+        if v.get("auc_vs_quotes") is not None:
+            line += f"\n  quotability control (vs famous non-ad quotes) {fmt('auc_vs_quotes', 'quotes')}"
+        print(line)
         print(
             "  by length: "
             + "   ".join(f"{b} n={d['n']} AUC {d['auc_vs_hard']:.3f}" for b, d in v["by_length"].items())
@@ -197,6 +228,7 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
             "hard_te": "bland ",
             "gen_te": "prose ",
             "topic_te": "topic ",
+            "quotes": "quote ",
             "probe": "probe ",
         }
         rows = sorted(((t, g, s) for g, rows_ in r.items() for t, s in rows_), key=lambda x: -x[2])
