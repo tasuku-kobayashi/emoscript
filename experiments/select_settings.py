@@ -37,7 +37,7 @@ from emoscript.axis import (  # noqa: E402
 )
 from emoscript.dataio import DATA_DIR, load_corpus, texts  # noqa: E402
 from emoscript.embed import DEFAULT_MODEL, make_embed_fn  # noqa: E402
-from emoscript.pipeline import cross_fit_scores, negative_family  # noqa: E402
+from emoscript.pipeline import SENSE_FAMILIES, cross_fit_scores, fit_sense_axis, negative_family  # noqa: E402
 from emoscript.text import normalizer  # noqa: E402
 
 
@@ -64,13 +64,17 @@ def run(
     seed: int = 0,
     embed_fn=None,
     balances: tuple[bool, ...] = (False,),
+    senses: tuple[bool, ...] = (False,),
 ) -> list[dict]:
     corpus = load_corpus(data_dir)
     embed_fn = embed_fn or make_embed_fn(model_name)
     pos_raw = texts(corpus.pos_train)
     neg_rows = corpus.negatives_train()
     neg_raw = texts(neg_rows)
-    fam_w = family_weights([negative_family(r) for r in neg_rows])
+    fams = [negative_family(r) for r in neg_rows]
+    fam_w = family_weights(fams)
+    in_sense = np.array([f in SENSE_FAMILIES for f in fams])
+    sense_w = np.where(in_sense, family_weights([f if f in SENSE_FAMILIES else "x" for f in fams]), 0.0)
     brands = [r["brand"] for r in corpus.pos_train]
     rng = np.random.default_rng(seed)
     pos_folds = grouped_folds(brands, n_folds, rng)
@@ -81,8 +85,9 @@ def run(
         norm = normalizer(casing)
         E_pos = l2_normalize(embed_fn(norm(pos_raw)))
         E_neg = l2_normalize(embed_fn(norm(neg_raw)))
-        for k, balance in [(k, b) for k in ks for b in balances]:
+        for k, balance, sense in [(k, b, s) for k in ks for b in balances for s in senses]:
             W = fam_w if balance else None
+            SW = sense_w if sense else None
             oof_s_pos = np.full(len(E_pos), np.nan)
             oof_s_neg = np.full(len(E_neg), np.nan)
             oof_p = {l2: (np.full(len(E_pos), np.nan), np.full(len(E_neg), np.nan)) for l2 in l2s}
@@ -91,21 +96,31 @@ def run(
                 tp = np.setdiff1d(np.arange(len(E_pos)), hp)
                 tn = np.setdiff1d(np.arange(len(E_neg)), hn)
                 w_tn = None if W is None else W[tn]
+                sw_tn = None if SW is None else SW[tn]
                 axes, _ = fit_multi_axis(E_pos[tp], E_neg[tn], k, seed=seed, neg_weights=w_tn)
                 oof_s_pos[hp] = score(E_pos[hp], axes)
                 oof_s_neg[hn] = score(E_neg[hn], axes)
                 # inner cross-fit on the training part only -> calibrator for this fold
                 in_p, in_n = cross_fit_scores(
-                    E_pos[tp], E_neg[tn], k, n_folds=n_folds, seed=seed, neg_weights=w_tn
+                    E_pos[tp], E_neg[tn], k, n_folds=n_folds, seed=seed, neg_weights=w_tn, sense_weights=sw_tn
                 )
+                if sw_tn is not None:
+                    s_axis = fit_sense_axis(E_pos[tp], E_neg[tn], sw_tn)
+                    f_hp = np.column_stack([score(E_pos[hp], axes), E_pos[hp] @ s_axis])
+                    f_hn = np.column_stack([score(E_neg[hn], axes), E_neg[hn] @ s_axis])
+                else:
+                    f_hp, f_hn = score(E_pos[hp], axes), score(E_neg[hn], axes)
                 for l2 in l2s:
                     cal = Calibrator(l2=l2).fit(in_p, in_n)
-                    oof_p[l2][0][hp] = cal.predict_proba(score(E_pos[hp], axes))
-                    oof_p[l2][1][hn] = cal.predict_proba(score(E_neg[hn], axes))
+                    oof_p[l2][0][hp] = cal.predict_proba(f_hp)
+                    oof_p[l2][1][hn] = cal.predict_proba(f_hn)
             cv_auc = auc(oof_s_pos, oof_s_neg)
+            nonsense = np.array([f == "nonsense" for f in fams])
             y = np.r_[np.ones(len(E_pos)), np.zeros(len(E_neg))]
             for l2 in l2s:
                 p = np.r_[oof_p[l2][0], oof_p[l2][1]]
+                auc_p = auc(oof_p[l2][0], oof_p[l2][1])
+                auc_nonsense = auc(oof_p[l2][0], oof_p[l2][1][nonsense]) if nonsense.any() else float("nan")
                 # balanced log-loss: mean of the per-class log-losses, so the class ratio does not dominate
                 ll_pos = log_loss(oof_p[l2][0], np.ones(len(E_pos)))
                 ll_neg = log_loss(oof_p[l2][1], np.zeros(len(E_neg)))
@@ -114,8 +129,11 @@ def run(
                         "casing": casing,
                         "k": k,
                         "balance": balance,
+                        "sense": sense,
                         "l2": l2,
                         "cv_auc": cv_auc,
+                        "cv_auc_proba": auc_p,
+                        "cv_auc_proba_vs_nonsense": auc_nonsense,
                         "cv_log_loss": log_loss(p, y),
                         "cv_balanced_log_loss": 0.5 * (ll_pos + ll_neg),
                         "cv_pos_pass_rate": float((oof_p[l2][0] >= 0.5).mean()),
@@ -127,19 +145,21 @@ def run(
 
 def print_table(rows: list[dict]) -> None:
     print(
-        f"{'casing':14s} {'k':>2s} {'bal':>3s} {'l2':>5s} {'AUC':>6s} {'logloss':>8s} {'bal-ll':>7s} "
-        f"{'pos pass':>9s} {'neg pass':>9s}"
+        f"{'casing':14s} {'k':>2s} {'bal':>3s} {'sns':>3s} {'l2':>5s} {'AUC':>6s} {'AUC(p)':>6s} "
+        f"{'vs nons':>7s} {'logloss':>8s} {'bal-ll':>7s} {'pos pass':>9s} {'neg pass':>9s}"
     )
     for r in sorted(rows, key=lambda r: (r["cv_balanced_log_loss"], -r["cv_auc"], r["k"])):
         print(
-            f"{r['casing']:14s} {r['k']:2d} {'y' if r.get('balance') else 'n':>3s} {r['l2']:5g} "
-            f"{r['cv_auc']:6.3f} {r['cv_log_loss']:8.3f} "
+            f"{r['casing']:14s} {r['k']:2d} {'y' if r.get('balance') else 'n':>3s} "
+            f"{'y' if r.get('sense') else 'n':>3s} {r['l2']:5g} "
+            f"{r['cv_auc']:6.3f} {r.get('cv_auc_proba', float('nan')):6.3f} "
+            f"{r.get('cv_auc_proba_vs_nonsense', float('nan')):7.3f} {r['cv_log_loss']:8.3f} "
             f"{r['cv_balanced_log_loss']:7.3f} {r['cv_pos_pass_rate']:9.3f} {r['cv_neg_pass_rate']:9.3f}"
         )
     best = min(rows, key=lambda r: (r["cv_balanced_log_loss"], -r["cv_auc"], r["k"]))
     print(
         f"\nbest by balanced log-loss: casing={best['casing']} k={best['k']} "
-        f"balance={best.get('balance', False)} l2={best['l2']}"
+        f"balance={best.get('balance', False)} sense={best.get('sense', False)} l2={best['l2']}"
     )
 
 
@@ -150,6 +170,9 @@ def main(argv=None) -> int:
     ap.add_argument("--k", default="1,2,3")
     ap.add_argument("--l2", default="0.1,1,10")
     ap.add_argument("--balance", default="0,1", help="comma list of 0/1: equal weight per negative family")
+    ap.add_argument(
+        "--sense", default="0,1", help="comma list of 0/1: add the sense axis (two-feature calibrator)"
+    )
     ap.add_argument("--data-dir", default=str(DATA_DIR))
     ap.add_argument("--json")
     args = ap.parse_args(argv)
@@ -160,6 +183,7 @@ def main(argv=None) -> int:
         [float(x) for x in args.l2.split(",") if x.strip()],
         Path(args.data_dir),
         balances=tuple(bool(int(x)) for x in args.balance.split(",") if x.strip()),
+        senses=tuple(bool(int(x)) for x in args.sense.split(",") if x.strip()),
     )
     print_table(rows)
     if args.json:

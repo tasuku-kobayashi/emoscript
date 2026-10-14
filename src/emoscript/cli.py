@@ -58,6 +58,7 @@ def cmd_fit(args) -> int:
         model_name=args.model,
         casing=args.casing,
         balance_negatives=not args.no_balance_negatives,
+        sense=not args.no_sense,
     )
     saved = model.save(args.out)
     oof = model.meta.get("oof", {})
@@ -104,9 +105,11 @@ def cmd_score(args) -> int:
 
     ok, E = embed_valid(model, texts, embed_fn)  # embedded once, reused for score / explain / brief
     scores = np.full(len(texts), np.nan)
+    probs = np.full(len(texts), np.nan) if model.calibrator is not None else None
     if ok.any():
         scores[ok] = model.score(E)
-    probs = model.predict_proba(scores, prior=args.prior)
+        if probs is not None:
+            probs[ok] = model.proba_from_embeddings(E, prior=args.prior)
     relevance = None
     if args.brief:
         relevance = np.full(len(texts), np.nan)
@@ -225,6 +228,13 @@ def cmd_eval(args) -> int:
     for g, v in report["auc"].items():
         lo, hi = report["auc_ci95"][g]
         print(f"  AUC held-out taglines vs {g:<12s} {v:.3f}  [{lo:.3f}, {hi:.3f}]  (n={report['n'][g]})")
+    if "good_copy" in report:
+        gc = report["good_copy"]
+        extra = f"  by probability {gc['auc_proba_vs_junk']:.3f}" if "auc_proba_vs_junk" in gc else ""
+        print(
+            f"  good (unknown) copy vs junk      {gc['auc_vs_junk']:.3f}{extra}   "
+            f"vs hard {gc['auc_vs_hard']:.3f}   famous vs good {gc['auc_famous_vs_good']:.3f}"
+        )
     if "contrast_pair_win_rate" in report:
         lo, hi = report["contrast_pair_win_ci95"]
         print(
@@ -276,6 +286,7 @@ def cmd_info(args) -> int:
         "calibrated": model.calibrator is not None,
         "threshold@0.5": model.threshold_for(0.5),
         "exemplars": len(model.exemplar_texts),
+        "sense_axis": model.sense_axis is not None,
         "meta": model.meta,
     }
     _print_json(info)
@@ -333,6 +344,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-calibrate", action="store_true", help="skip the cross-fitted calibrator")
     p.add_argument("--folds", type=int, default=5, help="folds for out-of-fold calibration")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument(
+        "--no-sense",
+        action="store_true",
+        help="drop the second 'is this a message' axis; calibrate on the style score alone",
+    )
     p.add_argument(
         "--no-balance-negatives",
         action="store_true",

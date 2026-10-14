@@ -90,10 +90,15 @@ def test_cli_guards(patched_backend, tmp_path, capsys):
     assert cli.main(["fit", "--model", "fake", "--out", str(tmp_path / "noext"), "--k", "1"]) == 0
     assert "noext.npz" in capsys.readouterr().out and (tmp_path / "noext.npz").exists()
     plain = str(tmp_path / "plain")
-    assert cli.main(["fit", "--model", "fake", "--out", plain, "--no-balance-negatives"]) == 0
+    assert cli.main(["fit", "--model", "fake", "--out", plain, "--no-balance-negatives", "--no-sense"]) == 0
     capsys.readouterr()
     assert cli.main(["info", "--axis", str(tmp_path / "plain.npz")]) == 0
-    assert json.loads(capsys.readouterr().out)["meta"]["neg_weighted"] is False
+    info = json.loads(capsys.readouterr().out)
+    assert info["meta"]["neg_weighted"] is False and info["sense_axis"] is False
+    assert cli.main(["info", "--axis", str(tmp_path / "noext.npz")]) == 0
+    assert json.loads(capsys.readouterr().out)["sense_axis"] is True
+    assert cli.main(["eval", "--axis", str(tmp_path / "noext.npz")]) == 0
+    assert "good (unknown) copy vs junk" in capsys.readouterr().out
     with pytest.raises(SystemExit, match="threshold"):
         cli.main(["score", "x", "--axis", str(tmp_path / "noext.npz"), "--threshold", "1.5"])
     assert (

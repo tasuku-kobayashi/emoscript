@@ -11,6 +11,9 @@ Files are JSONL, one object per line:
   literary / historical lines that are not advertising (quotability control)
 - ``junk_test.jsonl``                     {"text"}                    placeholder and UI
   strings ("Lorem Ipsum", "Page Not Found") that a usable scorer must reject
+- ``good_copy_test.jsonl``                {"text"}                    original, usable
+  lines that are not famous: what a scorer should PASS, and the cost side of
+  every measure that suppresses junk
 
 Positive rows may carry ``"kind"`` (tagline by default; headline, jingle,
 motto, poster, billing) so that non-tagline classics stay identifiable.
@@ -35,7 +38,8 @@ NEGATIVE_SPLITS = (
 CONTRAST_SPLIT = "contrast_pairs_test"
 QUOTES_SPLIT = "quotes_test"  # famous lines that are *not* ads: the quotability control
 JUNK_SPLIT = "junk_test"  # placeholder / UI strings that must never pass
-ALL_SPLITS = POSITIVE_SPLITS + NEGATIVE_SPLITS + (CONTRAST_SPLIT, QUOTES_SPLIT, JUNK_SPLIT)
+GOOD_SPLIT = "good_copy_test"  # original, usable, unknown copy that should pass
+ALL_SPLITS = POSITIVE_SPLITS + NEGATIVE_SPLITS + (CONTRAST_SPLIT, QUOTES_SPLIT, JUNK_SPLIT, GOOD_SPLIT)
 KINDS = ("tagline", "headline", "jingle", "motto", "poster", "billing")
 # Allowed ``note`` values for negatives (prefix match for the generic-* family).
 NOTE_PREFIXES = (
@@ -92,6 +96,7 @@ class Corpus:
     contrast: list[dict] = field(default_factory=list)
     quotes: list[dict] = field(default_factory=list)
     junk: list[dict] = field(default_factory=list)
+    good_copy: list[dict] = field(default_factory=list)
 
     def negatives_train(self, kinds: tuple[str, ...] = ("hard", "generic")) -> list[dict]:
         out: list[dict] = []
@@ -107,6 +112,7 @@ def load_corpus(data_dir: str | Path = DATA_DIR) -> Corpus:
     contrast_path = data_dir / f"{CONTRAST_SPLIT}.jsonl"
     quotes_path = data_dir / f"{QUOTES_SPLIT}.jsonl"
     junk_path = data_dir / f"{JUNK_SPLIT}.jsonl"
+    good_path = data_dir / f"{GOOD_SPLIT}.jsonl"
     return Corpus(
         pos_train=load_split("slogans_train", data_dir),
         hard_train=load_split("negatives_hard_train", data_dir),
@@ -117,6 +123,7 @@ def load_corpus(data_dir: str | Path = DATA_DIR) -> Corpus:
         contrast=load_jsonl(contrast_path) if contrast_path.exists() else [],
         quotes=load_jsonl(quotes_path) if quotes_path.exists() else [],
         junk=load_jsonl(junk_path) if junk_path.exists() else [],
+        good_copy=load_jsonl(good_path) if good_path.exists() else [],
     )
 
 
@@ -201,6 +208,10 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
     for r in splits.get(JUNK_SPLIT, []):
         if r.get("text") in positives or r.get("text") in negatives_all:
             problems.append(f"{JUNK_SPLIT}: junk line also in another split: {r['text']!r}")
+    check_rows(GOOD_SPLIT, ("text",))
+    for r in splits.get(GOOD_SPLIT, []):
+        if r.get("text") in positives or r.get("text") in negatives_all:
+            problems.append(f"{GOOD_SPLIT}: good-copy line also in another split: {r['text']!r}")
 
     def cross_check(train: str, test: str) -> None:
         tr = [r["text"] for r in splits.get(train, []) if isinstance(r.get("text"), str)]
@@ -217,9 +228,10 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
     cross_check("negatives_hard_train", "negatives_hard_test")
     cross_check("negatives_generic_train", "negatives_generic_test")
     # evaluation-only controls must not be shadowed by training negatives
-    for control in (JUNK_SPLIT, QUOTES_SPLIT):
+    for control in (JUNK_SPLIT, QUOTES_SPLIT, GOOD_SPLIT):
         cross_check("negatives_hard_train", control)
         cross_check("negatives_generic_train", control)
+    cross_check("slogans_train", GOOD_SPLIT)
 
     tr_brands = {r.get("brand") for r in splits.get("slogans_train", [])}
     te_brands = {r.get("brand") for r in splits.get("slogans_test", [])}

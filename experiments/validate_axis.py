@@ -59,7 +59,7 @@ from emoscript.axis import (  # noqa: E402
 )
 from emoscript.dataio import DATA_DIR, load_corpus, texts  # noqa: E402
 from emoscript.embed import DEFAULT_MODEL, make_embed_fn  # noqa: E402
-from emoscript.pipeline import fit_from_embeddings, negative_family  # noqa: E402
+from emoscript.pipeline import SENSE_FAMILIES, fit_from_embeddings, negative_family  # noqa: E402
 from emoscript.text import BLOCKING_FLAGS, CASINGS, input_flags, normalizer  # noqa: E402
 
 # Probes are illustrative only (not metrics). They are new lines, not paraphrases of corpus entries.
@@ -100,6 +100,7 @@ def run(
         "topic_te": [r["bland"] for r in corpus.contrast],
         "quotes": texts(corpus.quotes),
         "junk": texts(corpus.junk),
+        "good": texts(corpus.good_copy),
         "probe": [p for p, _ in PROBES],
     }
     groups = {g: ts for g, ts in groups.items() if ts}
@@ -113,20 +114,20 @@ def run(
         i += len(ts)
 
     N_all = np.vstack([E["hard_tr"], E["gen_tr"]])
-    neg_w = (
-        family_weights([negative_family(r) for r in corpus.hard_train + corpus.generic_train])
-        if balance
-        else None
-    )
+    fams = [negative_family(r) for r in corpus.hard_train + corpus.generic_train]
+    neg_w = family_weights(fams) if balance else None
+    in_sense = np.array([f in SENSE_FAMILIES for f in fams])
+    sense_w = np.where(in_sense, family_weights([f if f in SENSE_FAMILIES else "x" for f in fams]), 0.0)
     variants: dict[str, dict] = {}
 
-    def add_variant(name: str, axes: np.ndarray, calibrator=None, oof=None, scorer=None):
+    def add_variant(name: str, axes: np.ndarray, calibrator=None, oof=None, scorer=None, proba=None):
         scorer = scorer or (lambda X: score(X, axes))
         s = {
             g: scorer(E[g])
-            for g in ("pos_te", "hard_te", "gen_te", "topic_te", "quotes", "junk", "probe")
+            for g in ("pos_te", "hard_te", "gen_te", "topic_te", "quotes", "junk", "good", "probe")
             if g in E
         }
+        proba = proba or (lambda X: calibrator.predict_proba(scorer(X)))
         famous_score = dict(zip(groups["pos_te"], s["pos_te"], strict=True))
         fam_paired = np.array([famous_score[r["famous"]] for r in corpus.contrast])
         wins = [famous_score[r["famous"]] > sc for r, sc in zip(corpus.contrast, s["topic_te"], strict=True)]
@@ -142,6 +143,13 @@ def run(
             "auc_vs_topic_bland": auc(s["pos_te"], s["topic_te"]),
             "auc_vs_quotes": auc(s["pos_te"], s["quotes"]) if "quotes" in s else None,
             "auc_vs_junk": auc(s["pos_te"], s["junk"]) if "junk" in s else None,
+            "good_copy": {
+                "auc_vs_junk": auc(s["good"], s["junk"]),
+                "auc_vs_hard": auc(s["good"], s["hard_te"]),
+                "auc_famous_vs_good": auc(s["pos_te"], s["good"]),
+            }
+            if "good" in s and "junk" in s
+            else None,
             "auc_ci95": {
                 **{
                     g: auc_bootstrap_ci(s["pos_te"], s[g], pos_groups=pos_brands, n_boot=n_boot)
@@ -167,9 +175,9 @@ def run(
             ],
         }
         if calibrator is not None:
-            negs = np.concatenate([s["hard_te"], s["gen_te"], s["topic_te"]])
-            p = calibrator.predict_proba(np.concatenate([s["pos_te"], negs]))
-            y = np.concatenate([np.ones(len(s["pos_te"])), np.zeros(len(negs))])
+            P = {g: proba(E[g]) for g in s if g != "probe"}
+            p = np.concatenate([P["pos_te"], P["hard_te"], P["gen_te"], P["topic_te"]])
+            y = np.concatenate([np.ones(len(s["pos_te"])), np.zeros(len(p) - len(s["pos_te"]))])
             v["calibration"] = {
                 "oof_train": oof,
                 "negatives": "hard+generic+topic",
@@ -178,15 +186,13 @@ def run(
                 "test_accuracy@0.5": accuracy(p, y),
                 "threshold@0.5": calibrator.score_at(0.5),
             }
-            v["pass_rate@0.5"] = {
-                g: float((calibrator.predict_proba(sc) >= 0.5).mean()) for g, sc in s.items() if g != "probe"
-            }
-            if "junk" in s:
+            v["pass_rate@0.5"] = {g: float((pp >= 0.5).mean()) for g, pp in P.items()}
+            if "junk" in P:
                 flagged = np.array([bool(BLOCKING_FLAGS & set(input_flags(t))) for t in groups["junk"]])
                 # (the famous-line check only blocks verbatim copies; junk never contains one)
-                v["junk_pass_rate_after_flags"] = float(
-                    ((calibrator.predict_proba(s["junk"]) >= 0.5) & ~flagged).mean()
-                )
+                v["junk_pass_rate_after_flags"] = float(((P["junk"] >= 0.5) & ~flagged).mean())
+            if "good" in P and "junk" in P:
+                v["good_copy"]["auc_proba_vs_junk"] = auc(P["good"], P["junk"])
         variants[name] = v
         return s
 
@@ -235,6 +241,25 @@ def run(
         tag = ", balanced families" if balance else ""
         name = f"M2 diff (hard+generic{tag})" if k == 1 else f"M2 multi-axis k={k}{tag}"
         s = add_variant(name, m.axes, m.calibrator, m.meta.get("oof"))
+        if k == 1 and in_sense.any():
+            ms = fit_from_embeddings(
+                E["pos_tr"],
+                N_all,
+                k=1,
+                calibrate=True,
+                model_name=model_name,
+                neg_weights=neg_w,
+                sense_weights=sense_w,
+            )
+            sname = f"M2 diff + sense axis{tag}"
+            add_variant(
+                sname,
+                ms.axes,
+                ms.calibrator,
+                ms.meta.get("oof"),
+                proba=lambda X, ms=ms: ms.proba_from_embeddings(X),
+            )
+            variants[sname]["calibrator_weights"] = ms.meta["oof"]["calibrator_weights"]
         variants[name]["cluster_sizes"] = m.meta["cluster_sizes"]
         if ranking_scores is None:
             ranking_scores = s
@@ -255,6 +280,9 @@ def run(
             ),
             "junk": list(
                 zip(groups.get("junk", []), map(float, ranking_scores.get("junk", [])), strict=True)
+            ),
+            "good": list(
+                zip(groups.get("good", []), map(float, ranking_scores.get("good", [])), strict=True)
             ),
             "probe": list(zip(groups["probe"], map(float, ranking_scores["probe"]), strict=True)),
         },
@@ -291,6 +319,13 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
         lo, hi = v["topic_pair_win_ci95"]
         line += f"\n  pair win rate 95% Wilson [{lo:.2f},{hi:.2f}]"
         print(line)
+        if v.get("good_copy"):
+            gc = v["good_copy"]
+            extra = f"  by probability {gc['auc_proba_vs_junk']:.3f}" if "auc_proba_vs_junk" in gc else ""
+            print(
+                f"  good unknown copy: vs junk {gc['auc_vs_junk']:.3f}{extra}   "
+                f"vs hard {gc['auc_vs_hard']:.3f}   famous vs good {gc['auc_famous_vs_good']:.3f}"
+            )
         if "pass_rate@0.5" in v:
             rates = "  ".join(f"{g} {r:.2f}" for g, r in v["pass_rate@0.5"].items())
             extra = (
@@ -328,6 +363,7 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
             "topic_te": "topic ",
             "quotes": "quote ",
             "junk": "junk  ",
+            "good": "good  ",
             "probe": "probe ",
         }
         rows = sorted(((t, g, s) for g, rows_ in r.items() for t, s in rows_), key=lambda x: -x[2])

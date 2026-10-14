@@ -31,6 +31,7 @@ from .axis import (
     paired_auc_bootstrap_ci,
     score,
     score_per_axis,
+    weighted_mean,
     wilson_interval,
 )
 from .dataio import DATA_DIR, load_corpus, texts
@@ -59,6 +60,10 @@ class AxisModel:
     # these should be flagged, however well it scores.
     famous_texts: list[str] = field(default_factory=list)
     famous_brands: list[str] = field(default_factory=list)
+    # Optional second direction: famous lines minus the "not a message" negatives
+    # (nonsense, UI strings). The calibrator then reads [style, sense] and a line
+    # must look like great copy AND like a message to score a high probability.
+    sense_axis: np.ndarray | None = None
     _famous_cache: tuple | None = field(default=None, repr=False, compare=False)
 
     @property
@@ -106,8 +111,43 @@ class AxisModel:
     def score_per_axis(self, E: np.ndarray) -> np.ndarray:
         return score_per_axis(E, self.axes)
 
+    @property
+    def n_features(self) -> int:
+        return 2 if self.sense_axis is not None else 1
+
+    def sense_score(self, E: np.ndarray) -> np.ndarray | None:
+        if self.sense_axis is None:
+            return None
+        return np.atleast_2d(np.asarray(E, dtype=np.float64)) @ self.sense_axis
+
+    def features(self, E: np.ndarray) -> np.ndarray:
+        """Calibrator input per row: ``[style]`` or ``[style, sense]``."""
+        s = self.score(E)
+        if self.sense_axis is None:
+            return s[:, None]
+        return np.column_stack([s, self.sense_score(E)])
+
+    def proba_from_embeddings(self, E: np.ndarray, prior: float = 0.5) -> np.ndarray | None:
+        """Calibrated P(great copy) from embeddings (works for 1- and 2-feature models)."""
+        if self.calibrator is None:
+            return None
+        return self._shift_prior(self.calibrator.predict_proba(self.features(E)), prior)
+
+    @staticmethod
+    def _shift_prior(p: np.ndarray, prior: float) -> np.ndarray:
+        if prior == 0.5:
+            return p
+        if not 0 < prior < 1:
+            raise ValueError("prior must be strictly between 0 and 1")
+        eps = 1e-12
+        logit = np.log(np.clip(p, eps, 1 - eps) / np.clip(1 - p, eps, 1)) + np.log(prior / (1 - prior))
+        return 1.0 / (1.0 + np.exp(-logit))
+
     def predict_proba(self, scores: np.ndarray, prior: float = 0.5) -> np.ndarray | None:
-        """Calibrated P(great copy).
+        """Calibrated P(great copy) from the style score alone.
+
+        For a two-feature model (``sense_axis`` set) the style score is not
+        enough; use :meth:`proba_from_embeddings`. This method then raises.
 
         The calibrator is fitted with balanced classes, so its output assumes a
         50/50 prior. ``prior`` shifts the logit so that p reflects a different
@@ -117,14 +157,9 @@ class AxisModel:
         """
         if self.calibrator is None:
             return None
-        p = self.calibrator.predict_proba(np.asarray(scores))
-        if prior == 0.5:
-            return p
-        if not 0 < prior < 1:
-            raise ValueError("prior must be strictly between 0 and 1")
-        eps = 1e-12
-        logit = np.log(np.clip(p, eps, 1 - eps) / np.clip(1 - p, eps, 1)) + np.log(prior / (1 - prior))
-        return 1.0 / (1.0 + np.exp(-logit))
+        if self.sense_axis is not None:
+            raise ValueError("this model calibrates on [style, sense]; use proba_from_embeddings(E)")
+        return self._shift_prior(self.calibrator.predict_proba(np.asarray(scores)), prior)
 
     def near_famous(
         self, texts_: list[str], *, max_edits: int = 2, trigram: float = 0.5
@@ -201,7 +236,7 @@ class AxisModel:
 
         None when uncalibrated or when the calibrator is degenerate (no usable slope).
         """
-        if self.calibrator is None:
+        if self.calibrator is None or self.sense_axis is not None:
             return None
         t = self.calibrator.score_at(prob)
         return None if np.isnan(t) else t
@@ -221,6 +256,8 @@ class AxisModel:
         }
         if self.calibrator is not None:
             arrays.update(self.calibrator.to_arrays())
+        if self.sense_axis is not None:
+            arrays["sense_axis"] = np.asarray(self.sense_axis, dtype=np.float64)
         if self.famous_texts:
             arrays["famous_texts"] = np.asarray(self.famous_texts)
             arrays["famous_brands"] = np.asarray(self.famous_brands or [""] * len(self.famous_texts))
@@ -256,6 +293,7 @@ class AxisModel:
                 exemplar_labels = np.asarray(blob["ex_labels"], dtype=int)
             famous_texts = [str(t) for t in blob["famous_texts"]] if "famous_texts" in blob else []
             famous_brands = [str(t) for t in blob["famous_brands"]] if "famous_brands" in blob else []
+            sense_axis = np.asarray(blob["sense_axis"], dtype=np.float64) if "sense_axis" in blob else None
         return cls(
             axes=axes,
             model_name=model_name,
@@ -268,6 +306,7 @@ class AxisModel:
             exemplar_labels=exemplar_labels,
             famous_texts=famous_texts,
             famous_brands=famous_brands,
+            sense_axis=sense_axis,
         )
 
 
@@ -284,6 +323,9 @@ def _token_edit_distance(a: list[str], b: list[str]) -> int:
             cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ta != tb)))
         prev = cur
     return prev[-1]
+
+
+SENSE_FAMILIES = frozenset({"nonsense", "ui"})  # "not a message" negatives for the sense axis
 
 
 def negative_family(row: dict) -> str:
@@ -318,18 +360,21 @@ def cross_fit_scores(
     n_folds: int = 5,
     seed: int = 0,
     neg_weights: np.ndarray | None = None,
+    sense_weights: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Out-of-fold raw scores for every training positive and negative.
 
     Each fold's axes are fitted on the other folds only, so these scores are
     not optimistic and can be used to calibrate and to estimate the threshold.
+    With ``sense_weights`` the arrays have two columns, ``[style, sense]``.
     """
     rng = np.random.default_rng(seed)
     n_folds = max(2, min(n_folds, len(E_pos), len(E_neg)))
     pos_folds = _folds(len(E_pos), n_folds, rng)
     neg_folds = _folds(len(E_neg), n_folds, rng)
-    oof_pos = np.empty(len(E_pos))
-    oof_neg = np.empty(len(E_neg))
+    nf = 2 if sense_weights is not None else 1
+    oof_pos = np.empty((len(E_pos), nf))
+    oof_neg = np.empty((len(E_neg), nf))
     for f in range(n_folds):
         pos_hold, neg_hold = pos_folds[f], neg_folds[f]
         pos_mask = np.ones(len(E_pos), bool)
@@ -339,9 +384,24 @@ def cross_fit_scores(
         k_f = min(k, int(pos_mask.sum()))
         w_f = None if neg_weights is None else np.asarray(neg_weights)[neg_mask]
         axes, _ = fit_multi_axis(E_pos[pos_mask], E_neg[neg_mask], k_f, seed=seed, neg_weights=w_f)
-        oof_pos[pos_hold] = score(E_pos[pos_hold], axes)
-        oof_neg[neg_hold] = score(E_neg[neg_hold], axes)
+        oof_pos[pos_hold, 0] = score(E_pos[pos_hold], axes)
+        oof_neg[neg_hold, 0] = score(E_neg[neg_hold], axes)
+        if sense_weights is not None:
+            sw = np.asarray(sense_weights)[neg_mask]
+            s_axis = fit_sense_axis(E_pos[pos_mask], E_neg[neg_mask], sw)
+            oof_pos[pos_hold, 1] = E_pos[pos_hold] @ s_axis
+            oof_neg[neg_hold, 1] = E_neg[neg_hold] @ s_axis
+    if nf == 1:
+        return oof_pos[:, 0], oof_neg[:, 0]
     return oof_pos, oof_neg
+
+
+def fit_sense_axis(E_pos: np.ndarray, E_neg: np.ndarray, sense_weights: np.ndarray) -> np.ndarray:
+    """Famous centroid minus the centroid of the "not a message" negatives (weights > 0)."""
+    w = np.asarray(sense_weights, dtype=np.float64)
+    if not (w > 0).any():
+        raise ValueError("sense_weights selects no negatives")
+    return l2_normalize(np.asarray(E_pos).mean(axis=0) - weighted_mean(E_neg, w))
 
 
 def fit_from_embeddings(
@@ -359,11 +419,15 @@ def fit_from_embeddings(
     pos_texts: list[str] | None = None,
     keep_exemplars: bool = True,
     neg_weights: np.ndarray | None = None,
+    sense_weights: np.ndarray | None = None,
 ) -> AxisModel:
     """Fit axes (and a cross-fitted calibrator) from already-normalized embeddings.
 
     ``neg_weights`` (one per negative row) weights the negative centroid; see
     :func:`emoscript.axis.family_weights` for equal weight per negative family.
+    ``sense_weights`` (one per negative row, zero outside the "not a message"
+    families) adds a second axis and a two-feature calibrator; see
+    :class:`AxisModel.sense_axis`.
 
     When ``pos_texts`` is given the training positives are kept in the model as
     exemplars (for ``explain`` / nearest-tagline output) and each cluster is
@@ -403,26 +467,32 @@ def fit_from_embeddings(
                 }
             )
         info["clusters"] = clusters
+    sense_axis = fit_sense_axis(E_pos, E_neg, sense_weights) if sense_weights is not None else None
+    info["sense_axis"] = sense_axis is not None
     calibrator = None
     if calibrate:
         oof_pos, oof_neg = cross_fit_scores(
-            E_pos, E_neg, k, n_folds=n_folds, seed=seed, neg_weights=neg_weights
+            E_pos, E_neg, k, n_folds=n_folds, seed=seed, neg_weights=neg_weights, sense_weights=sense_weights
         )
         calibrator = Calibrator().fit(oof_pos, oof_neg)
         p = calibrator.predict_proba(np.concatenate([oof_pos, oof_neg]))
         y = np.concatenate([np.ones(len(oof_pos)), np.zeros(len(oof_neg))])
-        threshold = calibrator.score_at(0.5)
+        style_pos = oof_pos if oof_pos.ndim == 1 else oof_pos[:, 0]
+        style_neg = oof_neg if oof_neg.ndim == 1 else oof_neg[:, 0]
+        threshold = calibrator.score_at(0.5) if sense_axis is None else float("nan")
         info["oof"] = {
-            "auc": auc(oof_pos, oof_neg),
+            "auc": auc(style_pos, style_neg),
+            "auc_proba": auc(p[: len(oof_pos)], p[len(oof_pos) :]),
             "log_loss": log_loss(p, y),
             "brier": brier(p, y),
             "accuracy@0.5": accuracy(p, y),
             "threshold@0.5": None if np.isnan(threshold) else threshold,
-            "calibrator_slope": calibrator.slope,
-            "pos_score_mean": float(oof_pos.mean()),
-            "neg_score_mean": float(oof_neg.mean()),
+            "calibrator_slope": calibrator.slope if sense_axis is None else None,
+            "calibrator_weights": [float(x) for x in calibrator.w],
+            "pos_score_mean": float(style_pos.mean()),
+            "neg_score_mean": float(style_neg.mean()),
         }
-        if not calibrator.slope > 1e-9:
+        if sense_axis is None and not calibrator.slope > 1e-9:
             info["warnings"] = info.get("warnings", []) + [
                 "calibrator is degenerate (non-positive slope): probabilities are not usable"
             ]
@@ -437,6 +507,7 @@ def fit_from_embeddings(
         exemplars=E_pos if keep else None,
         exemplar_texts=list(pos_texts) if keep else [],
         exemplar_labels=labels if keep else None,
+        sense_axis=sense_axis,
     )
 
 
@@ -454,8 +525,14 @@ def fit_from_corpus(
     casing: str = "canonical",
     keep_exemplars: bool = True,
     balance_negatives: bool = True,
+    sense: bool = True,
 ) -> AxisModel:
     """Fit from the bundled (or a custom) corpus: train splits only.
+
+    ``sense`` (default) adds the second, "is this even a message" axis fitted
+    against the nonsense and UI-boilerplate families, and a two-feature
+    calibrator. It exists because the style axis alone cannot tell "Chase the
+    Gravy" from a tagline.
 
     ``balance_negatives`` (default) gives every negative family (by the
     ``note`` prefix: generic ad-speak, short, UI, topic-descriptive, nonsense,
@@ -476,7 +553,15 @@ def fit_from_corpus(
     pos = norm(pos_raw)
     neg_rows = corpus.negatives_train(negatives)
     neg = norm(texts(neg_rows))
-    neg_weights = family_weights([negative_family(r) for r in neg_rows]) if balance_negatives else None
+    families = [negative_family(r) for r in neg_rows]
+    neg_weights = family_weights(families) if balance_negatives else None
+    sense_weights = None
+    if sense:
+        in_sense = np.array([f in SENSE_FAMILIES for f in families])
+        if in_sense.any():
+            sense_weights = np.where(
+                in_sense, family_weights([f if f in SENSE_FAMILIES else "x" for f in families]), 0.0
+            )
     if not pos or not neg:
         raise ValueError("fit_from_corpus: need at least one positive and one negative")
     E_pos = embed_fn(pos)
@@ -498,6 +583,7 @@ def fit_from_corpus(
         pos_texts=pos_raw,
         keep_exemplars=keep_exemplars,
         neg_weights=neg_weights,
+        sense_weights=sense_weights,
     )
     famous = corpus.pos_train + corpus.pos_test
     model.famous_texts = [r["text"] for r in famous]
@@ -516,11 +602,13 @@ def score_texts(
     :meth:`AxisModel.predict_proba`.
     """
     texts_ = list(texts_)
-    ok = np.array([has_letters(t) for t in texts_], dtype=bool)
+    ok, E = embed_valid(model, texts_, embed_fn)
     s = np.full(len(texts_), np.nan)
+    p = np.full(len(texts_), np.nan) if model.calibrator is not None else None
     if ok.any():
-        s[ok] = model.score(model.embed([t for t, o in zip(texts_, ok, strict=True) if o], embed_fn))
-    p = model.predict_proba(s, prior=prior) if model.calibrator is not None else None
+        s[ok] = model.score(E)
+        if p is not None:
+            p[ok] = model.proba_from_embeddings(E, prior=prior)
     return s, p
 
 
@@ -572,7 +660,9 @@ def evaluate(
       non-advertising lines. Near 0.5 means the axis measures memorable writing
       in general rather than anything specific to advertising.
     - ``pass_rate[g]``: share of each group with calibrated p >= ``threshold``;
-      ``junk`` (placeholder / UI strings) should be close to 0.
+      ``junk`` (placeholder / UI strings) should be close to 0 and ``good_copy``
+      (original usable lines) close to 1: together they are the cost/benefit of
+      every junk-suppressing measure.
     - ``calibration`` is computed over taglines vs hard + generic + topic-matched
       negatives (every bland group), not just the easy ones.
     """
@@ -584,8 +674,10 @@ def evaluate(
         "topic_bland": [r["bland"] for r in corpus.contrast],
         "quotes": texts(corpus.quotes),
         "junk": texts(corpus.junk),
+        "good_copy": texts(corpus.good_copy),
     }
-    S = {g: model.score(model.embed(t, embed_fn)) for g, t in groups.items() if t}
+    EMB = {g: model.embed(t, embed_fn) for g, t in groups.items() if t}
+    S = {g: model.score(e) for g, e in EMB.items()}
     pos_brands = [r.get("brand", i) for i, r in enumerate(corpus.pos_test)]
     neg_groups = [g for g in ("hard", "generic", "topic_bland", "quotes", "junk") if g in S]
     out: dict = {
@@ -617,9 +709,17 @@ def evaluate(
                 "n": int(mask.sum()),
                 "auc": auc(S["pos"][mask], S["hard"]),
             }
+    if "good_copy" in S:
+        out["good_copy"] = {
+            "auc_vs_junk": auc(S["good_copy"], S["junk"]) if "junk" in S else None,
+            "auc_vs_hard": auc(S["good_copy"], S["hard"]) if "hard" in S else None,
+            "auc_famous_vs_good": auc(S["pos"], S["good_copy"]),
+        }
     if model.calibrator is not None:
-        P = {g: model.predict_proba(s) for g, s in S.items()}
+        P = {g: model.proba_from_embeddings(EMB[g]) for g in S}
         out["pass_rate"] = {g: float((p >= threshold).mean()) for g, p in P.items()}
+        if "good_copy" in P and "junk" in P:
+            out["good_copy"]["auc_proba_vs_junk"] = auc(P["good_copy"], P["junk"])
         # what a CLI user actually sees: a line with an input flag (placeholder, single
         # word, wrapped, ...) or a near-famous warning is not an unqualified PASS
         guarded = {}
@@ -637,9 +737,8 @@ def evaluate(
             guarded[g] = float(((P[g] >= threshold) & ~flagged).mean())
         out["pass_rate_after_guards"] = guarded
         bland = [g for g in ("hard", "generic", "topic_bland") if g in S]
-        negs = np.concatenate([S[g] for g in bland])
-        p = model.predict_proba(np.concatenate([S["pos"], negs]))
-        y = np.concatenate([np.ones(len(S["pos"])), np.zeros(len(negs))])
+        p = np.concatenate([P["pos"]] + [P[g] for g in bland])
+        y = np.concatenate([np.ones(len(S["pos"]))] + [np.zeros(len(S[g])) for g in bland])
         out["calibration"] = {
             "negatives": bland,
             "log_loss": log_loss(p, y),

@@ -20,6 +20,16 @@ def fmt_ci(v: float | None, ci: tuple[float, float] | None) -> str:
     return f"{v:.3f} [{ci[0]:.2f}, {ci[1]:.2f}]"
 
 
+def good_vs_junk(v: dict) -> str:
+    gc = v.get("good_copy")
+    if not gc:
+        return "–"
+    cell = f"{gc['auc_vs_junk']:.3f}"
+    if "auc_proba_vs_junk" in gc:
+        cell += f" ({gc['auc_proba_vs_junk']:.3f})"
+    return cell
+
+
 def render(reports: list[dict]) -> str:
     out: list[str] = []
     for res in reports:
@@ -37,9 +47,9 @@ def render(reports: list[dict]) -> str:
         out.append("")
         out.append(
             "| variant | AUC vs hard | vs generic | vs topic-matched | pair win | vs quotes | vs junk | "
-            "AUC long ≥8w | PASS pos / bland / junk | log-loss |"
+            "good copy vs junk (by p) | AUC long ≥8w | PASS pos / good / bland / junk | log-loss |"
         )
-        out.append("|---|---|---|---|---|---|---|---|---|---|")
+        out.append("|---|---|---|---|---|---|---|---|---|---|---|")
         for name, v in res["variants"].items():
             ci = v.get("auc_ci95", {})
             long_auc = v["by_length"].get("long>=8w", {}).get("auc_vs_hard")
@@ -50,7 +60,8 @@ def render(reports: list[dict]) -> str:
                 junk_cell = f"{pr.get('junk', float('nan')):.2f}"
                 if "junk_pass_rate_after_flags" in v:
                     junk_cell += f" ({v['junk_pass_rate_after_flags']:.2f} after flags)"
-                pass_cell = f"{pr['pos_te']:.2f} / {sum(bland) / len(bland):.2f} / {junk_cell}"
+                good_cell = f"{pr['good']:.2f}" if "good" in pr else "–"
+                pass_cell = f"{pr['pos_te']:.2f} / {good_cell} / {sum(bland) / len(bland):.2f} / {junk_cell}"
             else:
                 pass_cell = "–"
             win = f"{v['topic_pair_win_rate']:.3f}"
@@ -68,6 +79,7 @@ def render(reports: list[dict]) -> str:
                         win,
                         fmt_ci(v.get("auc_vs_quotes"), ci.get("quotes")),
                         fmt_ci(v.get("auc_vs_junk"), ci.get("junk")),
+                        good_vs_junk(v),
                         f"{long_auc:.3f}" if long_auc is not None else "–",
                         pass_cell,
                         f"{cal['test_log_loss']:.3f}" if cal else "–",

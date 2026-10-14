@@ -149,7 +149,7 @@ def test_near_famous_flags_copies_and_parodies_not_fresh_copy(fake_embed_fn, tmp
 
 
 def test_prior_shifts_probabilities_monotonically(fake_embed_fn):
-    model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake")
+    model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", sense=False)
     s = np.linspace(-0.3, 0.6, 7)
     p50 = model.predict_proba(s)
     p05 = model.predict_proba(s, prior=0.05)
@@ -196,6 +196,38 @@ def test_negative_family_weighting(fake_embed_fn):
     assert np.isclose(np.linalg.norm(balanced.axes[0]), 1.0)
 
 
+def test_sense_axis_two_feature_calibration(fake_embed_fn, tmp_path):
+    from emoscript.pipeline import SENSE_FAMILIES, negative_family
+
+    corpus = load_corpus()
+    assert any(negative_family(r) in SENSE_FAMILIES for r in corpus.hard_train)
+    model = fit_from_corpus(fake_embed_fn, model_name="fake")  # sense=True by default
+    assert model.sense_axis is not None and model.n_features == 2
+    assert np.isclose(np.linalg.norm(model.sense_axis), 1.0)
+    assert model.meta["sense_axis"] and len(model.meta["oof"]["calibrator_weights"]) == 2
+    assert "auc_proba" in model.meta["oof"] and model.meta["oof"]["threshold@0.5"] is None
+    assert model.threshold_for() is None
+    E = model.embed(["Sleep like you mean it.", "Blorp the Zinger"], fake_embed_fn)
+    assert model.features(E).shape == (2, 2)
+    p = model.proba_from_embeddings(E)
+    assert p.shape == (2,) and np.all((p >= 0) & (p <= 1))
+    p05 = model.proba_from_embeddings(E, prior=0.05)
+    assert np.all(p05 < p)
+    with pytest.raises(ValueError, match="sense"):
+        model.predict_proba(model.score(E))
+    s, pr = score_texts(model, ["Sleep like you mean it.", "?!"], fake_embed_fn)
+    assert np.isfinite(pr[0]) and np.isnan(pr[1]) and np.isnan(s[1])
+    model.save(tmp_path / "s.npz")
+    loaded = AxisModel.load(tmp_path / "s.npz")
+    assert np.allclose(loaded.sense_axis, model.sense_axis)
+    assert np.allclose(loaded.proba_from_embeddings(E), p)
+    plain = fit_from_corpus(fake_embed_fn, model_name="fake", sense=False)
+    assert plain.sense_axis is None and plain.n_features == 1
+    assert np.allclose(plain.proba_from_embeddings(E), plain.predict_proba(plain.score(E)))
+    report = evaluate(model, fake_embed_fn, n_boot=20)
+    assert "pass_rate" in report and "good_copy" in report["pass_rate"]
+
+
 def test_save_appends_npz_suffix(fake_embed_fn, tmp_path):
     model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False)
     saved = model.save(tmp_path / "myaxis")
@@ -236,8 +268,19 @@ def test_evaluate_reports_controls_pass_rates_and_cis(fake_embed_fn):
     assert report["n"]["quotes"] >= 20 and report["n"]["junk"] >= 20
     for g, (lo, hi) in report["auc_ci95"].items():
         assert lo <= report["auc"][g] <= hi
-    assert set(report["pass_rate"]) == {"pos", "hard", "generic", "topic_bland", "quotes", "junk"}
+    assert set(report["pass_rate"]) == {
+        "pos",
+        "hard",
+        "generic",
+        "topic_bland",
+        "quotes",
+        "junk",
+        "good_copy",
+    }
     assert set(report["pass_rate_after_guards"]) == set(report["pass_rate"])
+    assert {"auc_vs_junk", "auc_vs_hard", "auc_famous_vs_good", "auc_proba_vs_junk"} <= set(
+        report["good_copy"]
+    )
     assert all(report["pass_rate_after_guards"][g] <= report["pass_rate"][g] for g in report["pass_rate"])
     assert all(0 <= v <= 1 for v in report["pass_rate"].values())
     lo, hi = report["contrast_pair_win_ci95"]
