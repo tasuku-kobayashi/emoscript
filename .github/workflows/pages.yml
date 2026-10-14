@@ -1,7 +1,7 @@
 name: pages
 
-# Publishes web/ (the browser edition) to GitHub Pages. One-time setup in the
-# repository: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# Publishes web/ (the browser edition) to GitHub Pages. configure-pages enables
+# Pages (source: GitHub Actions) on the first run, so no manual setup is needed.
 on:
   push:
     branches: [main]
@@ -36,6 +36,8 @@ jobs:
           mkdir -p _site
           cp web/index.html web/app.js web/worker.js web/emoscript.js web/styles.css web/model.json _site/
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
