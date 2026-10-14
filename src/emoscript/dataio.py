@@ -188,6 +188,8 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
                 problems.append(f"{name}:{i}: bad year {r['year']!r} (int or 'YYY0s')")
             if name in POSITIVE_SPLITS and r.get("kind", "tagline") not in KINDS:
                 problems.append(f"{name}:{i}: unknown kind {r['kind']!r} (one of {', '.join(KINDS)})")
+            if name in POSITIVE_SPLITS and "sister_brand" in r and not isinstance(r["sister_brand"], bool):
+                problems.append(f"{name}:{i}: sister_brand must be true/false")
 
     check_rows("slogans_train", ("text", "brand", "year"))
     check_rows("slogans_test", ("text", "brand", "year"))

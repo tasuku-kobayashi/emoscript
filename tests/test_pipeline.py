@@ -281,6 +281,8 @@ def test_evaluate_reports_controls_pass_rates_and_cis(fake_embed_fn):
     assert {"auc_vs_junk", "auc_vs_hard", "auc_famous_vs_good", "auc_proba_vs_junk"} <= set(
         report["good_copy"]
     )
+    ex = report["excluding_sister_brands"]
+    assert ex["n_pos"] + ex["n_sister"] == report["n"]["pos"] and "hard" in ex["auc"]
     assert all(report["pass_rate_after_guards"][g] <= report["pass_rate"][g] for g in report["pass_rate"])
     assert all(0 <= v <= 1 for v in report["pass_rate"].values())
     lo, hi = report["contrast_pair_win_ci95"]

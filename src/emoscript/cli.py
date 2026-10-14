@@ -228,6 +228,12 @@ def cmd_eval(args) -> int:
     for g, v in report["auc"].items():
         lo, hi = report["auc_ci95"][g]
         print(f"  AUC held-out taglines vs {g:<12s} {v:.3f}  [{lo:.3f}, {hi:.3f}]  (n={report['n'][g]})")
+    if "excluding_sister_brands" in report:
+        ex = report["excluding_sister_brands"]
+        aucs = "  ".join(f"{g} {v:.3f}" for g, v in ex["auc"].items())
+        tb = ex.get("auc_topic_bland_paired")
+        tb_s = f"  topic_bland {tb:.3f}" if tb is not None else ""
+        print(f"  without {ex['n_sister']} sister-brand lines (n={ex['n_pos']}): {aucs}{tb_s}")
     if "good_copy" in report:
         gc = report["good_copy"]
         extra = f"  by probability {gc['auc_proba_vs_junk']:.3f}" if "auc_proba_vs_junk" in gc else ""

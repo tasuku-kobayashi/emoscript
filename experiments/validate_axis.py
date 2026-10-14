@@ -130,6 +130,9 @@ def run(
         proba = proba or (lambda X: calibrator.predict_proba(scorer(X)))
         famous_score = dict(zip(groups["pos_te"], s["pos_te"], strict=True))
         fam_paired = np.array([famous_score[r["famous"]] for r in corpus.contrast])
+        sister = np.array([bool(r.get("sister_brand")) for r in corpus.pos_test])
+        sister_by_text = {r["text"]: bool(r.get("sister_brand")) for r in corpus.pos_test}
+        pair_keep = np.array([not sister_by_text[r["famous"]] for r in corpus.contrast])
         wins = [famous_score[r["famous"]] > sc for r, sc in zip(corpus.contrast, s["topic_te"], strict=True)]
         buckets = {}
         for b in ("short<=4w", "mid5-7w", "long>=8w"):
@@ -159,6 +162,14 @@ def run(
                 "topic_te": paired_auc_bootstrap_ci(fam_paired, s["topic_te"], n_boot=n_boot),
             },
             "topic_pair_win_rate": float(np.mean(wins)),
+            "excluding_sister_brands": {
+                "n_pos": int((~sister).sum()),
+                "auc_vs_hard": auc(s["pos_te"][~sister], s["hard_te"]),
+                "auc_vs_topic_bland": auc(fam_paired[pair_keep], s["topic_te"][pair_keep]),
+                "auc_vs_junk": auc(s["pos_te"][~sister], s["junk"]) if "junk" in s else None,
+            }
+            if sister.any() and (~sister).any()
+            else None,
             "topic_pair_win_ci95": wilson_interval(int(np.sum(wins)), len(wins)),
             "by_length": buckets,
             "mean": {g: float(sc.mean()) for g, sc in s.items()},
@@ -319,6 +330,12 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
         lo, hi = v["topic_pair_win_ci95"]
         line += f"\n  pair win rate 95% Wilson [{lo:.2f},{hi:.2f}]"
         print(line)
+        if v.get("excluding_sister_brands"):
+            ex = v["excluding_sister_brands"]
+            print(
+                f"  without sister-brand lines (n={ex['n_pos']}): vs hard {ex['auc_vs_hard']:.3f}   "
+                f"topic-matched {ex['auc_vs_topic_bland']:.3f}   junk {ex['auc_vs_junk']:.3f}"
+            )
         if v.get("good_copy"):
             gc = v["good_copy"]
             extra = f"  by probability {gc['auc_proba_vs_junk']:.3f}" if "auc_proba_vs_junk" in gc else ""

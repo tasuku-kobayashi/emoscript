@@ -679,6 +679,8 @@ def evaluate(
     EMB = {g: model.embed(t, embed_fn) for g, t in groups.items() if t}
     S = {g: model.score(e) for g, e in EMB.items()}
     pos_brands = [r.get("brand", i) for i, r in enumerate(corpus.pos_test)]
+    # held-out lines whose brand belongs to the same company as a training brand (disclosed in the data)
+    sister = np.array([bool(r.get("sister_brand")) for r in corpus.pos_test])
     neg_groups = [g for g in ("hard", "generic", "topic_bland", "quotes", "junk") if g in S]
     out: dict = {
         "n": {g: len(t) for g, t in groups.items()},
@@ -709,6 +711,26 @@ def evaluate(
                 "n": int(mask.sum()),
                 "auc": auc(S["pos"][mask], S["hard"]),
             }
+    if sister.any() and (~sister).any():
+        keep = ~sister
+        fam_by_text = dict(zip(groups["pos"], S["pos"], strict=True))
+        pair_keep = np.array([not r.get("sister_brand") for r in corpus.pos_test])
+        fam = np.array([fam_by_text[r["famous"]] for r in corpus.contrast])
+        contrast_keep = np.array(
+            [
+                not next(x for x in corpus.pos_test if x["text"] == r["famous"]).get("sister_brand")
+                for r in corpus.contrast
+            ]
+        )
+        out["excluding_sister_brands"] = {
+            "n_pos": int(keep.sum()),
+            "n_sister": int(sister.sum()),
+            "auc": {g: auc(S["pos"][keep], S[g]) for g in neg_groups if g != "topic_bland"},
+            "auc_topic_bland_paired": auc(fam[contrast_keep], S["topic_bland"][contrast_keep])
+            if "topic_bland" in S
+            else None,
+        }
+        del pair_keep
     if "good_copy" in S:
         out["good_copy"] = {
             "auc_vs_junk": auc(S["good_copy"], S["junk"]) if "junk" in S else None,

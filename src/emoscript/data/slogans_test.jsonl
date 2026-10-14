@@ -1,6 +1,6 @@
 {"text": "Quality Never Goes Out of Style", "brand": "Levi's", "year": "1980s"}
 {"text": "The World's Online Marketplace", "brand": "eBay", "year": "2000s"}
-{"text": "Open Happiness", "brand": "Coca-Cola", "year": 2009}
+{"text": "Open Happiness", "brand": "Coca-Cola", "year": 2009, "sister_brand": true}
 {"text": "Belong Anywhere", "brand": "Airbnb", "year": 2014}
 {"text": "Shave Time. Shave Money.", "brand": "Dollar Shave Club", "year": 2012}
 {"text": "Eat Fresh", "brand": "Subway", "year": 2000}
@@ -9,29 +9,29 @@
 {"text": "15 Minutes Could Save You 15% or More on Car Insurance", "brand": "GEICO", "year": 1999}
 {"text": "When the World Zigs, Zag.", "brand": "Levi's", "year": 1982, "kind": "headline"}
 {"text": "Buy It. Sell It. Love It.", "brand": "eBay", "year": "2000s"}
-{"text": "The Pause That Refreshes", "brand": "Coca-Cola", "year": 1929}
-{"text": "It's the Real Thing", "brand": "Coca-Cola", "year": 1969}
-{"text": "Coke Is It!", "brand": "Coca-Cola", "year": 1982}
-{"text": "Taste the Feeling", "brand": "Coca-Cola", "year": 2016}
-{"text": "Just for the Taste of It", "brand": "Diet Coke", "year": 1982}
-{"text": "The Choice of a New Generation", "brand": "Pepsi", "year": 1984}
-{"text": "Lipsmackin' Thirstquenchin' Acetastin' Motivatin' Goodbuzzin' Cooltalkin' Highwalkin' Fastlivin' Evergivin' Coolfizzin' Pepsi", "brand": "Pepsi", "year": 1973, "kind": "jingle"}
+{"text": "The Pause That Refreshes", "brand": "Coca-Cola", "year": 1929, "sister_brand": true}
+{"text": "It's the Real Thing", "brand": "Coca-Cola", "year": 1969, "sister_brand": true}
+{"text": "Coke Is It!", "brand": "Coca-Cola", "year": 1982, "sister_brand": true}
+{"text": "Taste the Feeling", "brand": "Coca-Cola", "year": 2016, "sister_brand": true}
+{"text": "Just for the Taste of It", "brand": "Diet Coke", "year": 1982, "sister_brand": true}
+{"text": "The Choice of a New Generation", "brand": "Pepsi", "year": 1984, "sister_brand": true}
+{"text": "Lipsmackin' Thirstquenchin' Acetastin' Motivatin' Goodbuzzin' Cooltalkin' Highwalkin' Fastlivin' Evergivin' Coolfizzin' Pepsi", "brand": "Pepsi", "year": 1973, "kind": "jingle", "sister_brand": true}
 {"text": "Is It In You?", "brand": "Gatorade", "year": 1997}
 {"text": "Be Like Mike", "brand": "Gatorade", "year": 1991}
 {"text": "How Do You Spell Relief? R-O-L-A-I-D-S", "brand": "Rolaids", "year": "1970s"}
-{"text": "Head for the Mountains", "brand": "Busch", "year": "1970s"}
-{"text": "Weekends Were Made for Michelob", "brand": "Michelob", "year": "1970s"}
+{"text": "Head for the Mountains", "brand": "Busch", "year": "1970s", "sister_brand": true}
+{"text": "Weekends Were Made for Michelob", "brand": "Michelob", "year": "1970s", "sister_brand": true}
 {"text": "Persil Washes Whiter", "brand": "Persil", "year": "1950s"}
 {"text": "Stronger Than Dirt", "brand": "Ajax", "year": "1960s"}
 {"text": "Because So Much Is Riding on Your Tires", "brand": "Michelin", "year": "1980s"}
-{"text": "Look, Ma, No Cavities!", "brand": "Crest", "year": "1950s"}
+{"text": "Look, Ma, No Cavities!", "brand": "Crest", "year": "1950s", "sister_brand": true}
 {"text": "Snap into a Slim Jim", "brand": "Slim Jim", "year": "1990s"}
-{"text": "Once You Pop, You Can't Stop", "brand": "Pringles", "year": "1990s"}
+{"text": "Once You Pop, You Can't Stop", "brand": "Pringles", "year": "1990s", "sister_brand": true}
 {"text": "Just Say No", "brand": "Just Say No campaign", "year": 1982, "kind": "poster"}
 {"text": "Accelerate Your Life", "brand": "US Navy", "year": 2001}
 {"text": "Hey, You Never Know", "brand": "New York Lottery", "year": 1990}
-{"text": "Two Great Tastes That Taste Great Together", "brand": "Reese's", "year": "1970s"}
-{"text": "There's No Wrong Way to Eat a Reese's", "brand": "Reese's", "year": "1990s"}
+{"text": "Two Great Tastes That Taste Great Together", "brand": "Reese's", "year": "1970s", "sister_brand": true}
+{"text": "There's No Wrong Way to Eat a Reese's", "brand": "Reese's", "year": "1990s", "sister_brand": true}
 {"text": "I Am Stuck on Band-Aid, 'Cause Band-Aid's Stuck on Me", "brand": "Band-Aid", "year": 1975, "kind": "jingle"}
 {"text": "Wouldn't You Really Rather Have a Buick?", "brand": "Buick", "year": "1970s"}
 {"text": "Life's Good", "brand": "LG", "year": "2000s"}
@@ -44,15 +44,15 @@
 {"text": "It's Not Delivery. It's DiGiorno.", "brand": "DiGiorno", "year": 1995}
 {"text": "Make It a Blockbuster Night", "brand": "Blockbuster", "year": "1990s"}
 {"text": "Don't Get Mad. Get Glad.", "brand": "Glad", "year": "1980s"}
-{"text": "Raise Your Hand If You're Sure", "brand": "Sure", "year": 1984}
+{"text": "Raise Your Hand If You're Sure", "brand": "Sure", "year": 1984, "sister_brand": true}
 {"text": "Nothing Beats a Great Pair of L'eggs", "brand": "L'eggs", "year": "1970s"}
 {"text": "Let Hertz Put You in the Driver's Seat", "brand": "Hertz", "year": 1959}
-{"text": "Fill It to the Rim with Brim", "brand": "Brim", "year": "1970s", "kind": "jingle"}
-{"text": "Nothing Sucks Like an Electrolux", "brand": "Electrolux", "year": "1960s"}
+{"text": "Fill It to the Rim with Brim", "brand": "Brim", "year": "1970s", "kind": "jingle", "sister_brand": true}
+{"text": "Nothing Sucks Like an Electrolux", "brand": "Electrolux", "year": "1960s", "sister_brand": true}
 {"text": "The Bank That Likes to Say Yes", "brand": "TSB", "year": "1980s"}
-{"text": "Only Smarties Have the Answer", "brand": "Smarties", "year": "1980s"}
-{"text": "Full of Eastern Promise", "brand": "Fry's Turkish Delight", "year": "1950s"}
-{"text": "For Mash Get Smash", "brand": "Smash", "year": 1974}
+{"text": "Only Smarties Have the Answer", "brand": "Smarties", "year": "1980s", "sister_brand": true}
+{"text": "Full of Eastern Promise", "brand": "Fry's Turkish Delight", "year": "1950s", "sister_brand": true}
+{"text": "For Mash Get Smash", "brand": "Smash", "year": 1974, "sister_brand": true}
 {"text": "I Liked It So Much, I Bought the Company", "brand": "Remington", "year": 1979}
 {"text": "We Answer to a Higher Authority", "brand": "Hebrew National", "year": 1965}
 {"text": "With a Name Like Smucker's, It Has to Be Good", "brand": "Smucker's", "year": 1962}
@@ -66,52 +66,49 @@
 {"text": "Get a Piece of the Rock", "brand": "Prudential", "year": "1970s"}
 {"text": "The Quality Goes In Before the Name Goes On", "brand": "Zenith", "year": "1950s"}
 {"text": "Share Moments. Share Life.", "brand": "Kodak", "year": 2001}
-{"text": "It's a Sony", "brand": "Sony", "year": "1980s"}
+{"text": "It's a Sony", "brand": "Sony", "year": "1980s", "sister_brand": true}
 {"text": "Ideas for Life", "brand": "Panasonic", "year": 2003}
 {"text": "Have You Played Atari Today?", "brand": "Atari", "year": 1982}
 {"text": "Better Sound Through Research", "brand": "Bose", "year": "1960s"}
-{"text": "There Is No Substitute", "brand": "Porsche", "year": "1980s"}
-{"text": "Love. It's What Makes a Subaru, a Subaru.", "brand": "Subaru", "year": 2008}
+{"text": "There Is No Substitute", "brand": "Porsche", "year": "1980s", "sister_brand": true}
+{"text": "Love. It's What Makes a Subaru, a Subaru.", "brand": "Subaru", "year": 2008, "sister_brand": true}
 {"text": "New Thinking. New Possibilities.", "brand": "Hyundai", "year": 2011}
 {"text": "The Power to Surprise", "brand": "Kia", "year": "2000s"}
-{"text": "For Life", "brand": "Volvo", "year": 1999}
-{"text": "Born from Jets", "brand": "Saab", "year": 2005}
-{"text": "The Standard of the World", "brand": "Cadillac", "year": 1908}
-{"text": "We Build Excitement", "brand": "Pontiac", "year": "1980s"}
-{"text": "This Is Not Your Father's Oldsmobile", "brand": "Oldsmobile", "year": 1988}
-{"text": "Precision Crafted Performance", "brand": "Acura", "year": 1986}
+{"text": "Born from Jets", "brand": "Saab", "year": 2005, "sister_brand": true}
+{"text": "The Standard of the World", "brand": "Cadillac", "year": 1908, "sister_brand": true}
+{"text": "We Build Excitement", "brand": "Pontiac", "year": "1980s", "sister_brand": true}
+{"text": "This Is Not Your Father's Oldsmobile", "brand": "Oldsmobile", "year": 1988, "sister_brand": true}
+{"text": "Precision Crafted Performance", "brand": "Acura", "year": 1986, "sister_brand": true}
 {"text": "Innovation That Excites", "brand": "Nissan", "year": 2012}
 {"text": "Where the Rubber Meets the Road", "brand": "Firestone", "year": "1970s"}
 {"text": "You Can Be Sure of Shell", "brand": "Shell", "year": "1930s"}
 {"text": "Beyond Petroleum", "brand": "BP", "year": 2000}
-{"text": "You Can Trust Your Car to the Man Who Wears the Star", "brand": "Texaco", "year": "1960s"}
+{"text": "You Can Trust Your Car to the Man Who Wears the Star", "brand": "Texaco", "year": "1940s", "kind": "jingle"}
 {"text": "You Are Now Free to Move About the Country", "brand": "Southwest Airlines", "year": 1997}
 {"text": "The Spirit of Australia", "brand": "Qantas", "year": "1990s"}
-{"text": "Fly Better", "brand": "Emirates", "year": 2018}
 {"text": "A Great Way to Fly", "brand": "Singapore Airlines", "year": "1970s"}
 {"text": "The World's Most Experienced Airline", "brand": "Pan Am", "year": "1950s"}
-{"text": "Work Hard. Fly Right.", "brand": "Continental Airlines", "year": 1998}
+{"text": "Work Hard. Fly Right.", "brand": "Continental Airlines", "year": 1998, "sister_brand": true}
 {"text": "The Best Surprise Is No Surprise", "brand": "Holiday Inn", "year": 1975}
-{"text": "I Wish I Were an Oscar Mayer Wiener", "brand": "Oscar Mayer", "year": 1963, "kind": "jingle"}
-{"text": "Good Food, Good Life", "brand": "Nestlé", "year": "1990s"}
-{"text": "Made from the Best Stuff on Earth", "brand": "Snapple", "year": "1990s"}
-{"text": "Be a Pepper", "brand": "Dr Pepper", "year": 1977}
+{"text": "Oh, I Wish I Were an Oscar Mayer Wiener", "brand": "Oscar Mayer", "year": 1963, "kind": "jingle", "sister_brand": true}
+{"text": "Good Food, Good Life", "brand": "Nestlé", "year": "2000s", "sister_brand": true}
+{"text": "Made from the Best Stuff on Earth", "brand": "Snapple", "year": "1990s", "sister_brand": true}
+{"text": "Be a Pepper", "brand": "Dr Pepper", "year": 1977, "sister_brand": true}
 {"text": "Live Young", "brand": "Evian", "year": "2000s"}
-{"text": "For the Bold", "brand": "Doritos", "year": 2013}
-{"text": "It Ain't Easy Being Cheesy", "brand": "Cheetos", "year": "1990s"}
-{"text": "There's Always Room for Jell-O", "brand": "Jell-O", "year": 1964}
+{"text": "For the Bold", "brand": "Doritos", "year": 2013, "sister_brand": true}
+{"text": "It Ain't Easy Being Cheesy", "brand": "Cheetos", "year": "1990s", "sister_brand": true}
+{"text": "There's Always Room for Jell-O", "brand": "Jell-O", "year": 1964, "sister_brand": true}
 {"text": "How Many Licks Does It Take to Get to the Tootsie Roll Center of a Tootsie Pop?", "brand": "Tootsie Pop", "year": 1970}
-{"text": "The Curiously Strong Mints", "brand": "Altoids", "year": "1920s"}
+{"text": "The Curiously Strong Mints", "brand": "Altoids", "year": "1920s", "sister_brand": true}
 {"text": "The Freshmaker", "brand": "Mentos", "year": "1990s"}
-{"text": "Makin' It Great", "brand": "Pizza Hut", "year": 1987}
+{"text": "Makin' It Great", "brand": "Pizza Hut", "year": 1987, "sister_brand": true}
 {"text": "Better Ingredients. Better Pizza.", "brand": "Papa John's", "year": 1995}
 {"text": "We Have the Meats", "brand": "Arby's", "year": 2014}
 {"text": "Food with Integrity", "brand": "Chipotle", "year": "2000s"}
 {"text": "Eatin' Good in the Neighborhood", "brand": "Applebee's", "year": "1990s"}
 {"text": "No Rules, Just Right", "brand": "Outback Steakhouse", "year": "1990s"}
-{"text": "Love That Chicken", "brand": "Popeyes", "year": "1980s"}
+{"text": "Love That Chicken from Popeyes", "brand": "Popeyes", "year": "1980s", "sister_brand": true}
 {"text": "Where America Shops", "brand": "Sears", "year": "1970s"}
-{"text": "Expect Great Things", "brand": "Kohl's", "year": "2000s"}
 {"text": "You've Got Questions. We've Got Answers.", "brand": "RadioShack", "year": "1990s"}
 {"text": "That Was Easy", "brand": "Staples", "year": 2003}
 {"text": "The Wonderful Everyday", "brand": "IKEA", "year": 2013}
@@ -121,21 +118,20 @@
 {"text": "The World's Local Bank", "brand": "HSBC", "year": 2002}
 {"text": "Bullish on America", "brand": "Merrill Lynch", "year": "1970s"}
 {"text": "Talk to Chuck", "brand": "Charles Schwab", "year": 2005}
-{"text": "Love the Skin You're In", "brand": "Olay", "year": "2000s"}
-{"text": "Get the London Look", "brand": "Rimmel", "year": 2001}
-{"text": "Smell Like a Man, Man", "brand": "Old Spice", "year": 2010}
-{"text": "The Nighttime, Sniffling, Sneezing, Coughing, Aching, Stuffy Head, Fever, So You Can Rest Medicine", "brand": "NyQuil", "year": "1980s"}
-{"text": "Wonder Drug That Works Wonders", "brand": "Bayer", "year": "1950s"}
-{"text": "Tide's In, Dirt's Out", "brand": "Tide", "year": "1960s"}
+{"text": "Love the Skin You're In", "brand": "Olay", "year": "2000s", "sister_brand": true}
+{"text": "Get the London Look", "brand": "Rimmel", "year": 2001, "sister_brand": true}
+{"text": "Smell Like a Man, Man", "brand": "Old Spice", "year": 2010, "sister_brand": true}
+{"text": "The Nighttime, Sniffling, Sneezing, Coughing, Aching, Stuffy Head, Fever, So You Can Rest Medicine", "brand": "NyQuil", "year": "1980s", "sister_brand": true}
+{"text": "Tide's In, Dirt's Out", "brand": "Tide", "year": "1960s", "sister_brand": true}
 {"text": "Hefty Hefty Hefty! Wimpy Wimpy Wimpy!", "brand": "Hefty", "year": "1970s", "kind": "jingle"}
 {"text": "You're Soaking in It", "brand": "Palmolive", "year": 1966}
-{"text": "I Am What I Am", "brand": "Reebok", "year": 2005}
+{"text": "I Am What I Am", "brand": "Reebok", "year": 2005, "sister_brand": true}
 {"text": "Forever Faster", "brand": "Puma", "year": 2014}
-{"text": "I Will", "brand": "Under Armour", "year": 2013}
-{"text": "Off the Wall", "brand": "Vans", "year": 1966}
+{"text": "Protect This House", "brand": "Under Armour", "year": 2003}
+{"text": "Off the Wall", "brand": "Vans", "year": "1970s"}
 {"text": "I Dreamed I Went Shopping in My Maidenform Bra", "brand": "Maidenform", "year": 1949, "kind": "headline"}
 {"text": "Don't Crack Under Pressure", "brand": "TAG Heuer", "year": 1991}
-{"text": "You Never Actually Own a Patek Philippe. You Merely Look After It for the Next Generation.", "brand": "Patek Philippe", "year": 1996}
+{"text": "You Never Actually Own a Patek Philippe. You Merely Look After It for the Next Generation.", "brand": "Patek Philippe", "year": 1996, "kind": "headline"}
 {"text": "Every Kiss Begins with Kay", "brand": "Kay Jewelers", "year": "2000s"}
 {"text": "Inspire the Next", "brand": "Hitachi", "year": 2000}
 {"text": "Invented for Life", "brand": "Bosch", "year": 2004}
@@ -143,17 +139,17 @@
 {"text": "Fair and Balanced", "brand": "Fox News", "year": 1996}
 {"text": "Must See TV", "brand": "NBC", "year": "1990s"}
 {"text": "It's Not TV. It's HBO.", "brand": "HBO", "year": 1996}
-{"text": "The Worldwide Leader in Sports", "brand": "ESPN", "year": "1990s"}
-{"text": "All the News That's Fit to Print", "brand": "The New York Times", "year": 1897}
-{"text": "Clunk Click Every Trip", "brand": "UK road safety campaign", "year": 1971, "kind": "poster"}
+{"text": "The Worldwide Leader in Sports", "brand": "ESPN", "year": "1990s", "sister_brand": true}
+{"text": "All the News That's Fit to Print", "brand": "The New York Times", "year": 1897, "kind": "motto"}
+{"text": "Clunk Click Every Trip", "brand": "UK road safety campaign", "year": 1971}
 {"text": "Love It or Hate It", "brand": "Marmite", "year": 1996}
 {"text": "Tetley Make Tea Bags Make Tea", "brand": "Tetley", "year": "1980s", "kind": "jingle"}
 {"text": "You Only Get an 'OO' with Typhoo", "brand": "Typhoo", "year": "1970s"}
 {"text": "Lucozade Aids Recovery", "brand": "Lucozade", "year": "1950s"}
 {"text": "You Know When You've Been Tango'd", "brand": "Tango", "year": 1992}
-{"text": "The Totally Tropical Taste", "brand": "Lilt", "year": "1980s"}
-{"text": "The Milky Bars Are on Me!", "brand": "Milky Bar", "year": 1961}
-{"text": "It's Not for Girls", "brand": "Yorkie", "year": 2002}
+{"text": "The Totally Tropical Taste", "brand": "Lilt", "year": "1980s", "sister_brand": true}
+{"text": "The Milky Bars Are on Me!", "brand": "Milkybar", "year": 1961, "sister_brand": true}
+{"text": "It's Not for Girls", "brand": "Yorkie", "year": 2002, "sister_brand": true}
 {"text": "Just One Cornetto", "brand": "Cornetto", "year": 1982, "kind": "jingle"}
 {"text": "That's Why Mums Go to Iceland", "brand": "Iceland", "year": "2000s"}
 {"text": "You Can't Get Better Than a Kwik Fit Fitter", "brand": "Kwik Fit", "year": "1980s", "kind": "jingle"}
@@ -162,16 +158,16 @@
 {"text": "It Is. Are You?", "brand": "The Independent", "year": 1986}
 {"text": "No FT, No Comment", "brand": "Financial Times", "year": "1980s"}
 {"text": "Your Flexible Friend", "brand": "Access", "year": "1980s"}
-{"text": "Australian for Beer", "brand": "Foster's", "year": "1980s"}
+{"text": "Australian for Beer", "brand": "Foster's", "year": "1990s"}
 {"text": "Australians Wouldn't Give a XXXX for Anything Else", "brand": "Castlemaine XXXX", "year": 1986}
-{"text": "The Cream of Manchester", "brand": "Boddingtons", "year": "1990s"}
-{"text": "No Nonsense", "brand": "John Smith's", "year": "1990s"}
-{"text": "I Bet He Drinks Carling Black Label", "brand": "Carling", "year": "1980s"}
+{"text": "The Cream of Manchester", "brand": "Boddingtons", "year": "1990s", "sister_brand": true}
+{"text": "No Nonsense", "brand": "John Smith's", "year": "1990s", "sister_brand": true}
+{"text": "I Bet He Drinks Carling Black Label", "brand": "Carling", "year": "1980s", "sister_brand": true}
 {"text": "Follow the Bear", "brand": "Hofmeister", "year": "1980s"}
-{"text": "Absolut Perfection", "brand": "Absolut", "year": 1980}
-{"text": "It's Pimm's O'Clock", "brand": "Pimm's", "year": "2000s"}
+{"text": "Absolut Perfection", "brand": "Absolut", "year": 1980, "kind": "headline"}
+{"text": "It's Pimm's O'Clock", "brand": "Pimm's", "year": "2000s", "sister_brand": true}
 {"text": "Oxo Gives a Meal Man Appeal", "brand": "Oxo", "year": "1950s"}
-{"text": "Everyone's Private Driver", "brand": "Uber", "year": "2010s"}
-{"text": "Where Work Happens", "brand": "Slack", "year": "2010s"}
-{"text": "Music for Everyone", "brand": "Spotify", "year": "2010s"}
 {"text": "Do You Yahoo!?", "brand": "Yahoo", "year": "1990s"}
+{"text": "When It Rains It Pours", "brand": "Morton Salt", "year": 1914}
+{"text": "Sorry, Charlie", "brand": "StarKist", "year": "1960s"}
+{"text": "Ace Is the Place", "brand": "Ace Hardware", "year": "1970s"}

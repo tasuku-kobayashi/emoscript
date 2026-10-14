@@ -59,6 +59,13 @@ def test_junk_and_kind_fields():
             assert brand_word in r["bland"].lower(), r
 
 
+def test_sister_brand_flags_are_present_and_boolean():
+    corpus = load_corpus()
+    flagged = [r for r in corpus.pos_test if r.get("sister_brand")]
+    assert 20 <= len(flagged) < len(corpus.pos_test)
+    assert all(isinstance(r.get("sister_brand", False), bool) for r in corpus.pos_test)
+
+
 def test_corpus_warnings_are_soft_and_informative():
     from emoscript.dataio import corpus_warnings
 

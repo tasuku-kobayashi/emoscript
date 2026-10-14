@@ -65,113 +65,109 @@
 {"famous": "Fall into the Gap", "bland": "Gap sells casual clothing in classic styles for everyone.", "brand": "Gap"}
 {"famous": "Get a Piece of the Rock", "bland": "Life insurance and financial security for your family.", "brand": "Prudential"}
 {"famous": "The Quality Goes In Before the Name Goes On", "bland": "Quality televisions that are built to last.", "brand": "Zenith"}
-{"famous": "Share Moments. Share Life.", "bland": "Kodak cameras and film for your family photos.", "brand": "Kodak"}
-{"famous": "It's a Sony", "bland": "Sony makes televisions, stereos and video recorders.", "brand": "Sony"}
-{"famous": "Ideas for Life", "bland": "Panasonic electronics and appliances for the home.", "brand": "Panasonic"}
-{"famous": "Have You Played Atari Today?", "bland": "Atari video game consoles and cartridges for the family.", "brand": "Atari"}
-{"famous": "Better Sound Through Research", "bland": "Bose speakers and headphones with clear, powerful sound.", "brand": "Bose"}
-{"famous": "There Is No Substitute", "bland": "Porsche sports cars with racing heritage.", "brand": "Porsche"}
-{"famous": "Love. It's What Makes a Subaru, a Subaru.", "bland": "Subaru all-wheel-drive cars for families who love the outdoors.", "brand": "Subaru"}
-{"famous": "New Thinking. New Possibilities.", "bland": "Hyundai cars with modern design and good value.", "brand": "Hyundai"}
-{"famous": "The Power to Surprise", "bland": "Kia cars with long warranties at affordable prices.", "brand": "Kia"}
-{"famous": "For Life", "bland": "Volvo cars built for safety and long life.", "brand": "Volvo"}
-{"famous": "Born from Jets", "bland": "Saab cars from a company that also built aircraft.", "brand": "Saab"}
-{"famous": "The Standard of the World", "bland": "Cadillac luxury cars with a long American heritage.", "brand": "Cadillac"}
-{"famous": "We Build Excitement", "bland": "Pontiac sporty cars for drivers who want performance.", "brand": "Pontiac"}
-{"famous": "This Is Not Your Father's Oldsmobile", "bland": "Oldsmobile cars with a new, younger design.", "brand": "Oldsmobile"}
-{"famous": "Precision Crafted Performance", "bland": "Acura luxury cars engineered for performance.", "brand": "Acura"}
-{"famous": "Innovation That Excites", "bland": "Nissan cars with new technology and modern design.", "brand": "Nissan"}
-{"famous": "Where the Rubber Meets the Road", "bland": "Firestone tires for safety on every road.", "brand": "Firestone"}
-{"famous": "You Can Be Sure of Shell", "bland": "Shell petrol and motor oil at stations nationwide.", "brand": "Shell"}
-{"famous": "Beyond Petroleum", "bland": "BP is an energy company investing in fuels of the future.", "brand": "BP"}
-{"famous": "You Can Trust Your Car to the Man Who Wears the Star", "bland": "Texaco service stations with trained mechanics and quality fuel.", "brand": "Texaco"}
-{"famous": "You Are Now Free to Move About the Country", "bland": "Southwest Airlines offers low fares to cities across the country.", "brand": "Southwest Airlines"}
-{"famous": "The Spirit of Australia", "bland": "Qantas flies to Australia and around the world.", "brand": "Qantas"}
-{"famous": "Fly Better", "bland": "Emirates offers comfortable long-haul flights with good service.", "brand": "Emirates"}
-{"famous": "A Great Way to Fly", "bland": "Singapore Airlines is known for attentive cabin service.", "brand": "Singapore Airlines"}
-{"famous": "The World's Most Experienced Airline", "bland": "Pan Am flies international routes with a long history.", "brand": "Pan Am"}
-{"famous": "Work Hard. Fly Right.", "bland": "Continental Airlines offers reliable flights and friendly service.", "brand": "Continental Airlines"}
-{"famous": "The Best Surprise Is No Surprise", "bland": "Holiday Inn hotels offer clean, consistent rooms everywhere.", "brand": "Holiday Inn"}
-{"famous": "I Wish I Were an Oscar Mayer Wiener", "bland": "Oscar Mayer hot dogs and sliced meats for lunch.", "brand": "Oscar Mayer"}
-{"famous": "Good Food, Good Life", "bland": "Nestlé makes food and drinks for families around the world.", "brand": "Nestlé"}
-{"famous": "Made from the Best Stuff on Earth", "bland": "Snapple fruit drinks and iced teas made with natural ingredients.", "brand": "Snapple"}
-{"famous": "Be a Pepper", "bland": "Dr Pepper is a soft drink with a unique blend of flavours.", "brand": "Dr Pepper"}
-{"famous": "Live Young", "bland": "Evian natural mineral water from the French Alps.", "brand": "Evian"}
-{"famous": "For the Bold", "bland": "Doritos tortilla chips with bold, cheesy flavours.", "brand": "Doritos"}
-{"famous": "It Ain't Easy Being Cheesy", "bland": "Cheetos crunchy cheese-flavoured snacks.", "brand": "Cheetos"}
-{"famous": "There's Always Room for Jell-O", "bland": "Jell-O gelatin desserts in fruit flavours.", "brand": "Jell-O"}
-{"famous": "How Many Licks Does It Take to Get to the Tootsie Roll Center of a Tootsie Pop?", "bland": "Tootsie Pop lollipops with a chewy chocolate centre.", "brand": "Tootsie Pop"}
-{"famous": "The Curiously Strong Mints", "bland": "Altoids strong peppermints in a small tin.", "brand": "Altoids"}
-{"famous": "The Freshmaker", "bland": "Mentos chewy mints that freshen your breath.", "brand": "Mentos"}
-{"famous": "Makin' It Great", "bland": "Pizza Hut restaurants serving pizza and pasta.", "brand": "Pizza Hut"}
-{"famous": "Better Ingredients. Better Pizza.", "bland": "Papa John's delivers pizza made with quality ingredients.", "brand": "Papa John's"}
-{"famous": "We Have the Meats", "bland": "Arby's sandwiches made with roast beef and other sliced meats.", "brand": "Arby's"}
-{"famous": "Food with Integrity", "bland": "Chipotle burritos and bowls made with responsibly sourced ingredients.", "brand": "Chipotle"}
-{"famous": "Eatin' Good in the Neighborhood", "bland": "Applebee's casual restaurants with burgers, steaks and salads.", "brand": "Applebee's"}
-{"famous": "No Rules, Just Right", "bland": "Outback Steakhouse serves steaks in a relaxed setting.", "brand": "Outback Steakhouse"}
-{"famous": "Love That Chicken", "bland": "Popeyes Louisiana-style fried chicken and biscuits.", "brand": "Popeyes"}
-{"famous": "Where America Shops", "bland": "Sears department stores selling appliances, tools and clothing.", "brand": "Sears"}
-{"famous": "Expect Great Things", "bland": "Kohl's department stores with clothing and home goods on sale.", "brand": "Kohl's"}
-{"famous": "You've Got Questions. We've Got Answers.", "bland": "RadioShack sells electronics, cables and batteries.", "brand": "RadioShack"}
-{"famous": "That Was Easy", "bland": "Staples sells office supplies, printers and paper.", "brand": "Staples"}
-{"famous": "The Wonderful Everyday", "bland": "IKEA sells affordable furniture and home accessories.", "brand": "IKEA"}
-{"famous": "This Is Not Just Food, This Is M&S Food", "bland": "M&S Food sells quality ready meals and groceries.", "brand": "Marks & Spencer"}
-{"famous": "Try Something New Today", "bland": "Sainsbury's supermarkets with a wide range of groceries.", "brand": "Sainsbury's"}
-{"famous": "You Can Do It When You B&Q It", "bland": "B&Q sells tools, paint and materials for home improvement.", "brand": "B&Q"}
-{"famous": "The World's Local Bank", "bland": "HSBC offers banking services in countries around the world.", "brand": "HSBC"}
-{"famous": "Bullish on America", "bland": "Merrill Lynch provides investment advice and brokerage services.", "brand": "Merrill Lynch"}
-{"famous": "Talk to Chuck", "bland": "Charles Schwab offers low-cost investing and advice.", "brand": "Charles Schwab"}
-{"famous": "Love the Skin You're In", "bland": "Olay moisturisers and skin-care products for women.", "brand": "Olay"}
-{"famous": "Get the London Look", "bland": "Rimmel make-up products at affordable prices.", "brand": "Rimmel"}
-{"famous": "Smell Like a Man, Man", "bland": "Old Spice body wash and deodorant for men.", "brand": "Old Spice"}
-{"famous": "The Nighttime, Sniffling, Sneezing, Coughing, Aching, Stuffy Head, Fever, So You Can Rest Medicine", "bland": "NyQuil cold medicine helps you sleep when you have a cold.", "brand": "NyQuil"}
-{"famous": "Wonder Drug That Works Wonders", "bland": "Bayer aspirin relieves headaches and pain.", "brand": "Bayer"}
-{"famous": "Tide's In, Dirt's Out", "bland": "Tide laundry detergent removes dirt and stains.", "brand": "Tide"}
-{"famous": "Hefty Hefty Hefty! Wimpy Wimpy Wimpy!", "bland": "Hefty trash bags are stronger than ordinary bags.", "brand": "Hefty"}
-{"famous": "You're Soaking in It", "bland": "Palmolive dishwashing liquid is gentle on your hands.", "brand": "Palmolive"}
-{"famous": "I Am What I Am", "bland": "Reebok athletic shoes and sportswear.", "brand": "Reebok"}
-{"famous": "Forever Faster", "bland": "Puma running shoes and sports clothing.", "brand": "Puma"}
-{"famous": "I Will", "bland": "Under Armour performance clothing for athletes.", "brand": "Under Armour"}
-{"famous": "Off the Wall", "bland": "Vans skate shoes and casual sneakers.", "brand": "Vans"}
-{"famous": "I Dreamed I Went Shopping in My Maidenform Bra", "bland": "Maidenform bras in comfortable, flattering styles.", "brand": "Maidenform"}
-{"famous": "Don't Crack Under Pressure", "bland": "TAG Heuer Swiss sports watches.", "brand": "TAG Heuer"}
-{"famous": "You Never Actually Own a Patek Philippe. You Merely Look After It for the Next Generation.", "bland": "Patek Philippe makes luxury Swiss watches that hold their value.", "brand": "Patek Philippe"}
-{"famous": "Every Kiss Begins with Kay", "bland": "Kay Jewelers sells engagement rings and diamond jewellery.", "brand": "Kay Jewelers"}
-{"famous": "Inspire the Next", "bland": "Hitachi makes electronics, appliances and industrial equipment.", "brand": "Hitachi"}
-{"famous": "Invented for Life", "bland": "Bosch makes power tools and home appliances.", "brand": "Bosch"}
-{"famous": "The Most Trusted Name in News", "bland": "CNN broadcasts news around the clock.", "brand": "CNN"}
-{"famous": "Fair and Balanced", "bland": "Fox News is a cable news channel.", "brand": "Fox News"}
-{"famous": "Must See TV", "bland": "NBC broadcasts popular comedies and dramas on Thursday nights.", "brand": "NBC"}
-{"famous": "It's Not TV. It's HBO.", "bland": "HBO is a premium cable channel with original series and films.", "brand": "HBO"}
-{"famous": "The Worldwide Leader in Sports", "bland": "ESPN broadcasts sports and sports news.", "brand": "ESPN"}
-{"famous": "All the News That's Fit to Print", "bland": "The New York Times is a daily newspaper.", "brand": "The New York Times"}
-{"famous": "Clunk Click Every Trip", "bland": "Wear your seat belt on every journey.", "brand": "UK road safety campaign"}
-{"famous": "Love It or Hate It", "bland": "Marmite is a savoury yeast spread for toast.", "brand": "Marmite"}
-{"famous": "Tetley Make Tea Bags Make Tea", "bland": "Tetley sells a popular brand of tea.", "brand": "Tetley"}
-{"famous": "You Only Get an 'OO' with Typhoo", "bland": "Typhoo tea is a popular British tea.", "brand": "Typhoo"}
-{"famous": "Lucozade Aids Recovery", "bland": "Lucozade is a glucose drink for energy.", "brand": "Lucozade"}
-{"famous": "You Know When You've Been Tango'd", "bland": "Tango is a fizzy orange drink.", "brand": "Tango"}
-{"famous": "The Totally Tropical Taste", "bland": "Lilt is a pineapple and grapefruit soft drink.", "brand": "Lilt"}
-{"famous": "The Milky Bars Are on Me!", "bland": "Milky Bar is a white chocolate bar for children.", "brand": "Milky Bar"}
-{"famous": "It's Not for Girls", "bland": "Yorkie is a chunky milk chocolate bar.", "brand": "Yorkie"}
-{"famous": "Just One Cornetto", "bland": "Cornetto is an ice cream cone with a chocolate tip.", "brand": "Cornetto"}
-{"famous": "That's Why Mums Go to Iceland", "bland": "Iceland supermarkets sell frozen food at low prices.", "brand": "Iceland"}
-{"famous": "You Can't Get Better Than a Kwik Fit Fitter", "bland": "Kwik Fit fits tyres, exhausts and brakes.", "brand": "Kwik Fit"}
-{"famous": "That's the Wonder of Woolies", "bland": "Woolworths high-street stores sold sweets, toys and homewares.", "brand": "Woolworths"}
-{"famous": "Believe in Better", "bland": "Sky offers satellite television, broadband and phone services.", "brand": "Sky"}
-{"famous": "It Is. Are You?", "bland": "The Independent is a British daily newspaper.", "brand": "The Independent"}
-{"famous": "No FT, No Comment", "bland": "The Financial Times reports business and financial news.", "brand": "Financial Times"}
-{"famous": "Your Flexible Friend", "bland": "Access is a credit card accepted in many shops.", "brand": "Access"}
-{"famous": "Australian for Beer", "bland": "Foster's is an Australian lager.", "brand": "Foster's"}
-{"famous": "Australians Wouldn't Give a XXXX for Anything Else", "bland": "Castlemaine XXXX is a lager brewed in Queensland.", "brand": "Castlemaine XXXX"}
-{"famous": "The Cream of Manchester", "bland": "Boddingtons is a smooth bitter brewed in Manchester.", "brand": "Boddingtons"}
-{"famous": "No Nonsense", "bland": "John Smith's is a traditional Yorkshire bitter.", "brand": "John Smith's"}
-{"famous": "I Bet He Drinks Carling Black Label", "bland": "Carling Black Label is a popular lager.", "brand": "Carling"}
-{"famous": "Follow the Bear", "bland": "Hofmeister is a lager with a bear mascot.", "brand": "Hofmeister"}
-{"famous": "Absolut Perfection", "bland": "Absolut is a Swedish vodka in a distinctive bottle.", "brand": "Absolut"}
-{"famous": "It's Pimm's O'Clock", "bland": "Pimm's is a gin-based summer drink served with fruit.", "brand": "Pimm's"}
-{"famous": "Oxo Gives a Meal Man Appeal", "bland": "Oxo stock cubes add flavour to gravy and stews.", "brand": "Oxo"}
-{"famous": "Everyone's Private Driver", "bland": "Uber is an app for booking rides from local drivers.", "brand": "Uber"}
-{"famous": "Where Work Happens", "bland": "Slack is a messaging app for teams at work.", "brand": "Slack"}
-{"famous": "Music for Everyone", "bland": "Spotify streams millions of songs on demand.", "brand": "Spotify"}
-{"famous": "Do You Yahoo!?", "bland": "Yahoo is a web portal with search, email and news.", "brand": "Yahoo"}
+{"famous": "Share Moments. Share Life.", "bland": "Capture the memories that matter most to you.", "brand": "Kodak"}
+{"famous": "It's a Sony", "bland": "Sony electronics you can enjoy for years to come.", "brand": "Sony"}
+{"famous": "Ideas for Life", "bland": "Home electronics designed around the way you live.", "brand": "Panasonic"}
+{"famous": "Have You Played Atari Today?", "bland": "Atari brings hours of video game fun to the whole family.", "brand": "Atari"}
+{"famous": "Better Sound Through Research", "bland": "Speakers that deliver rich, clear sound in any room.", "brand": "Bose"}
+{"famous": "There Is No Substitute", "bland": "A sports car built for drivers who demand the best.", "brand": "Porsche"}
+{"famous": "Love. It's What Makes a Subaru, a Subaru.", "bland": "A Subaru is a dependable car for families who love adventure.", "brand": "Subaru"}
+{"famous": "New Thinking. New Possibilities.", "bland": "Modern cars with smart design at a fair price.", "brand": "Hyundai"}
+{"famous": "The Power to Surprise", "bland": "Stylish, well-equipped cars that offer great value.", "brand": "Kia"}
+{"famous": "Born from Jets", "bland": "Cars with distinctive Swedish design and turbocharged engines.", "brand": "Saab"}
+{"famous": "The Standard of the World", "bland": "Luxury cars with a long tradition of craftsmanship.", "brand": "Cadillac"}
+{"famous": "We Build Excitement", "bland": "Sporty cars for people who enjoy driving.", "brand": "Pontiac"}
+{"famous": "This Is Not Your Father's Oldsmobile", "bland": "Oldsmobile has a fresh new look for a new generation of drivers.", "brand": "Oldsmobile"}
+{"famous": "Precision Crafted Performance", "bland": "Luxury sedans engineered for a smooth, responsive drive.", "brand": "Acura"}
+{"famous": "Innovation That Excites", "bland": "Cars packed with the latest technology and features.", "brand": "Nissan"}
+{"famous": "Where the Rubber Meets the Road", "bland": "Dependable tires for safe driving in all conditions.", "brand": "Firestone"}
+{"famous": "You Can Be Sure of Shell", "bland": "Shell fuel keeps your engine running smoothly, mile after mile.", "brand": "Shell"}
+{"famous": "Beyond Petroleum", "bland": "An energy company working towards cleaner fuels.", "brand": "BP"}
+{"famous": "You Can Trust Your Car to the Man Who Wears the Star", "bland": "Friendly service stations with trained mechanics and quality fuel.", "brand": "Texaco"}
+{"famous": "You Are Now Free to Move About the Country", "bland": "Low fares and friendly service to cities nationwide.", "brand": "Southwest Airlines"}
+{"famous": "The Spirit of Australia", "bland": "Comfortable flights to Australia and destinations worldwide.", "brand": "Qantas"}
+{"famous": "A Great Way to Fly", "bland": "Attentive cabin service on every long-haul flight.", "brand": "Singapore Airlines"}
+{"famous": "The World's Most Experienced Airline", "bland": "International flights with a long tradition of service.", "brand": "Pan Am"}
+{"famous": "Work Hard. Fly Right.", "bland": "Reliable flights and friendly service, every time you travel.", "brand": "Continental Airlines"}
+{"famous": "The Best Surprise Is No Surprise", "bland": "Clean, comfortable hotel rooms wherever you travel.", "brand": "Holiday Inn"}
+{"famous": "Oh, I Wish I Were an Oscar Mayer Wiener", "bland": "Oscar Mayer hot dogs are a tasty favourite at every cookout.", "brand": "Oscar Mayer"}
+{"famous": "Good Food, Good Life", "bland": "Wholesome food and drinks for families everywhere.", "brand": "Nestlé"}
+{"famous": "Made from the Best Stuff on Earth", "bland": "Refreshing fruit drinks made with natural ingredients.", "brand": "Snapple"}
+{"famous": "Be a Pepper", "bland": "A soft drink with a unique blend of twenty-three flavours.", "brand": "Dr Pepper"}
+{"famous": "Live Young", "bland": "Pure natural mineral water from the mountains.", "brand": "Evian"}
+{"famous": "For the Bold", "bland": "Tortilla chips with big, bold flavours.", "brand": "Doritos"}
+{"famous": "It Ain't Easy Being Cheesy", "bland": "Crunchy snacks with real cheese flavour.", "brand": "Cheetos"}
+{"famous": "There's Always Room for Jell-O", "bland": "Jell-O gelatin makes a light, fruity dessert the whole family enjoys.", "brand": "Jell-O"}
+{"famous": "How Many Licks Does It Take to Get to the Tootsie Roll Center of a Tootsie Pop?", "bland": "Tootsie Pop lollipops have a chewy chocolate centre kids love.", "brand": "Tootsie Pop"}
+{"famous": "The Curiously Strong Mints", "bland": "Strong peppermints in a handy pocket tin.", "brand": "Altoids"}
+{"famous": "The Freshmaker", "bland": "Chewy mints that keep your breath fresh all day.", "brand": "Mentos"}
+{"famous": "Makin' It Great", "bland": "Hot, fresh pizza made the way you like it.", "brand": "Pizza Hut"}
+{"famous": "Better Ingredients. Better Pizza.", "bland": "Delicious pizza delivered hot to your door.", "brand": "Papa John's"}
+{"famous": "We Have the Meats", "bland": "Sandwiches piled high with freshly sliced meats.", "brand": "Arby's"}
+{"famous": "Food with Integrity", "bland": "Burritos and bowls made with fresh, responsibly sourced ingredients.", "brand": "Chipotle"}
+{"famous": "Eatin' Good in the Neighborhood", "bland": "Casual dining with burgers, steaks and salads for everyone.", "brand": "Applebee's"}
+{"famous": "No Rules, Just Right", "bland": "Juicy steaks served in a relaxed, friendly setting.", "brand": "Outback Steakhouse"}
+{"famous": "Love That Chicken from Popeyes", "bland": "Popeyes serves crispy Louisiana-style fried chicken and biscuits.", "brand": "Popeyes"}
+{"famous": "Where America Shops", "bland": "Everything for your home, from appliances to clothing.", "brand": "Sears"}
+{"famous": "You've Got Questions. We've Got Answers.", "bland": "Electronics, cables and batteries with helpful advice.", "brand": "RadioShack"}
+{"famous": "That Was Easy", "bland": "All the office supplies you need in one convenient store.", "brand": "Staples"}
+{"famous": "The Wonderful Everyday", "bland": "Affordable furniture and accessories for every room.", "brand": "IKEA"}
+{"famous": "This Is Not Just Food, This Is M&S Food", "bland": "M&S Food offers quality ready meals and fresh groceries.", "brand": "Marks & Spencer"}
+{"famous": "Try Something New Today", "bland": "Fresh groceries and great choice at your local supermarket.", "brand": "Sainsbury's"}
+{"famous": "You Can Do It When You B&Q It", "bland": "B&Q has the tools, paint and materials for every home project.", "brand": "B&Q"}
+{"famous": "The World's Local Bank", "bland": "Banking services that follow you around the world.", "brand": "HSBC"}
+{"famous": "Bullish on America", "bland": "Investment advice and brokerage services you can trust.", "brand": "Merrill Lynch"}
+{"famous": "Talk to Chuck", "bland": "Low-cost investing with advice when you need it.", "brand": "Charles Schwab"}
+{"famous": "Love the Skin You're In", "bland": "Moisturisers that keep your skin soft and healthy.", "brand": "Olay"}
+{"famous": "Get the London Look", "bland": "Fashionable make-up at prices you will love.", "brand": "Rimmel"}
+{"famous": "Smell Like a Man, Man", "bland": "Body wash and deodorant that keep men feeling fresh.", "brand": "Old Spice"}
+{"famous": "The Nighttime, Sniffling, Sneezing, Coughing, Aching, Stuffy Head, Fever, So You Can Rest Medicine", "bland": "Cold medicine that relieves your symptoms so you can sleep.", "brand": "NyQuil"}
+{"famous": "Tide's In, Dirt's Out", "bland": "Tide detergent gets tough stains out of your laundry.", "brand": "Tide"}
+{"famous": "Hefty Hefty Hefty! Wimpy Wimpy Wimpy!", "bland": "Hefty trash bags are strong enough for the heaviest loads.", "brand": "Hefty"}
+{"famous": "You're Soaking in It", "bland": "Dishwashing liquid that is gentle on your hands.", "brand": "Palmolive"}
+{"famous": "I Am What I Am", "bland": "Athletic shoes and sportswear for every workout.", "brand": "Reebok"}
+{"famous": "Forever Faster", "bland": "Running shoes and sports clothing for athletes.", "brand": "Puma"}
+{"famous": "Protect This House", "bland": "Performance clothing that keeps athletes cool and dry.", "brand": "Under Armour"}
+{"famous": "Off the Wall", "bland": "Skate shoes and casual sneakers with classic style.", "brand": "Vans"}
+{"famous": "I Dreamed I Went Shopping in My Maidenform Bra", "bland": "Maidenform bras offer comfort and a flattering fit.", "brand": "Maidenform"}
+{"famous": "Don't Crack Under Pressure", "bland": "Swiss sports watches built for precision.", "brand": "TAG Heuer"}
+{"famous": "You Never Actually Own a Patek Philippe. You Merely Look After It for the Next Generation.", "bland": "A Patek Philippe watch is a luxury Swiss timepiece that holds its value.", "brand": "Patek Philippe"}
+{"famous": "Every Kiss Begins with Kay", "bland": "Kay has engagement rings and diamond jewellery for every occasion.", "brand": "Kay Jewelers"}
+{"famous": "Inspire the Next", "bland": "Electronics, appliances and industrial equipment for a better future.", "brand": "Hitachi"}
+{"famous": "Invented for Life", "bland": "Power tools and home appliances built to last.", "brand": "Bosch"}
+{"famous": "The Most Trusted Name in News", "bland": "News coverage around the clock, wherever it happens.", "brand": "CNN"}
+{"famous": "Fair and Balanced", "bland": "News and opinion on cable, all day long.", "brand": "Fox News"}
+{"famous": "Must See TV", "bland": "Popular comedies and dramas every Thursday night.", "brand": "NBC"}
+{"famous": "It's Not TV. It's HBO.", "bland": "HBO brings you original series and films every week.", "brand": "HBO"}
+{"famous": "The Worldwide Leader in Sports", "bland": "Live sports and sports news whenever you want them.", "brand": "ESPN"}
+{"famous": "All the News That's Fit to Print", "bland": "In-depth news coverage delivered every morning.", "brand": "The New York Times"}
+{"famous": "Clunk Click Every Trip", "bland": "Always wear your seat belt, on every journey.", "brand": "UK road safety campaign"}
+{"famous": "Love It or Hate It", "bland": "A savoury spread with a strong, distinctive taste.", "brand": "Marmite"}
+{"famous": "Tetley Make Tea Bags Make Tea", "bland": "Tetley tea bags for a refreshing cup any time of day.", "brand": "Tetley"}
+{"famous": "You Only Get an 'OO' with Typhoo", "bland": "Typhoo tea has a rich flavour you will enjoy every day.", "brand": "Typhoo"}
+{"famous": "Lucozade Aids Recovery", "bland": "Lucozade gives you the energy to keep going.", "brand": "Lucozade"}
+{"famous": "You Know When You've Been Tango'd", "bland": "Tango is a fizzy orange drink with a bold, fruity taste.", "brand": "Tango"}
+{"famous": "The Totally Tropical Taste", "bland": "A sparkling drink with pineapple and grapefruit flavour.", "brand": "Lilt"}
+{"famous": "The Milky Bars Are on Me!", "bland": "Milkybar white chocolate is a creamy treat for children.", "brand": "Milky Bar"}
+{"famous": "It's Not for Girls", "bland": "A chunky milk chocolate bar for a big appetite.", "brand": "Yorkie"}
+{"famous": "Just One Cornetto", "bland": "A Cornetto ice cream cone with a crisp wafer and chocolate tip.", "brand": "Cornetto"}
+{"famous": "That's Why Mums Go to Iceland", "bland": "Iceland stores sell frozen food at prices families love.", "brand": "Iceland"}
+{"famous": "You Can't Get Better Than a Kwik Fit Fitter", "bland": "Kwik Fit fits tyres, exhausts and brakes while you wait.", "brand": "Kwik Fit"}
+{"famous": "That's the Wonder of Woolies", "bland": "Sweets, toys and homewares on every high street.", "brand": "Woolworths"}
+{"famous": "Believe in Better", "bland": "Television, broadband and phone services for your home.", "brand": "Sky"}
+{"famous": "It Is. Are You?", "bland": "Independent news and opinion every day.", "brand": "The Independent"}
+{"famous": "No FT, No Comment", "bland": "The FT delivers business and financial news every morning.", "brand": "Financial Times"}
+{"famous": "Your Flexible Friend", "bland": "A credit card accepted in shops across the country.", "brand": "Access"}
+{"famous": "Australian for Beer", "bland": "A crisp Australian lager, served ice cold.", "brand": "Foster's"}
+{"famous": "Australians Wouldn't Give a XXXX for Anything Else", "bland": "XXXX is a refreshing lager brewed in Queensland.", "brand": "Castlemaine XXXX"}
+{"famous": "The Cream of Manchester", "bland": "A smooth, creamy bitter from the north of England.", "brand": "Boddingtons"}
+{"famous": "No Nonsense", "bland": "A traditional bitter with a full, satisfying flavour.", "brand": "John Smith's"}
+{"famous": "I Bet He Drinks Carling Black Label", "bland": "Carling Black Label is a refreshing lager for any occasion.", "brand": "Carling"}
+{"famous": "Follow the Bear", "bland": "A smooth lager with a taste you will come back to.", "brand": "Hofmeister"}
+{"famous": "Absolut Perfection", "bland": "Absolut vodka is distilled in Sweden for a clean, pure taste.", "brand": "Absolut"}
+{"famous": "It's Pimm's O'Clock", "bland": "Pimm's makes a refreshing summer drink served with fruit.", "brand": "Pimm's"}
+{"famous": "Oxo Gives a Meal Man Appeal", "bland": "Oxo stock cubes add rich flavour to gravies and stews.", "brand": "Oxo"}
+{"famous": "Do You Yahoo!?", "bland": "Yahoo offers search, email and news in one place.", "brand": "Yahoo"}
+{"famous": "When It Rains It Pours", "bland": "Table salt that pours freely in any weather.", "brand": "Morton Salt"}
+{"famous": "Sorry, Charlie", "bland": "Canned tuna packed fresh for sandwiches and salads.", "brand": "StarKist"}
+{"famous": "Ace Is the Place", "bland": "Ace Hardware stores for tools, paint and helpful advice.", "brand": "Ace Hardware"}
