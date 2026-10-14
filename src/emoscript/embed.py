@@ -40,6 +40,11 @@ WEB_MODELS: dict[str, tuple[str, str]] = {
     "thenlper/gte-base": ("Xenova/gte-base", "mean"),
     "intfloat/multilingual-e5-large": ("Xenova/multilingual-e5-large", "mean"),
 }
+# Hub revision the browser app pins for each transformers.js model, so a re-export
+# upstream cannot silently change the embeddings the axis was fitted on.
+WEB_REVISIONS: dict[str, str] = {
+    "Xenova/bge-small-en-v1.5": "ea104dacec62c0de699686887e3f920caeb4f3e3",
+}
 
 
 class Embedder(Protocol):

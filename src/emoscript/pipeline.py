@@ -333,14 +333,16 @@ class AxisModel:
         )
 
 
-def web_export(model: AxisModel, web_model: str | None = None, pooling: str | None = None) -> dict:
+def web_export(
+    model: AxisModel, web_model: str | None = None, pooling: str | None = None, revision: str | None = None
+) -> dict:
     """Everything the browser app (``web/``) needs, as plain JSON types.
 
     The embedding model itself is not exported: the app loads the transformers.js
     port named here from the Hugging Face hub. ``web_model`` / ``pooling``
     default to the known mapping for the axis's fastembed model.
     """
-    from .embed import WEB_MODELS
+    from .embed import WEB_MODELS, WEB_REVISIONS
 
     if web_model is None or pooling is None:
         if model.model_name not in WEB_MODELS:
@@ -352,6 +354,8 @@ def web_export(model: AxisModel, web_model: str | None = None, pooling: str | No
         web_model, pooling = web_model or wm, pooling or pl
     if pooling not in ("cls", "mean"):
         raise ValueError("pooling must be 'cls' or 'mean'")
+    if revision is None:
+        revision = WEB_REVISIONS.get(web_model, "main")
 
     def calib(c: Calibrator | None) -> dict | None:
         if c is None:
@@ -375,6 +379,7 @@ def web_export(model: AxisModel, web_model: str | None = None, pooling: str | No
             "fastembed_model": model.model_name,
             "web_model": web_model,
             "pooling": pooling,
+            "revision": revision,
             "prefix": model.prefix,
             "dim": int(model.axes.shape[1]),
         },

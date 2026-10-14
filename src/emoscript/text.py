@@ -43,7 +43,7 @@ _LABEL = re.compile(
     re.I,
 )
 _PLACEHOLDER = re.compile(
-    r"\{\{.*?\}\}|\$\{.*?\}|<[A-Z][A-Z _-]{1,30}>|\[(?:insert|your|tagline|brand|slogan)[^\]]*\]"
+    r"\{\{.*?\}\}|\$\{.*?\}|(?-i:<[A-Z][A-Z _-]{1,30}>)|\[(?:insert|your|tagline|brand|slogan)[^\]]*\]"
     r"|^\s*todo\s*:?\s*$|^\s*todo:\s*(?:write|add|insert|tagline|slogan|headline|copy)\b"
     r"|^\s*tbd\s*:?\s*$|^\s*tbd:\s*(?:tagline|slogan|headline|copy)\b|lorem ipsum"
     r"|^\W*(?:(?:your|the|a|an|new|catchy|best|insert) )?"
@@ -166,8 +166,9 @@ def input_flags(text: str, max_words: int = MAX_WORDS) -> list[str]:
     - ``single_word``:  one word; famous one-word lines exist ("Think") but a
                         single noun is not a tagline and scores high by length
     - ``too_long``:     longer than any famous line; the axis was not fitted on these
-    - ``placeholder``:  template artefacts such as {{tagline}}, <BRAND>, TODO:,
-                        lorem ipsum, "Your slogan here", "null"
+    - ``placeholder``:  template artefacts such as {{tagline}}, <BRAND> (upper-case
+                        only; <strong> is markup), TODO:, lorem ipsum, "Your slogan
+                        here", "null"
     - ``llm_chatter``:  chat-model framing instead of a line ("Sure! Here are
                         five taglines:", "As an AI language model, I cannot ...")
     - ``non_latin``:    mostly non-Latin script; scores for other languages are

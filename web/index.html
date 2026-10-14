@@ -12,8 +12,8 @@
     <h1>emoscript <span class="sub">browser edition</span></h1>
     <p class="lede">
       Paste candidate taglines, one per line. Each is embedded <strong>in your browser</strong> and scored
-      against the direction of famous ad copy. Nothing you type leaves this page; the embedding model
-      is downloaded once from huggingface.co and cached.
+      against the direction of famous ad copy. Your lines are never sent anywhere. The page loads its
+      code from cdn.jsdelivr.net and the embedding model once from huggingface.co (cached by the browser).
     </p>
   </header>
 
@@ -51,8 +51,8 @@ Quality products at affordable prices for everyone."></textarea>
           <label class="check"><input id="famous-check" type="checkbox" checked /> Famous-line check (block copies, flag parodies)</label>
           <label>Model precision
             <select id="dtype">
-              <option value="fp32">fp32 (exact, ~130 MB download)</option>
-              <option value="fp16">fp16 (WebGPU only, ~65 MB)</option>
+              <option value="fp32">fp32 (~130 MB; matches the Python scorer within 0.001)</option>
+              <option value="fp16" hidden disabled>fp16 (WebGPU only, ~65 MB)</option>
               <option value="q8">q8 (approximate, ~35 MB; scores drift up to ±0.03)</option>
             </select>
           </label>

@@ -335,7 +335,7 @@ def cmd_info(args) -> int:
 
 def cmd_export_web(args) -> int:
     model = AxisModel.load(args.axis)
-    blob = web_export(model, web_model=args.web_model, pooling=args.pooling)
+    blob = web_export(model, web_model=args.web_model, pooling=args.pooling, revision=args.web_revision)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(
@@ -484,6 +484,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--pooling", choices=("cls", "mean"), help="pooling used by that model (default: known mapping)"
     )
+    p.add_argument("--web-revision", help="hub revision to pin (default: known mapping, else 'main')")
     p.set_defaults(fn=cmd_export_web)
 
     p = sub.add_parser("fetch-axis", help="download a prebuilt axis from GitHub Releases")

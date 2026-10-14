@@ -223,6 +223,7 @@ def test_export_web_writes_json_the_browser_app_can_read(patched_backend, tmp_pa
         "fastembed_model": "fake",
         "web_model": "Xenova/fake",
         "pooling": "cls",
+        "revision": "main",
         "prefix": "",
         "dim": 32,
     }

@@ -18,6 +18,27 @@
   workflow deploys `web/`.
 - Held-out numbers for the browser model are in docs/results.md: hard 0.942,
   topic-matched 0.789 (e5-large: 0.942), topic_bland PASS 0.43 (0.17).
+- After an adversarial review of the port: Unicode-aware digit / word
+  classes in the JavaScript regexes (full-width "Option ２:" strips as in
+  Python, so a famous copy behind it is still blocked); the hub revision of
+  the browser model is pinned in model.json; the parity test matches rows by
+  occurrence, compares flags, near-famous, sense, p and relevance at 0.002,
+  and the fixture carries 102 lines including the divergence probes; the app
+  rejects pending embeddings when the worker is replaced, ignores superseded
+  runs, falls back to WASM when WebGPU fails mid-run, caps input (5000 lines,
+  2000 characters), neutralises formula-like cells in the CSV and marks
+  results stale when the input changes.
+
+### Fixed
+- `placeholder` flag: the `<BRAND>` pattern was case-insensitive, so
+  `<strong>Fresh every day</strong>` and `<em>…</em>` were blocked as
+  placeholders. Upper-case tags only now (Python and JS).
+
+### Known divergences of the browser port (display flags only)
+- `non_latin` uses `\p{Script=Latin}`, Python the Unicode name prefix: full-width
+  Latin letters and modifier letters are flagged by Python only.
+- Python's whitespace set (`\x1c`–`\x1f`, `\x85`) and case-insensitive
+  matches (ſ, K, İ) differ from JavaScript's in corner cases.
 
 ## 0.2.0
 

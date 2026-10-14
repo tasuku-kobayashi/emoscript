@@ -2,7 +2,8 @@
 
     python web/test/make_fixture.py --axis axis.npz [--out web/test/fixture.json]
 
-Records, for every line of fixture_texts.txt: the canonical form, input flags
+Records, for every line of fixture_texts.json (a JSON list; non-blank lines only, so the
+CLI, which drops blank lines, scores exactly this list): the canonical form, input flags
 and near-famous match (model-free, from emoscript.text / pipeline), plus the
 full `emoscript score --sort --json` rows with and without a brief (needs the
 embedding model). Re-run whenever text.py, near_famous or the CLI row logic
@@ -38,10 +39,13 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--axis", required=True)
     ap.add_argument("--out", default=str(HERE / "fixture.json"))
-    ap.add_argument("--texts", default=str(HERE / "fixture_texts.txt"))
+    ap.add_argument("--texts", default=str(HERE / "fixture_texts.json"))
     args = ap.parse_args()
-    texts_file = Path(args.texts)
-    texts = texts_file.read_text(encoding="utf-8").splitlines()
+    texts = json.loads(Path(args.texts).read_text(encoding="utf-8"))
+    if any(not t.strip() or "\n" in t for t in texts):
+        raise SystemExit("fixture texts must be non-blank single lines")
+    texts_file = Path(args.out).with_suffix(".lines.txt")
+    texts_file.write_text("".join(t + "\n" for t in texts), encoding="utf-8")
     model = AxisModel.load(args.axis)
     near = model.near_famous(texts)
     fixture = {
@@ -59,6 +63,7 @@ def main() -> int:
             ["--brief", BRIEF, "--top-rel", "0.5", "--prior", "0.2", "--threshold", "0.3"],
         ),
     }
+    texts_file.unlink()
     Path(args.out).write_text(json.dumps(fixture, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"fixture written to {args.out} ({len(texts)} lines)", file=sys.stderr)
     return 0

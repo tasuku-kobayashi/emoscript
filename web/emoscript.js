@@ -13,38 +13,47 @@ const RE_HTML = /<\/?[a-z][a-z0-9]*(?:\s[^<>]{0,80})?\/?>/gi;
 const RE_MD_LEAD = /^(?:[#>]+\s*)+/;
 const RE_MD_PAIR = /(\*\*|__|~~|\*|_)(\S(?:.*?\S)?)\1/g;
 const RE_MD_EDGE = /^[*_~]+|[*_~]+$/g;
-const RE_LIST = /^\s*(?:[-•▪·]|\(?\d{1,3}[.)]|[a-z]\))\s+/i;
+// Python's \d, \w and \b are Unicode-aware; JavaScript's are ASCII-only, so they are
+// spelled out (`u` flag everywhere a class matters). Full-width digits from a Japanese
+// keyboard ("Option ２:") must strip exactly as in Python.
+const D = "\\p{Nd}";
+const W = "[\\p{L}\\p{N}_]";
+const NONWORD = "[^\\p{L}\\p{N}_]";
+const BOUNDARY_BEFORE = "(?<![\\p{L}\\p{N}_])";
+const BOUNDARY_AFTER = "(?![\\p{L}\\p{N}_])";
+const RE_LIST = new RegExp(`^\\s*(?:[-•▪·]|\\(?${D}{1,3}[.)]|[a-z]\\))\\s+`, "iu");
 const RE_LABEL = new RegExp(
-  "^\\s*(?:tagline|slogan|headline|option|variant|idea|line|candidate|copy|v\\d+)" +
+  `^\\s*(?:tagline|slogan|headline|option|variant|idea|line|candidate|copy|v${D}+)` +
     "(?:\\s+(?:idea|option|variant|line|candidate))?" +
-    "(?:\\s*(?:\\d+|[a-z]|#\\d+))?(?:\\s*\\([^)]{0,40}\\))?(?:\\s*[:：]|\\s+[-–—])\\s*",
-  "i",
+    `(?:\\s*(?:${D}+|[a-z]|#${D}+))?(?:\\s*\\([^)]{0,40}\\))?(?:\\s*[:：]|\\s+[-–—])\\s*`,
+  "iu",
 );
-const NONWORD = "[^\\p{L}\\p{N}_]"; // Python's unicode-aware \W
+// <BRAND>-style placeholders are upper-case only (<strong> is markup): matched case-sensitively.
+const RE_PLACEHOLDER_TAG = /<[A-Z][A-Z _-]{1,30}>/u;
 const RE_PLACEHOLDER = new RegExp(
-  "\\{\\{.*?\\}\\}|\\$\\{.*?\\}|<[A-Z][A-Z _-]{1,30}>|\\[(?:insert|your|tagline|brand|slogan)[^\\]]*\\]" +
-    "|^\\s*todo\\s*:?\\s*$|^\\s*todo:\\s*(?:write|add|insert|tagline|slogan|headline|copy)\\b" +
-    "|^\\s*tbd\\s*:?\\s*$|^\\s*tbd:\\s*(?:tagline|slogan|headline|copy)\\b|lorem ipsum" +
+  "\\{\\{.*?\\}\\}|\\$\\{.*?\\}|\\[(?:insert|your|tagline|brand|slogan)[^\\]]*\\]" +
+    `|^\\s*todo\\s*:?\\s*$|^\\s*todo:\\s*(?:write|add|insert|tagline|slogan|headline|copy)${BOUNDARY_AFTER}` +
+    `|^\\s*tbd\\s*:?\\s*$|^\\s*tbd:\\s*(?:tagline|slogan|headline|copy)${BOUNDARY_AFTER}|lorem ipsum` +
     `|^${NONWORD}*(?:(?:your|the|a|an|new|catchy|best|insert) )?` +
     `(?:tagline|slogan|headline|copy|text|title|name|brand|logo|content|description|body)s? goes here${NONWORD}*$` +
-    "|^\\s*(?:insert|add|enter) \\w+ here\\s*[.!]?$" +
+    `|^\\s*(?:insert|add|enter) ${W}+ here\\s*[.!]?$` +
     "|^\\s*your (?:tagline|slogan|text|copy|headline|logo|name|brand|message|title) here\\s*[.!]?$" +
     "|^\\s*(?:undefined|null|nan|none|n/?a|\\[object object\\])\\s*$",
   "iu",
 );
 const COPY_WORDS = "(?:tagline|slogan|headline|option|idea|cop(?:y|ies)|suggestion|version)s?";
 const RE_LLM_CHATTER = new RegExp(
-  "^(?:sure|certainly|okay|of course|absolutely|got it)(?: thing)?[!,.:]\\s+(?:here|i|below|these)\\b" +
-    `(?:.*\\b${COPY_WORDS}\\b|.*:\\s*$)` +
-    `|^here(?:'s| is| are) (?:\\w+ ){0,4}${COPY_WORDS}\\b` +
+  `^(?:sure|certainly|okay|of course|absolutely|got it)(?: thing)?[!,.:]\\s+(?:here|i|below|these)${BOUNDARY_AFTER}` +
+    `(?:.*${BOUNDARY_BEFORE}${COPY_WORDS}${BOUNDARY_AFTER}|.*:\\s*$)` +
+    `|^here(?:'s| is| are) (?:${W}+ ){0,4}${COPY_WORDS}${BOUNDARY_AFTER}` +
     "|^here you go[:!]" +
-    "|^as an? (?:ai|language model)\\b" +
-    "|^i(?:'m| am) (?:sorry|afraid),? but i can(?:'t|not)\\b" +
-    "|^sorry,? (?:but )?i can(?:'t|not) (?:write|generate|create|provide|do that|help with)\\b" +
+    `|^as an? (?:ai|language model)${BOUNDARY_AFTER}` +
+    `|^i(?:'m| am) (?:sorry|afraid),? but i can(?:'t|not)${BOUNDARY_AFTER}` +
+    `|^sorry,? (?:but )?i can(?:'t|not) (?:write|generate|create|provide|do that|help with)${BOUNDARY_AFTER}` +
     "|^i (?:can(?:'t|not)|am unable to) (?:write|generate|create|provide|come up with) " +
     "(?:a |an |the |any |that|this|slogan|tagline)" +
-    "|^error[:\\s]+(?:\\d{3}\\s*$|rate limit|loading|message|code)",
-  "i",
+    `|^error[:\\s]+(?:${D}{3}\\s*$|rate limit|loading|message|code)`,
+  "iu",
 );
 const RE_LETTER = /\p{L}/u;
 const RE_LATIN = /\p{Script=Latin}/u;
@@ -102,11 +111,10 @@ export function normalizeText(text, casing = "none") {
     case "canonical":
       return canonicalize(text);
     case "sentence": {
-      const t = text.toLowerCase();
-      for (let i = 0; i < t.length; i++) {
-        if (RE_LETTER.test(t[i])) return t.slice(0, i) + t[i].toUpperCase() + t.slice(i + 1);
-      }
-      return t;
+      const chars = Array.from(text.toLowerCase());
+      const i = chars.findIndex((ch) => RE_LETTER.test(ch));
+      if (i >= 0) chars[i] = chars[i].toUpperCase();
+      return chars.join("");
     }
     default:
       throw new Error(`casing must be one of ${CASINGS.join(", ")}, got ${casing}`);
@@ -125,7 +133,7 @@ export function inputFlags(text, maxWords = MAX_WORDS) {
   const words = stripped.split(/\s+/).filter((w) => w && RE_LETTER.test(w));
   if (words.length <= 1) flags.push("single_word");
   if (words.length > maxWords) flags.push("too_long");
-  if (RE_PLACEHOLDER.test(raw) || RE_PLACEHOLDER.test(stripped)) flags.push("placeholder");
+  if ([raw, stripped].some((t) => RE_PLACEHOLDER.test(t) || RE_PLACEHOLDER_TAG.test(t))) flags.push("placeholder");
   if (RE_LLM_CHATTER.test(stripped.trim())) flags.push("llm_chatter");
   const letters = Array.from(stripped).filter((ch) => RE_LETTER.test(ch));
   if (letters.length && letters.filter((ch) => RE_LATIN.test(ch)).length / letters.length < 0.9) {
@@ -223,7 +231,8 @@ function dot(a, b) {
 }
 
 export function l2Normalize(v) {
-  const n = Math.sqrt(dot(v, v)) || 1;
+  const n = Math.sqrt(dot(v, v));
+  if (!Number.isFinite(n) || n === 0) throw new Error("embedding is not finite");
   return Array.from(v, (x) => x / n);
 }
 

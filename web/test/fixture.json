@@ -262,14 +262,6 @@
    "near_famous": null
   },
   {
-   "text": "   ",
-   "canonical": "",
-   "flags": [
-    "no_letters"
-   ],
-   "near_famous": null
-  },
-  {
    "text": "- Option 3: Less talk. More walk.",
    "canonical": "less talk. more walk",
    "flags": [
@@ -831,6 +823,177 @@
    "canonical": "the quick brown fox jumps over the lazy dog",
    "flags": [],
    "near_famous": null
+  },
+  {
+   "text": "Option ２: Just do it.",
+   "canonical": "just do it",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "１) Just Do It.",
+   "canonical": "just do it",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "v２: Just do it",
+   "canonical": "just do it",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Here are five crème brûlée taglines:",
+   "canonical": "here are five crème brûlée taglines:",
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Insert café here",
+   "canonical": "insert café here",
+   "flags": [
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "TODO: writeé",
+   "canonical": "todo: writeé",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "<strong>Fresh every day</strong>",
+   "canonical": "fresh every day",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "<em>Just do it</em>",
+   "canonical": "just do it",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "error: ５００",
+   "canonical": "error: ５００",
+   "flags": [
+    "single_word",
+    "llm_chatter"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Just Do It.",
+   "canonical": "just do it",
+   "flags": [],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "🔥🔥",
+   "canonical": "🔥🔥",
+   "flags": [
+    "no_letters"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Fresh every day",
+   "canonical": "fresh every day",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Café au lait",
+   "canonical": "café au lait",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "İstanbul seni bekliyor",
+   "canonical": "i̇stanbul seni bekliyor",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "𝐉𝐮𝐬𝐭 𝐝𝐨 𝐢𝐭",
+   "canonical": "𝐉𝐮𝐬𝐭 𝐝𝐨 𝐢𝐭",
+   "flags": [
+    "non_latin"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Think different",
+   "canonical": "think different",
+   "flags": [],
+   "near_famous": {
+    "text": "Think Different.",
+    "brand": "Apple",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Think Different.",
+   "canonical": "think different",
+   "flags": [],
+   "near_famous": {
+    "text": "Think Different.",
+    "brand": "Apple",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx y",
+   "canonical": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx y",
+   "flags": [],
+   "near_famous": null
   }
  ],
  "score_sorted": [
@@ -979,8 +1142,8 @@
   },
   {
    "text": "The quick brown fox jumps over the lazy dog",
-   "score": 0.13709912974685465,
-   "sense": 0.6367448896728196,
+   "score": 0.13709912974685456,
+   "sense": 0.6367448896728195,
    "prob": 0.8488651781979556,
    "pass": true
   },
@@ -1096,6 +1259,13 @@
    "pass": false
   },
   {
+   "text": "Café au lait",
+   "score": -0.004413296763268763,
+   "sense": 0.6013983935483741,
+   "prob": 0.39191814832370325,
+   "pass": false
+  },
+  {
    "text": "Save time. Live better.",
    "score": -0.010761308913804554,
    "sense": 0.9187640789321938,
@@ -1107,6 +1277,23 @@
     "severity": "parody"
    },
    "prob": 0.42314329979217163,
+   "pass": false
+  },
+  {
+   "text": "<strong>Fresh every day</strong>",
+   "score": -0.07246697344977038,
+   "sense": 0.7208568915763024,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.1959036913660342,
+   "pass": false
+  },
+  {
+   "text": "Fresh every day",
+   "score": -0.07246697344977038,
+   "sense": 0.7208568915763024,
+   "prob": 0.1959036913660342,
    "pass": false
   },
   {
@@ -1350,6 +1537,103 @@
    ]
   },
   {
+   "text": "Option ２: Just do it.",
+   "score": 0.14261796922252057,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8602077265139537,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "１) Just Do It.",
+   "score": 0.14261796922252057,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8602077265139537,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "v２: Just do it",
+   "score": 0.14261796922252057,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8602077265139537,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "<em>Just do it</em>",
+   "score": 0.14261796922252057,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8602077265139537,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Just Do It.",
+   "score": 0.14261796922252057,
+   "sense": 0.6521023011145288,
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8602077265139537,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
    "text": "When it absolutely, positively has to be there overnight, you know who to call, and it is us.",
    "score": 0.1386171593223936,
    "sense": 0.9990114713870768,
@@ -1543,6 +1827,40 @@
    ]
   },
   {
+   "text": "Think different",
+   "score": 0.07767780016731538,
+   "sense": 0.8588034384275913,
+   "near_famous": {
+    "text": "Think Different.",
+    "brand": "Apple",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.7237468799501915,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Think Different.",
+   "score": 0.07767780016731538,
+   "sense": 0.8588034384275913,
+   "near_famous": {
+    "text": "Think Different.",
+    "brand": "Apple",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.7237468799501915,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
    "text": "<h1>Think Small.</h1>",
    "score": 0.07546412866139202,
    "sense": 0.8642471692255832,
@@ -1576,6 +1894,20 @@
    ]
   },
   {
+   "text": "Insert café here",
+   "score": 0.061911971744883436,
+   "sense": 0.4668776218569573,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.6240115634146627,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ]
+  },
+  {
    "text": "Option B - Bold moves only",
    "score": 0.061361538625229334,
    "sense": 0.13452308784064035,
@@ -1583,6 +1915,16 @@
     "wrapped"
    ],
    "prob": 0.575545482649557,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx y",
+   "score": 0.0593669968791478,
+   "sense": 0.16109280148501745,
+   "prob": 0.5739361533749787,
    "pass": false,
    "blocked_by": [
     "sense_gate"
@@ -1708,6 +2050,20 @@
    ]
   },
   {
+   "text": "Here are five crème brûlée taglines:",
+   "score": -0.0021037836941313823,
+   "sense": 0.1730733235344677,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.348519008478005,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "sense_gate"
+   ]
+  },
+  {
    "text": "Open happiness",
    "score": -0.0035076816829288995,
    "sense": 0.8301251423829034,
@@ -1769,6 +2125,16 @@
    "score": -0.02892825792582301,
    "sense": 0.35041215994473784,
    "prob": 0.28360352785371773,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "İstanbul seni bekliyor",
+   "score": -0.03235335873678559,
+   "sense": 0.24132243888616814,
+   "prob": 0.26156632494182835,
    "pass": false,
    "blocked_by": [
     "sense_gate"
@@ -1902,6 +2268,22 @@
    ]
   },
   {
+   "text": "error: ５００",
+   "score": -0.07943545077530789,
+   "sense": 0.002917099255831578,
+   "flags": [
+    "single_word",
+    "llm_chatter"
+   ],
+   "prob": 0.09296165482773878,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "single_word",
+    "sense_gate"
+   ]
+  },
+  {
    "text": "東京で一番おいしいコーヒー",
    "score": -0.0799120950211401,
    "sense": 0.06038996392018255,
@@ -1913,6 +2295,16 @@
    "pass": false,
    "blocked_by": [
     "single_word",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "TODO: writeé",
+   "score": -0.08318317069808456,
+   "sense": 0.006756653621475737,
+   "prob": 0.0961868354149527,
+   "pass": false,
+   "blocked_by": [
     "sense_gate"
    ]
   },
@@ -1929,6 +2321,19 @@
    "blocked_by": [
     "placeholder",
     "single_word",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "𝐉𝐮𝐬𝐭 𝐝𝐨 𝐢𝐭",
+   "score": -0.10716166997147605,
+   "sense": 0.0842368128129095,
+   "flags": [
+    "non_latin"
+   ],
+   "prob": 0.09009472749087327,
+   "pass": false,
+   "blocked_by": [
     "sense_gate"
    ]
   },
@@ -2003,6 +2408,20 @@
    "blocked_by": [
     "no_letters"
    ]
+  },
+  {
+   "text": "🔥🔥",
+   "score": null,
+   "skipped": "no letters",
+   "sense": null,
+   "flags": [
+    "no_letters"
+   ],
+   "prob": null,
+   "pass": false,
+   "blocked_by": [
+    "no_letters"
+   ]
   }
  ],
  "score_brief_top_rel": [
@@ -2013,7 +2432,23 @@
    "sense": 0.9364232412283818,
    "prob": 0.7036617441311039,
    "pass": true,
-   "rank_score": 2.2534812301617677
+   "rank_score": 2.441567011580774
+  },
+  {
+   "text": "Lunch of champions",
+   "score": 0.030563310965333657,
+   "brief_relevance": 0.6335268337168951,
+   "sense": 0.6438743834835536,
+   "near_famous": {
+    "text": "Breakfast of Champions",
+    "brand": "Wheaties",
+    "edits": 1,
+    "trigram": 0.44,
+    "severity": "parody"
+   },
+   "prob": 0.21851761260155053,
+   "pass": false,
+   "rank_score": 1.4486054382135818
   },
   {
    "text": "Energy drink gives you wings",
@@ -2029,7 +2464,7 @@
    },
    "prob": 0.6997635362891118,
    "pass": true,
-   "rank_score": 1.2958932478683403
+   "rank_score": 1.4262407487808226
   },
   {
    "text": "**Just Chew It.**",
@@ -2048,28 +2483,12 @@
    },
    "prob": 0.8575111700651674,
    "pass": true,
-   "rank_score": 1.2789473653349115
-  },
-  {
-   "text": "Lunch of champions",
-   "score": 0.030563310965333657,
-   "brief_relevance": 0.6335268337168951,
-   "sense": 0.6438743834835536,
-   "near_famous": {
-    "text": "Breakfast of Champions",
-    "brand": "Wheaties",
-    "edits": 1,
-    "trigram": 0.44,
-    "severity": "parody"
-   },
-   "prob": 0.21851761260155053,
-   "pass": false,
-   "rank_score": 1.2625377393861879
+   "rank_score": 1.3673848610786348
   },
   {
    "text": "Say it with chocolate",
    "score": 0.16063195987515777,
-   "brief_relevance": 0.5893661587040282,
+   "brief_relevance": 0.5893661587040285,
    "sense": 0.7582089779669599,
    "near_famous": {
     "text": "Say It with Flowers",
@@ -2080,7 +2499,7 @@
    },
    "prob": 0.6817538841732262,
    "pass": true,
-   "rank_score": 1.0970048143880815
+   "rank_score": 1.207676794048211
   },
   {
    "text": "Finger licking good food here",
@@ -2096,7 +2515,7 @@
    },
    "prob": 0.7567745151407802,
    "pass": true,
-   "rank_score": 1.0938622659497557
+   "rank_score": 1.202078751524374
   },
   {
    "text": "Live más",
@@ -2112,7 +2531,7 @@
    },
    "prob": 0.22338973493665046,
    "pass": false,
-   "rank_score": 0.5760619122151363
+   "rank_score": 0.7151467399218514
   },
   {
    "text": "Melts in your hand, not in your mouth",
@@ -2128,7 +2547,16 @@
    },
    "prob": 0.9117477888614925,
    "pass": true,
-   "rank_score": 0.05021349168771394
+   "rank_score": 0.049702515974389794
+  },
+  {
+   "text": "Café au lait",
+   "score": -0.004413296763268763,
+   "brief_relevance": 0.582302407630883,
+   "sense": 0.6013983935483741,
+   "prob": 0.1387691476138994,
+   "pass": false,
+   "rank_score": -0.26907433638696465
   },
   {
    "text": "Save time. Live better.",
@@ -2144,7 +2572,28 @@
    },
    "prob": 0.15496518463142667,
    "pass": false,
-   "rank_score": -0.4978778549867385
+   "rank_score": -0.4056039447178686
+  },
+  {
+   "text": "<strong>Fresh every day</strong>",
+   "score": -0.07246697344977038,
+   "brief_relevance": 0.5950293611012873,
+   "sense": 0.7208568915763024,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.057411226194527216,
+   "pass": false,
+   "rank_score": -0.4361941892225726
+  },
+  {
+   "text": "Fresh every day",
+   "score": -0.07246697344977038,
+   "brief_relevance": 0.5950293611012873,
+   "sense": 0.7208568915763024,
+   "prob": 0.057411226194527216,
+   "pass": false,
+   "rank_score": -0.4361941892225726
   },
   {
    "text": "Do the math.",
@@ -2160,7 +2609,7 @@
    },
    "prob": 0.2772053298546743,
    "pass": false,
-   "rank_score": -0.5444847682487876
+   "rank_score": -0.48806939687359563
   },
   {
    "text": "Where is the beef",
@@ -2176,7 +2625,7 @@
    },
    "prob": 0.6759933759532248,
    "pass": true,
-   "rank_score": -0.5445346947050647
+   "rank_score": -0.537939699244196
   },
   {
    "text": "Sleep like you mean it.",
@@ -2185,7 +2634,7 @@
    "sense": 0.9421398840927503,
    "prob": 0.716969666945247,
    "pass": true,
-   "rank_score": -0.6209718449776679
+   "rank_score": -0.621320764831384
   },
   {
    "text": "America's #1 pizza",
@@ -2194,7 +2643,7 @@
    "sense": 0.9613245745901176,
    "prob": 0.3711168044985645,
    "pass": true,
-   "rank_score": -1.1431950444650827
+   "rank_score": -1.1282084644913497
   },
   {
    "text": "v2: Small steps, big leaps",
@@ -2206,7 +2655,7 @@
    ],
    "prob": 0.19566452409794785,
    "pass": false,
-   "rank_score": -1.537203174351468
+   "rank_score": -1.5252219539753182
   },
   {
    "text": "Quality products at affordable prices for everyone.",
@@ -2215,7 +2664,7 @@
    "sense": 0.9020372658091192,
    "prob": 0.002093556052362343,
    "pass": false,
-   "rank_score": -4.0197346852570774
+   "rank_score": -4.010575922156791
   },
   {
    "text": "Breakfast of champions",
@@ -2235,7 +2684,7 @@
     "near_famous:copy",
     "sense_gate"
    ],
-   "rank_score": 3.0081942311070047
+   "rank_score": 3.3061134783173873
   },
   {
    "text": "Got milk",
@@ -2254,7 +2703,7 @@
    "blocked_by": [
     "near_famous:copy"
    ],
-   "rank_score": 2.691866536008122
+   "rank_score": 2.8948909065247834
   },
   {
    "text": "Snap! Crackle! Pop!",
@@ -2274,7 +2723,23 @@
     "near_famous:copy",
     "sense_gate"
    ],
-   "rank_score": 1.5312406347794394
+   "rank_score": 1.6617673995044706
+  },
+  {
+   "text": "Insert café here",
+   "score": 0.061911971744883436,
+   "brief_relevance": 0.616295473312877,
+   "sense": 0.4668776218569573,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.2932432970376808,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ],
+   "rank_score": 1.2044390930806728
   },
   {
    "text": "<BRAND> makes it easy",
@@ -2290,7 +2755,7 @@
    "blocked_by": [
     "placeholder"
    ],
-   "rank_score": 0.9239227693357235
+   "rank_score": 1.087741365595929
   },
   {
    "text": "Say it with flowers",
@@ -2310,7 +2775,7 @@
     "near_famous:copy",
     "sense_gate"
    ],
-   "rank_score": 0.5905799926130932
+   "rank_score": 0.6859031093313204
   },
   {
    "text": "<h1>Think Small.</h1>",
@@ -2332,7 +2797,23 @@
    "blocked_by": [
     "near_famous:copy"
    ],
-   "rank_score": 0.3737853240544059
+   "rank_score": 0.4798158810534604
+  },
+  {
+   "text": "Here are five crème brûlée taglines:",
+   "score": -0.0021037836941313823,
+   "brief_relevance": 0.5944309836924123,
+   "sense": 0.1730733235344677,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.11796437144947887,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "sense_gate"
+   ],
+   "rank_score": 0.0914116347832521
   },
   {
    "text": "Melts in your mouth, not in your hands",
@@ -2352,7 +2833,7 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": 0.08069949450549196
+   "rank_score": 0.05660678487612336
   },
   {
    "text": "Where's the beef?",
@@ -2371,7 +2852,7 @@
    "blocked_by": [
     "near_famous:copy"
    ],
-   "rank_score": 0.0005579050643031991
+   "rank_score": 0.027762631304445562
   },
   {
    "text": "Taste the rainbow",
@@ -2390,7 +2871,39 @@
    "blocked_by": [
     "near_famous:copy"
    ],
-   "rank_score": -0.16823239139500812
+   "rank_score": -0.11965755711137377
+  },
+  {
+   "text": "Here's a tagline: Fresh every day.",
+   "score": -0.05603754115126901,
+   "brief_relevance": 0.5971212818387572,
+   "sense": 0.44528510693656265,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.06416808917992702,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "sense_gate"
+   ],
+   "rank_score": -0.2499606490295152
+  },
+  {
+   "text": "Enter text here",
+   "score": 0.03798964263668829,
+   "brief_relevance": 0.5698310627306087,
+   "sense": 0.022389695021399293,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.16095135170281508,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ],
+   "rank_score": -0.293233448634261
   },
   {
    "text": "Finger lickin' good",
@@ -2407,42 +2920,9 @@
    "prob": 0.8552186145798819,
    "pass": false,
    "blocked_by": [
-    "near_famous:copy",
-    "off_brief"
+    "near_famous:copy"
    ],
-   "rank_score": -0.315246745112404
-  },
-  {
-   "text": "Enter text here",
-   "score": 0.03798964263668829,
-   "brief_relevance": 0.5698310627306087,
-   "sense": 0.022389695021399293,
-   "flags": [
-    "placeholder"
-   ],
-   "prob": 0.16095135170281508,
-   "pass": false,
-   "blocked_by": [
-    "placeholder",
-    "sense_gate"
-   ],
-   "rank_score": -0.3696084329921819
-  },
-  {
-   "text": "Here's a tagline: Fresh every day.",
-   "score": -0.05603754115126901,
-   "brief_relevance": 0.5971212818387572,
-   "sense": 0.44528510693656265,
-   "flags": [
-    "llm_chatter"
-   ],
-   "prob": 0.06416808917992702,
-   "pass": false,
-   "blocked_by": [
-    "llm_chatter",
-    "sense_gate"
-   ],
-   "rank_score": -0.3728567946227672
+   "rank_score": -0.3210990873690964
   },
   {
    "text": "Here you go: Taste the rainbow",
@@ -2464,7 +2944,7 @@
    "blocked_by": [
     "llm_chatter"
    ],
-   "rank_score": -0.4623565961627704
+   "rank_score": -0.43423101130008795
   },
   {
    "text": "lorem ipsum dolor sit amet",
@@ -2480,22 +2960,7 @@
     "placeholder",
     "sense_gate"
    ],
-   "rank_score": -0.580054889234071
-  },
-  {
-   "text": "> 2) **Headline:** \"Eat the frog first.\"",
-   "score": 0.12699928844272262,
-   "brief_relevance": 0.5353762632915411,
-   "sense": 0.4970712040902498,
-   "flags": [
-    "wrapped"
-   ],
-   "prob": 0.5304390404140271,
-   "pass": false,
-   "blocked_by": [
-    "sense_gate"
-   ],
-   "rank_score": -0.5952078967664496
+   "rank_score": -0.4640793723915553
   },
   {
    "text": "Your slogan here",
@@ -2510,7 +2975,7 @@
    "blocked_by": [
     "placeholder"
    ],
-   "rank_score": -0.5998494296490464
+   "rank_score": -0.5449926290519108
   },
   {
    "text": "Open happiness",
@@ -2529,7 +2994,7 @@
    "blocked_by": [
     "near_famous:copy"
    ],
-   "rank_score": -0.6383265729623071
+   "rank_score": -0.5587793812500575
   },
   {
    "text": "open   happiness   ",
@@ -2548,7 +3013,7 @@
    "blocked_by": [
     "near_famous:copy"
    ],
-   "rank_score": -0.6383265729623071
+   "rank_score": -0.5587793812500575
   },
   {
    "text": "{{tagline}}",
@@ -2566,7 +3031,22 @@
     "single_word",
     "sense_gate"
    ],
-   "rank_score": -0.6624394831755902
+   "rank_score": -0.5657428379971314
+  },
+  {
+   "text": "> 2) **Headline:** \"Eat the frog first.\"",
+   "score": 0.12699928844272262,
+   "brief_relevance": 0.5353762632915411,
+   "sense": 0.4970712040902498,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.5304390404140271,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -0.577723133019908
   },
   {
    "text": "Café crème, chaque matin",
@@ -2578,7 +3058,7 @@
    "blocked_by": [
     "sense_gate"
    ],
-   "rank_score": -0.7292473917141836
+   "rank_score": -0.6405121672424902
   },
   {
    "text": "We’re lovin’ it",
@@ -2597,7 +3077,7 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -0.8150613047462465
+   "rank_score": -0.8442018227005837
   },
   {
    "text": "Think",
@@ -2620,7 +3100,22 @@
     "single_word",
     "near_famous:copy"
    ],
-   "rank_score": -0.9484161510659869
+   "rank_score": -0.936154168395849
+  },
+  {
+   "text": "Tagline (short): Do more with less",
+   "score": -0.006159865890730992,
+   "brief_relevance": 0.558577826863755,
+   "sense": 0.35699602266279734,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.12302446535465682,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -0.9527733015262152
   },
   {
    "text": "Red Bull gives you wings",
@@ -2640,22 +3135,19 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -0.9531912293494466
+   "rank_score": -0.9729194289320138
   },
   {
-   "text": "Tagline (short): Do more with less",
-   "score": -0.006159865890730992,
-   "brief_relevance": 0.558577826863755,
-   "sense": 0.35699602266279734,
-   "flags": [
-    "wrapped"
-   ],
-   "prob": 0.12302446535465682,
+   "text": "Add to Cart",
+   "score": -0.15443636570570418,
+   "brief_relevance": 0.5947349988541235,
+   "sense": 0.009032762245601983,
+   "prob": 0.009235101475839573,
    "pass": false,
    "blocked_by": [
     "sense_gate"
    ],
-   "rank_score": -1.0095303516491552
+   "rank_score": -1.0788337200078946
   },
   {
    "text": "N/A",
@@ -2673,19 +3165,7 @@
     "single_word",
     "sense_gate"
    ],
-   "rank_score": -1.129180940430996
-  },
-  {
-   "text": "Add to Cart",
-   "score": -0.15443636570570418,
-   "brief_relevance": 0.5947349988541235,
-   "sense": 0.009032762245601983,
-   "prob": 0.009235101475839573,
-   "pass": false,
-   "blocked_by": [
-    "sense_gate"
-   ],
-   "rank_score": -1.197103025564647
+   "rank_score": -1.1066240575383328
   },
   {
    "text": "\"Just. Do. It.\"",
@@ -2708,7 +3188,7 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -1.3882583070558414
+   "rank_score": -1.4218330496813647
   },
   {
    "text": "Insert your tagline here.",
@@ -2720,7 +3200,19 @@
    "blocked_by": [
     "sense_gate"
    ],
-   "rank_score": -1.5215597474883156
+   "rank_score": -1.4908308378917194
+  },
+  {
+   "text": "TODO: writeé",
+   "score": -0.08318317069808456,
+   "brief_relevance": 0.5593590750295762,
+   "sense": 0.006756653621475737,
+   "prob": 0.025916315105445325,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -1.526752940846611
   },
   {
    "text": "- Option 3: Less talk. More walk.",
@@ -2735,7 +3227,47 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -1.5830217662127761
+   "rank_score": -1.6002766416828702
+  },
+  {
+   "text": "Think different",
+   "score": 0.07767780016731538,
+   "brief_relevance": 0.5113835743230815,
+   "sense": 0.8588034384275913,
+   "near_famous": {
+    "text": "Think Different.",
+    "brand": "Apple",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.39575840087077124,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.637156639184764
+  },
+  {
+   "text": "Think Different.",
+   "score": 0.07767780016731538,
+   "brief_relevance": 0.5113835743230815,
+   "sense": 0.8588034384275913,
+   "near_famous": {
+    "text": "Think Different.",
+    "brand": "Apple",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.39575840087077124,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.637156639184764
   },
   {
    "text": "This is a deliberately long line that goes on and on and on and on and on and on and on and on and on and on and on.",
@@ -2751,7 +3283,20 @@
     "too_long",
     "off_brief"
    ],
-   "rank_score": -1.662899790951021
+   "rank_score": -1.691764053976041
+  },
+  {
+   "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx y",
+   "score": 0.0593669968791478,
+   "brief_relevance": 0.5110711702755493,
+   "sense": 0.16109280148501745,
+   "prob": 0.2519262069625864,
+   "pass": false,
+   "blocked_by": [
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -1.7876806433730306
   },
   {
    "text": "TODO",
@@ -2769,7 +3314,7 @@
     "single_word",
     "sense_gate"
    ],
-   "rank_score": -1.8796162285302793
+   "rank_score": -1.8503730933285676
   },
   {
    "text": "Just Do It.",
@@ -2789,7 +3334,7 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -1.883574473031333
+   "rank_score": -1.957526878547299
   },
   {
    "text": "just do it",
@@ -2809,7 +3354,7 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -1.883574473031333
+   "rank_score": -1.957526878547299
   },
   {
    "text": "1. Tagline: \"Just Do It.\"",
@@ -2832,7 +3377,135 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -1.883574473031333
+   "rank_score": -1.957526878547299
+  },
+  {
+   "text": "Option ２: Just do it.",
+   "score": 0.14261796922252057,
+   "brief_relevance": 0.48225233078419216,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.60604605775956,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.957526878547299
+  },
+  {
+   "text": "１) Just Do It.",
+   "score": 0.14261796922252057,
+   "brief_relevance": 0.48225233078419216,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.60604605775956,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.957526878547299
+  },
+  {
+   "text": "v２: Just do it",
+   "score": 0.14261796922252057,
+   "brief_relevance": 0.48225233078419216,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.60604605775956,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.957526878547299
+  },
+  {
+   "text": "<em>Just do it</em>",
+   "score": 0.14261796922252057,
+   "brief_relevance": 0.48225233078419216,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.60604605775956,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.957526878547299
+  },
+  {
+   "text": "Just Do It.",
+   "score": 0.14261796922252057,
+   "brief_relevance": 0.48225233078419216,
+   "sense": 0.6521023011145288,
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.60604605775956,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.957526878547299
+  },
+  {
+   "text": "Insert tagline here",
+   "score": -0.04396735745243784,
+   "brief_relevance": 0.5327882452409499,
+   "sense": 0.012726348478539989,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.04928029365616522,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ],
+   "rank_score": -1.9738646313363877
   },
   {
    "text": "I’m lovin’ it",
@@ -2852,23 +3525,7 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -1.9111001015034303
-  },
-  {
-   "text": "Insert tagline here",
-   "score": -0.04396735745243784,
-   "brief_relevance": 0.5327882452409499,
-   "sense": 0.012726348478539989,
-   "flags": [
-    "placeholder"
-   ],
-   "prob": 0.04928029365616522,
-   "pass": false,
-   "blocked_by": [
-    "placeholder",
-    "sense_gate"
-   ],
-   "rank_score": -1.9859945620717876
+   "rank_score": -2.0225468100742994
   },
   {
    "text": "Certainly, here you go:",
@@ -2884,7 +3541,27 @@
     "llm_chatter",
     "off_brief"
    ],
-   "rank_score": -2.0121417834580737
+   "rank_score": -2.059831627837356
+  },
+  {
+   "text": "The ultimate driving machine",
+   "score": 0.05520709962013374,
+   "brief_relevance": 0.49875591748354886,
+   "sense": 0.9881786879205378,
+   "near_famous": {
+    "text": "The Ultimate Driving Machine",
+    "brand": "BMW",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.3844720564020786,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -2.167759236877534
   },
   {
    "text": "When it absolutely, positively has to be there overnight, you know who to call, and it is us.",
@@ -2907,27 +3584,7 @@
     "too_long",
     "off_brief"
    ],
-   "rank_score": -2.089562924273524
-  },
-  {
-   "text": "The ultimate driving machine",
-   "score": 0.05520709962013374,
-   "brief_relevance": 0.49875591748354886,
-   "sense": 0.9881786879205378,
-   "near_famous": {
-    "text": "The Ultimate Driving Machine",
-    "brand": "BMW",
-    "edits": 0,
-    "trigram": 1.0,
-    "severity": "copy"
-   },
-   "prob": 0.3844720564020786,
-   "pass": false,
-   "blocked_by": [
-    "near_famous:copy",
-    "off_brief"
-   ],
-   "rank_score": -2.1217800500183133
+   "rank_score": -2.1749050790204407
   },
   {
    "text": "Copy-paste less.",
@@ -2940,7 +3597,7 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -2.3016138605704684
+   "rank_score": -2.3095241957527484
   },
   {
    "text": "Got Mold?",
@@ -2960,7 +3617,7 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -2.318496468104075
+   "rank_score": -2.390890661611663
   },
   {
    "text": "Like a pro.",
@@ -2979,7 +3636,24 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -2.3612376337811116
+   "rank_score": -2.4295863081959297
+  },
+  {
+   "text": "東京で一番おいしいコーヒー",
+   "score": -0.0799120950211401,
+   "brief_relevance": 0.5242246479022818,
+   "sense": 0.06038996392018255,
+   "flags": [
+    "single_word",
+    "non_latin"
+   ],
+   "prob": 0.03471346798030109,
+   "pass": false,
+   "blocked_by": [
+    "single_word",
+    "sense_gate"
+   ],
+   "rank_score": -2.493933286163093
   },
   {
    "text": "Option B - Bold moves only",
@@ -2995,64 +3669,7 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -2.42581586540871
-  },
-  {
-   "text": "東京で一番おいしいコーヒー",
-   "score": -0.0799120950211401,
-   "brief_relevance": 0.5242246479022818,
-   "sense": 0.06038996392018255,
-   "flags": [
-    "single_word",
-    "non_latin"
-   ],
-   "prob": 0.03471346798030109,
-   "pass": false,
-   "blocked_by": [
-    "single_word",
-    "off_brief",
-    "sense_gate"
-   ],
-   "rank_score": -2.4911218628069207
-  },
-  {
-   "text": "Because you're worth it.",
-   "score": 0.0789267835187898,
-   "brief_relevance": 0.47647744720904217,
-   "sense": 0.9993969962232568,
-   "near_famous": {
-    "text": "Because You're Worth It",
-    "brand": "L'Oréal",
-    "edits": 0,
-    "trigram": 1.0,
-    "severity": "copy"
-   },
-   "prob": 0.5558149132458311,
-   "pass": false,
-   "blocked_by": [
-    "near_famous:copy",
-    "off_brief"
-   ],
-   "rank_score": -2.529300940636489
-  },
-  {
-   "text": "Nothing is impossible",
-   "score": 0.1597365818576407,
-   "brief_relevance": 0.4523266646549847,
-   "sense": 0.9969084259790026,
-   "near_famous": {
-    "text": "Impossible Is Nothing",
-    "brand": "Adidas",
-    "edits": 2,
-    "trigram": 0.6521739130434783,
-    "severity": "parody"
-   },
-   "prob": 0.780305975198719,
-   "pass": false,
-   "blocked_by": [
-    "off_brief"
-   ],
-   "rank_score": -2.544990863564551
+   "rank_score": -2.4945998360901833
   },
   {
    "text": "Save money. Live better.",
@@ -3072,19 +3689,61 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -2.5695621814949403
+   "rank_score": -2.590251523300547
   },
   {
-   "text": "The quick brown fox jumps over the lazy dog",
-   "score": 0.13709912974685465,
-   "brief_relevance": 0.4528631103325008,
-   "sense": 0.6367448896728196,
-   "prob": 0.5840529586929213,
+   "text": "Because you're worth it.",
+   "score": 0.0789267835187898,
+   "brief_relevance": 0.47647744720904217,
+   "sense": 0.9993969962232568,
+   "near_famous": {
+    "text": "Because You're Worth It",
+    "brand": "L'Oréal",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.5558149132458311,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -2.613535921721747
+  },
+  {
+   "text": "Nothing is impossible",
+   "score": 0.1597365818576407,
+   "brief_relevance": 0.4523266646549847,
+   "sense": 0.9969084259790026,
+   "near_famous": {
+    "text": "Impossible Is Nothing",
+    "brand": "Adidas",
+    "edits": 2,
+    "trigram": 0.6521739130434783,
+    "severity": "parody"
+   },
+   "prob": 0.780305975198719,
    "pass": false,
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -2.705823629768567
+   "rank_score": -2.6704078488157044
+  },
+  {
+   "text": "𝐉𝐮𝐬𝐭 𝐝𝐨 𝐢𝐭",
+   "score": -0.10716166997147605,
+   "brief_relevance": 0.523966112674279,
+   "sense": 0.0842368128129095,
+   "flags": [
+    "non_latin"
+   ],
+   "prob": 0.024155922836663107,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -2.712108711055728
   },
   {
    "text": "Lower prices every day",
@@ -3096,7 +3755,19 @@
    "blocked_by": [
     "sense_gate"
    ],
-   "rank_score": -2.778548108903926
+   "rank_score": -2.7560728235466994
+  },
+  {
+   "text": "The quick brown fox jumps over the lazy dog",
+   "score": 0.13709912974685456,
+   "brief_relevance": 0.4528631103325009,
+   "sense": 0.6367448896728195,
+   "prob": 0.5840529586929213,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -2.8304351376658454
   },
   {
    "text": "Impossible is nothing",
@@ -3116,7 +3787,7 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -2.9205426853050875
+   "rank_score": -3.074370049350385
   },
   {
    "text": "Kills Kids Dead",
@@ -3135,7 +3806,7 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -2.928055107453769
+   "rank_score": -3.0818841120360116
   },
   {
    "text": "Okay. I think this one works best.",
@@ -3147,7 +3818,7 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -3.04119786724003
+   "rank_score": -3.170923620237823
   },
   {
    "text": "Sorry, but I can't write that.",
@@ -3164,23 +3835,7 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -3.078282296019355
-  },
-  {
-   "text": "Okay. I think these work:",
-   "score": 0.04132387831053683,
-   "brief_relevance": 0.45857644139703374,
-   "sense": 0.9548094703085831,
-   "flags": [
-    "llm_chatter"
-   ],
-   "prob": 0.3024870165827883,
-   "pass": false,
-   "blocked_by": [
-    "llm_chatter",
-    "off_brief"
-   ],
-   "rank_score": -3.2949328574429737
+   "rank_score": -3.2346862893050026
   },
   {
    "text": "Sure! Here are five taglines for your brand:",
@@ -3197,7 +3852,23 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -3.2986760597315117
+   "rank_score": -3.3331730889410744
+  },
+  {
+   "text": "Okay. I think these work:",
+   "score": 0.04132387831053683,
+   "brief_relevance": 0.45857644139703374,
+   "sense": 0.9548094703085831,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.3024870165827883,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "off_brief"
+   ],
+   "rank_score": -3.4102038711445264
   },
   {
    "text": "I'm afraid I can't help.",
@@ -3209,7 +3880,7 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -3.346366783904415
+   "rank_score": -3.5076512474854207
   },
   {
    "text": "As an AI language model, I cannot write slogans.",
@@ -3226,7 +3897,26 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -3.4295140317955046
+   "rank_score": -3.5423799155416242
+  },
+  {
+   "text": "undefined",
+   "score": -0.08626816115639772,
+   "brief_relevance": 0.48241053959037244,
+   "sense": 0.003127305460174619,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.022749667892632188,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -3.724304508576232
   },
   {
    "text": "Diamonds are forever",
@@ -3238,7 +3928,7 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -3.5934514292627022
+   "rank_score": -3.7445071536063894
   },
   {
    "text": "Es ist Zeit für Veränderung",
@@ -3251,7 +3941,20 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -3.6466178981233335
+   "rank_score": -3.7498137627476034
+  },
+  {
+   "text": "İstanbul seni bekliyor",
+   "score": -0.03235335873678559,
+   "brief_relevance": 0.4654201637724761,
+   "sense": 0.24132243888616814,
+   "prob": 0.0813504934355661,
+   "pass": false,
+   "blocked_by": [
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -3.787034190852053
   },
   {
    "text": "A diamond is forever",
@@ -3271,26 +3974,7 @@
     "near_famous:copy",
     "off_brief"
    ],
-   "rank_score": -3.6473360529112995
-  },
-  {
-   "text": "undefined",
-   "score": -0.08626816115639772,
-   "brief_relevance": 0.48241053959037244,
-   "sense": 0.003127305460174619,
-   "flags": [
-    "single_word",
-    "placeholder"
-   ],
-   "prob": 0.022749667892632188,
-   "pass": false,
-   "blocked_by": [
-    "placeholder",
-    "single_word",
-    "off_brief",
-    "sense_gate"
-   ],
-   "rank_score": -3.6494246648490147
+   "rank_score": -3.8187572318991765
   },
   {
    "text": "The ultimate cleaning machine",
@@ -3309,19 +3993,7 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -4.089973358443947
-  },
-  {
-   "text": "Because you're worth more than that, really.",
-   "score": 0.09050532655853359,
-   "brief_relevance": 0.41211166184377807,
-   "sense": 0.999607949590018,
-   "prob": 0.6102179450878905,
-   "pass": false,
-   "blocked_by": [
-    "off_brief"
-   ],
-   "rank_score": -4.147109401091199
+   "rank_score": -4.196959603878753
   },
   {
    "text": "Premium Quality",
@@ -3333,7 +4005,19 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -4.209383925061797
+   "rank_score": -4.266891309850669
+  },
+  {
+   "text": "Because you're worth more than that, really.",
+   "score": 0.09050532655853359,
+   "brief_relevance": 0.41211166184377807,
+   "sense": 0.999607949590018,
+   "prob": 0.6102179450878905,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -4.342169592396806
   },
   {
    "text": "null",
@@ -3352,7 +4036,7 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -4.500249755805236
+   "rank_score": -4.6417439170670205
   },
   {
    "text": "Athletic shoes designed for serious runners.",
@@ -3364,7 +4048,26 @@
    "blocked_by": [
     "off_brief"
    ],
-   "rank_score": -5.116509813087666
+   "rank_score": -5.246223572081055
+  },
+  {
+   "text": "error: ５００",
+   "score": -0.07943545077530789,
+   "brief_relevance": 0.40511789689222727,
+   "sense": 0.002917099255831578,
+   "flags": [
+    "single_word",
+    "llm_chatter"
+   ],
+   "prob": 0.024982203973930202,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "single_word",
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -5.854827954290572
   },
   {
    "text": "Error: 429 rate limit exceeded",
@@ -3377,7 +4080,7 @@
     "off_brief",
     "sense_gate"
    ],
-   "rank_score": -6.2783248894309995
+   "rank_score": -6.454916377734699
   },
   {
    "text": "!!!",
@@ -3396,6 +4099,21 @@
   },
   {
    "text": "12345",
+   "score": null,
+   "skipped": "no letters",
+   "brief_relevance": null,
+   "sense": null,
+   "flags": [
+    "no_letters"
+   ],
+   "prob": null,
+   "pass": false,
+   "blocked_by": [
+    "no_letters"
+   ]
+  },
+  {
+   "text": "🔥🔥",
    "score": null,
    "skipped": "no letters",
    "brief_relevance": null,
