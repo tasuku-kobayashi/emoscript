@@ -114,15 +114,17 @@ with the default model (details and the full evaluation in
 [`docs/results.md`](docs/results.md)):
 
 ```
-+0.0892  p=0.91  PASS  rel=0.85  Sleep like you mean it.
-+0.0202  p=0.45  fail  rel=0.82  Got Mold?
++0.0783  p=0.92  PASS  rel=0.85  Sleep like you mean it.
++0.0024  p=0.40  fail  rel=0.82  Got Mold?
           ! possibly riffs on: "Got Milk?" (California Milk Processor Board)
--0.0790  p=0.02  fail  rel=0.84  Comfort, redefined for modern living.
-+0.0882  p=0.91  fail  rel=0.80  Just Chew It.
-          ! parodies famous line: "Just Do It." (Nike); not passing: near_famous:parody
-+0.0192  p=0.44  fail  rel=0.79  Sure, here is a tagline:
++0.0765  p=0.92  PASS  rel=0.80  Just Chew It.
+          ! parodies famous line: "Just Do It." (Nike)
+-0.0904  p=0.02  fail  rel=0.84  Comfort, redefined for modern living.
++0.0339  p=0.69  fail  rel=0.79  1. "Just. Do. It."
+          ! copies famous line: "Just Do It." (Nike); flags: wrapped; not passing: near_famous:copy
++0.0120  p=0.49  fail  rel=0.79  Sure, here is a tagline:
           ! flags: llm_chatter; not passing: llm_chatter
--0.0332  p=0.10  fail  rel=0.79  Lorem Ipsum
+-0.0500  p=0.08  fail  rel=0.79  Lorem Ipsum
           ! flags: placeholder; not passing: placeholder
    n/a   skipped (no letters)  ?!
           ! flags: no_letters; not passing: no_letters
@@ -209,9 +211,9 @@ produced by the `evaluate` job in `.github/workflows/ci.yml` on every pull
 request and attached to each GitHub Release.
 
 The short version (canonical text, the shipped default; 95% intervals in
-`docs/results.md`): held-out famous taglines vs bland ad-speak **AUC 0.94**,
-vs plain prose 0.99, vs same-topic product descriptions 0.93 with a paired
-win rate of 0.97, vs junk 0.76, and vs famous non-advertising quotes 0.53.
+`docs/results.md`): held-out famous taglines vs bland ad-speak **AUC 0.95**,
+vs plain prose 0.99, vs same-topic product descriptions 0.92 with a paired
+win rate of 0.94, vs junk 0.78, and vs famous non-advertising quotes 0.54.
 With raw text the same axis reaches 0.99 against the rewrites, and so does a
 six-feature typography model, which is why raw text is not the default. The
 axis measures memorable writing, not advertising; the brief relevance and the
