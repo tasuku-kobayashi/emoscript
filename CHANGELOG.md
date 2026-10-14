@@ -8,10 +8,11 @@ Renamed from `copyaxis` to `emoscript` (import path, CLI, docs).
 - Positives 50 → 278 (211 train / 67 test) across 235 brands, 1872–2016,
   with brand and year, a `kind` tag for headlines / jingles / mottos / posters,
   and attribution fixes from review.
-- Hard negatives 30 → 333 (278 train / 55 test) in six families: bland
+- Hard negatives 30 → 353 (298 train / 55 test) in seven families: bland
   ad-speak, short / Title Case / no full stop, questions-numbers-B2B, UI
-  boilerplate, topic-descriptive product descriptions on the training brands.
-  Generic prose negatives 15 → 45. All original writing.
+  boilerplate, topic-descriptive product descriptions on the training brands,
+  whimsical non-sequiturs. Generic prose negatives 15 → 45. All original
+  writing.
 - New evaluation-only controls: `contrast_pairs_test.jsonl` (an original
   same-topic bland rewrite of every held-out tagline, naming the brand when
   the famous line does), `quotes_test.jsonl` (30 famous non-advertising
