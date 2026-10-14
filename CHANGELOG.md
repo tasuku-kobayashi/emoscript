@@ -2,6 +2,18 @@
 
 ## 0.2.0
 
+### Evaluation set and controls (second review round)
+- Held-out taglines 67 → 173 (brand-disjoint; 53 lines from sister brands of
+  training brands are flagged `sister_brand` and reported separately), with
+  brandless contrast rewrites for every one; hard / generic test negatives
+  55 / 15 → 85 / 22; junk 45 → 80; quotes 30 → 50.
+- `good_copy_test.jsonl`: 88 original, usable, unknown lines across registers,
+  reported as PASS rate overall and by length. It shows that the axis scores
+  tagline-shaped writing: 43% of tagline-length lines pass, 12% of longer
+  benefit-led lines.
+- Sense axis (famous minus nonsense + UI families) feeding a two-feature
+  calibrator; junk PASS 0.42 → 0.29 at no cost to famous lines.
+
 Renamed from `copyaxis` to `emoscript` (import path, CLI, docs).
 
 ### Corpus
