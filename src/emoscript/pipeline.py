@@ -131,9 +131,10 @@ class AxisModel:
 
         Flags verbatim copies and one- or two-word parodies ("Just Chew It.",
         "Kills Kids Dead") that the embedding scores like the originals. A
-        match is a famous line with token edit distance <= ``max_edits`` and at
-        most half of its tokens changed (so one-word lines only match exactly),
-        or character-trigram Jaccard >= ``trigram``.
+        match is a famous line with token edit distance <= ``max_edits``, capped
+        at ``(tokens - 1) // 2`` (one- and two-word lines only match exactly,
+        three- and four-word lines allow one swapped word), or character-trigram
+        Jaccard >= ``trigram``.
         Returns, per input, ``{"text", "brand", "edits", "trigram"}`` or None.
         """
         if not self.famous_texts:
@@ -155,8 +156,10 @@ class AxisModel:
                 else:
                     edits = _token_edit_distance(ct, ft)
                     jac = len(ctri & ftri) / len(ctri | ftri) if (ctri or ftri) else 0.0
-                # short famous lines must match (almost) exactly: "Think" may not flag "Think fresh."
-                hit = (edits <= max_edits and edits <= len(ft) // 2) or jac >= trigram
+                # allowed edits grow with the famous line: 1-2 tokens exact only, 3-4 one
+                # word, 5+ two words. "Eat Fresh" must not flag every "<verb> fresh".
+                allowed = min(max_edits, (len(ft) - 1) // 2)
+                hit = edits <= allowed or jac >= trigram
                 if hit and (best is None or (edits, -jac) < (best["edits"], -best["trigram"])):
                     best = {
                         "text": self.famous_texts[i],
