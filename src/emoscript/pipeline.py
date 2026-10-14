@@ -34,7 +34,7 @@ from .axis import (
 )
 from .dataio import DATA_DIR, load_corpus, texts
 from .embed import DEFAULT_MODEL, EmbedFn, prefix_for
-from .text import canonicalize, has_letters, normalizer
+from .text import canonicalize, has_letters, input_flags, normalizer
 
 NegativeKinds = tuple[str, ...]
 
@@ -544,6 +544,20 @@ def evaluate(
     if model.calibrator is not None:
         P = {g: model.predict_proba(s) for g, s in S.items()}
         out["pass_rate"] = {g: float((p >= threshold).mean()) for g, p in P.items()}
+        # what a CLI user actually sees: a line with an input flag (placeholder, single
+        # word, wrapped, ...) or a near-famous warning is not an unqualified PASS
+        guarded = {}
+        for g, t in groups.items():
+            if g not in P:
+                continue
+            flagged = np.array(
+                [
+                    bool(input_flags(x)) or nf is not None
+                    for x, nf in zip(t, model.near_famous(t), strict=True)
+                ]
+            )
+            guarded[g] = float(((P[g] >= threshold) & ~flagged).mean())
+        out["pass_rate_after_guards"] = guarded
         bland = [g for g in ("hard", "generic", "topic_bland") if g in S]
         negs = np.concatenate([S[g] for g in bland])
         p = model.predict_proba(np.concatenate([S["pos"], negs]))

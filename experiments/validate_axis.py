@@ -59,7 +59,7 @@ from emoscript.axis import (  # noqa: E402
 from emoscript.dataio import DATA_DIR, load_corpus, texts  # noqa: E402
 from emoscript.embed import DEFAULT_MODEL, make_embed_fn  # noqa: E402
 from emoscript.pipeline import fit_from_embeddings  # noqa: E402
-from emoscript.text import CASINGS, normalizer  # noqa: E402
+from emoscript.text import CASINGS, input_flags, normalizer  # noqa: E402
 
 # Probes are illustrative only (not metrics). They are new lines, not paraphrases of corpus entries.
 PROBES = [
@@ -174,6 +174,11 @@ def run(
             v["pass_rate@0.5"] = {
                 g: float((calibrator.predict_proba(sc) >= 0.5).mean()) for g, sc in s.items() if g != "probe"
             }
+            if "junk" in s:
+                flagged = np.array([bool(input_flags(t)) for t in groups["junk"]])
+                v["junk_pass_rate_after_flags"] = float(
+                    ((calibrator.predict_proba(s["junk"]) >= 0.5) & ~flagged).mean()
+                )
         variants[name] = v
         return s
 
@@ -273,7 +278,12 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
         print(line)
         if "pass_rate@0.5" in v:
             rates = "  ".join(f"{g} {r:.2f}" for g, r in v["pass_rate@0.5"].items())
-            print(f"  PASS rate at p>=0.5: {rates}")
+            extra = (
+                f"   junk after input flags {v['junk_pass_rate_after_flags']:.2f}"
+                if "junk_pass_rate_after_flags" in v
+                else ""
+            )
+            print(f"  PASS rate at p>=0.5: {rates}{extra}")
         print(
             "  by length: "
             + "   ".join(f"{b} n={d['n']} AUC {d['auc_vs_hard']:.3f}" for b, d in v["by_length"].items())

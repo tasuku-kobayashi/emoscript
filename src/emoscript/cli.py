@@ -172,6 +172,8 @@ def cmd_eval(args) -> int:
     if "pass_rate" in report:
         rates = "  ".join(f"{g} {v:.2f}" for g, v in report["pass_rate"].items())
         print(f"  PASS rate at p>=0.5:             {rates}")
+        rates = "  ".join(f"{g} {v:.2f}" for g, v in report["pass_rate_after_guards"].items())
+        print(f"  ... after input flags / famous:  {rates}")
     for name, v in report.get("auc_vs_hard_by_length", {}).items():
         print(f"  AUC vs hard, taglines {name:<10s} {v['auc']:.3f}  (n={v['n']})")
     if "calibration" in report:

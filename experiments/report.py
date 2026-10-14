@@ -44,9 +44,10 @@ def render(reports: list[dict]) -> str:
             pr = v.get("pass_rate@0.5")
             if pr:
                 bland = [pr[g] for g in ("hard_te", "gen_te", "topic_te") if g in pr]
-                pass_cell = (
-                    f"{pr['pos_te']:.2f} / {sum(bland) / len(bland):.2f} / {pr.get('junk', float('nan')):.2f}"
-                )
+                junk_cell = f"{pr.get('junk', float('nan')):.2f}"
+                if "junk_pass_rate_after_flags" in v:
+                    junk_cell += f" ({v['junk_pass_rate_after_flags']:.2f} after flags)"
+                pass_cell = f"{pr['pos_te']:.2f} / {sum(bland) / len(bland):.2f} / {junk_cell}"
             else:
                 pass_cell = "–"
             win = f"{v['topic_pair_win_rate']:.3f}"

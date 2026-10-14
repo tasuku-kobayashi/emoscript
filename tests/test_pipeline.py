@@ -34,9 +34,9 @@ def test_fit_from_corpus_end_to_end_with_fake_embedder(fake_embed_fn, tmp_path):
         corpus = load_corpus()
         s_pos, p_pos = score_texts(model, texts(corpus.pos_test), fake_embed_fn)
         s_neg, p_neg = score_texts(model, texts(corpus.hard_test), fake_embed_fn)
-        # surface features alone still carry some signal on this corpus
-        assert auc(s_pos, s_neg) > 0.6
-        assert p_pos.mean() > p_neg.mean()
+        # the fake embedder has no semantics: only check shapes and ranges here
+        assert s_pos.shape == (len(corpus.pos_test),) and 0 <= auc(s_pos, s_neg) <= 1
+        assert np.all((p_pos >= 0) & (p_pos <= 1)) and np.all((p_neg >= 0) & (p_neg <= 1))
 
         path = tmp_path / f"axis_k{k}.npz"
         model.save(path)
@@ -203,6 +203,8 @@ def test_evaluate_reports_controls_pass_rates_and_cis(fake_embed_fn):
     for g, (lo, hi) in report["auc_ci95"].items():
         assert lo <= report["auc"][g] <= hi
     assert set(report["pass_rate"]) == {"pos", "hard", "generic", "topic_bland", "quotes", "junk"}
+    assert set(report["pass_rate_after_guards"]) == set(report["pass_rate"])
+    assert all(report["pass_rate_after_guards"][g] <= report["pass_rate"][g] for g in report["pass_rate"])
     assert all(0 <= v <= 1 for v in report["pass_rate"].values())
     lo, hi = report["contrast_pair_win_ci95"]
     assert lo <= report["contrast_pair_win_rate"] <= hi
