@@ -16,7 +16,7 @@ def test_fit_score_eval_info_roundtrip(patched_backend, tmp_path, capsys):
     assert cli.main(["fit", "--k", "2", "--model", "fake", "--out", str(out), "--casing", "lower"]) == 0
     assert "axis saved" in capsys.readouterr().out
 
-    assert cli.main(["score", "Think fresh.", "Please find the attached invoice.", "--axis", str(out)]) == 0
+    assert cli.main(["score", "Sleep like you mean it.", "Please find the invoice.", "--axis", str(out)]) == 0
     lines = capsys.readouterr().out.strip().splitlines()
     assert len(lines) == 2 and all(("PASS" in ln or "fail" in ln) for ln in lines)
 
@@ -124,17 +124,40 @@ def test_score_warns_about_famous_copies_flags_prior_and_brief(patched_backend, 
     )
     assert rc == 0
     text = capsys.readouterr().out
-    assert 'near famous line: "Just Do It." (Nike)' in text
-    assert "flags: single_word, placeholder" in text
+    assert 'parodies famous line: "Just Do It." (Nike)' in text
+    assert "not passing: near_famous:parody" in text
+    assert "flags: single_word, placeholder" in text and "not passing: placeholder, single_word" in text
     assert "rel=" in text
     cli.main(["score", "Just Chew It.", "--axis", str(out), "--json", "--no-famous-check"])
     row = json.loads(capsys.readouterr().out)[0]
-    assert "near_famous" not in row and "flags" not in row
+    assert "near_famous" not in row and "flags" not in row and "blocked_by" not in row
     cli.main(["score", "1. Just Chew It.", "--axis", str(out), "--json"])
     row = json.loads(capsys.readouterr().out)[0]
     assert row["near_famous"]["text"] == "Just Do It." and row["flags"] == ["wrapped"]
+    assert row["pass"] is False and row["blocked_by"] == ["near_famous:parody"]
     with pytest.raises(SystemExit, match="prior"):
         cli.main(["score", "x", "--axis", str(out), "--prior", "0"])
+
+
+def test_brief_gate_and_blocked_rows_sort_last(patched_backend, tmp_path, capsys):
+    out = tmp_path / "axis.npz"
+    cli.main(["fit", "--model", "fake", "--out", str(out), "--k", "1"])
+    capsys.readouterr()
+    lines = ["Sleep like you mean it.", "{{tagline}}", "Sure, here is a tagline:", "The sofa that forgives."]
+    cli.main(["score", *lines, "--axis", str(out), "--brief", "a mattress brand", "--sort", "--json"])
+    rows = json.loads(capsys.readouterr().out)
+    assert [r["text"] for r in rows[-2:]] == sorted(
+        ["{{tagline}}", "Sure, here is a tagline:"], key=lambda t: [r["text"] for r in rows].index(t)
+    )
+    assert all("blocked_by" in r for r in rows[-2:]) and all("blocked_by" not in r for r in rows[:2])
+    assert all("rank_score" in r for r in rows[:2])
+    assert rows[0]["rank_score"] >= rows[1]["rank_score"]
+    assert "llm_chatter" in next(r for r in rows if r["text"].startswith("Sure"))["flags"]
+    cli.main(
+        ["score", *lines[:1], "--axis", str(out), "--brief", "a mattress brand", "--min-rel", "2.0", "--json"]
+    )
+    row = json.loads(capsys.readouterr().out)[0]
+    assert row["pass"] is False and row["blocked_by"] == ["off_brief"]
 
 
 def test_corpus_check(capsys):

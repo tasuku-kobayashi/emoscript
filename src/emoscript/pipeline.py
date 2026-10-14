@@ -24,6 +24,7 @@ from .axis import (
     auc,
     auc_bootstrap_ci,
     brier,
+    family_weights,
     fit_multi_axis,
     l2_normalize,
     log_loss,
@@ -34,7 +35,7 @@ from .axis import (
 )
 from .dataio import DATA_DIR, load_corpus, texts
 from .embed import DEFAULT_MODEL, EmbedFn, prefix_for
-from .text import canonicalize, has_letters, input_flags, normalizer
+from .text import BLOCKING_FLAGS, canonicalize, has_letters, input_flags, normalizer
 
 NegativeKinds = tuple[str, ...]
 
@@ -134,8 +135,10 @@ class AxisModel:
         match is a famous line with token edit distance <= ``max_edits``, capped
         at ``(tokens - 1) // 2`` (one- and two-word lines only match exactly,
         three- and four-word lines allow one swapped word), or character-trigram
-        Jaccard >= ``trigram``.
-        Returns, per input, ``{"text", "brand", "edits", "trigram"}`` or None.
+        Jaccard >= ``trigram``. A two-word famous line with its first word kept
+        and the second swapped ("Got Mold?") is reported with severity
+        ``"possible"``; exact matches are ``"copy"``, the rest ``"parody"``.
+        Returns, per input, ``{"text", "brand", "edits", "trigram", "severity"}`` or None.
         """
         if not self.famous_texts:
             return [None] * len(texts_)
@@ -159,14 +162,26 @@ class AxisModel:
                 # allowed edits grow with the famous line: 1-2 tokens exact only, 3-4 one
                 # word, 5+ two words. "Eat Fresh" must not flag every "<verb> fresh".
                 allowed = min(max_edits, (len(ft) - 1) // 2)
-                hit = edits <= allowed or jac >= trigram
-                if hit and (best is None or (edits, -jac) < (best["edits"], -best["trigram"])):
+                if edits == 0:
+                    severity = "copy"
+                elif edits <= allowed or jac >= trigram:
+                    severity = "parody"
+                elif len(ft) == 2 and len(ct) == 2 and edits == 1 and ct[0] == ft[0]:
+                    severity = "possible"  # "Got Mold?" rides on "Got Milk?"; lower confidence
+                else:
+                    continue
+                rank = ({"copy": 0, "parody": 1, "possible": 2}[severity], edits, -jac)
+                if best is None or rank < best["_rank"]:
                     best = {
                         "text": self.famous_texts[i],
                         "brand": self.famous_brands[i] if self.famous_brands else "",
                         "edits": int(edits),
                         "trigram": float(jac),
+                        "severity": severity,
+                        "_rank": rank,
                     }
+            if best is not None:
+                best.pop("_rank")
             out.append(best)
         return out
 
@@ -260,6 +275,22 @@ def _token_edit_distance(a: list[str], b: list[str]) -> int:
     return prev[-1]
 
 
+def negative_family(row: dict) -> str:
+    """Coarse family of a negative row from its ``note`` (see CONTRIBUTING)."""
+    note = str(row.get("note", "")).lower()
+    if note.startswith("generic-"):
+        return "ad-speak"
+    if note.startswith("short-") or note.startswith("mid-"):
+        return "short"
+    if note.startswith("ui-"):
+        return "ui"
+    if note.startswith("topic-"):
+        return "topic"
+    if note.startswith("question") or note.startswith("nonsense"):
+        return note.split("-")[0]
+    return "prose"  # transactional / factual / support / policy / instructional / short-factual
+
+
 # --------------------------------------------------------------------------- fitting
 def _folds(n: int, n_folds: int, rng: np.random.Generator) -> list[np.ndarray]:
     idx = rng.permutation(n)
@@ -273,6 +304,7 @@ def cross_fit_scores(
     *,
     n_folds: int = 5,
     seed: int = 0,
+    neg_weights: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Out-of-fold raw scores for every training positive and negative.
 
@@ -292,7 +324,8 @@ def cross_fit_scores(
         neg_mask = np.ones(len(E_neg), bool)
         neg_mask[neg_hold] = False
         k_f = min(k, int(pos_mask.sum()))
-        axes, _ = fit_multi_axis(E_pos[pos_mask], E_neg[neg_mask], k_f, seed=seed)
+        w_f = None if neg_weights is None else np.asarray(neg_weights)[neg_mask]
+        axes, _ = fit_multi_axis(E_pos[pos_mask], E_neg[neg_mask], k_f, seed=seed, neg_weights=w_f)
         oof_pos[pos_hold] = score(E_pos[pos_hold], axes)
         oof_neg[neg_hold] = score(E_neg[neg_hold], axes)
     return oof_pos, oof_neg
@@ -312,8 +345,12 @@ def fit_from_embeddings(
     meta: dict | None = None,
     pos_texts: list[str] | None = None,
     keep_exemplars: bool = True,
+    neg_weights: np.ndarray | None = None,
 ) -> AxisModel:
     """Fit axes (and a cross-fitted calibrator) from already-normalized embeddings.
+
+    ``neg_weights`` (one per negative row) weights the negative centroid; see
+    :func:`emoscript.axis.family_weights` for equal weight per negative family.
 
     When ``pos_texts`` is given the training positives are kept in the model as
     exemplars (for ``explain`` / nearest-tagline output) and each cluster is
@@ -330,11 +367,12 @@ def fit_from_embeddings(
             f"need at least max(2, k)={max(2, k)} positives and 2 negatives, "
             f"got {len(E_pos)} and {len(E_neg)}"
         )
-    axes, labels = fit_multi_axis(E_pos, E_neg, k, seed=seed)
+    axes, labels = fit_multi_axis(E_pos, E_neg, k, seed=seed, neg_weights=neg_weights)
     info: dict = {
         "k": int(k),
         "n_pos": int(len(E_pos)),
         "n_neg": int(len(E_neg)),
+        "neg_weighted": neg_weights is not None,
         "cluster_sizes": np.bincount(labels, minlength=k).tolist(),
         **(meta or {}),
     }
@@ -354,7 +392,9 @@ def fit_from_embeddings(
         info["clusters"] = clusters
     calibrator = None
     if calibrate:
-        oof_pos, oof_neg = cross_fit_scores(E_pos, E_neg, k, n_folds=n_folds, seed=seed)
+        oof_pos, oof_neg = cross_fit_scores(
+            E_pos, E_neg, k, n_folds=n_folds, seed=seed, neg_weights=neg_weights
+        )
         calibrator = Calibrator().fit(oof_pos, oof_neg)
         p = calibrator.predict_proba(np.concatenate([oof_pos, oof_neg]))
         y = np.concatenate([np.ones(len(oof_pos)), np.zeros(len(oof_neg))])
@@ -400,8 +440,13 @@ def fit_from_corpus(
     prefix: str | None = None,
     casing: str = "canonical",
     keep_exemplars: bool = True,
+    balance_negatives: bool = False,
 ) -> AxisModel:
     """Fit from the bundled (or a custom) corpus: train splits only.
+
+    ``balance_negatives`` gives every negative family (by the ``note`` prefix:
+    generic ad-speak, short, UI, topic-descriptive, prose, ...) equal total
+    weight in the negative centroid instead of one vote per line.
 
     Defaults (k=1, casing="canonical", calibrator L2=1) were chosen by
     brand-grouped nested cross-validation on the training split only
@@ -413,7 +458,9 @@ def fit_from_corpus(
     norm = normalizer(casing)
     pos_raw = texts(corpus.pos_train)
     pos = norm(pos_raw)
-    neg = norm(texts(corpus.negatives_train(negatives)))
+    neg_rows = corpus.negatives_train(negatives)
+    neg = norm(texts(neg_rows))
+    neg_weights = family_weights([negative_family(r) for r in neg_rows]) if balance_negatives else None
     if not pos or not neg:
         raise ValueError("fit_from_corpus: need at least one positive and one negative")
     E_pos = embed_fn(pos)
@@ -434,6 +481,7 @@ def fit_from_corpus(
         },
         pos_texts=pos_raw,
         keep_exemplars=keep_exemplars,
+        neg_weights=neg_weights,
     )
     famous = corpus.pos_train + corpus.pos_test
     model.famous_texts = [r["text"] for r in famous]
@@ -550,10 +598,12 @@ def evaluate(
         for g, t in groups.items():
             if g not in P:
                 continue
+            near = model.near_famous(t) if g != "pos" else [None] * len(t)  # the famous lines ARE famous
             flagged = np.array(
                 [
-                    bool(input_flags(x)) or nf is not None
-                    for x, nf in zip(t, model.near_famous(t), strict=True)
+                    bool(BLOCKING_FLAGS & set(input_flags(x)))
+                    or (nf is not None and nf["severity"] != "possible")
+                    for x, nf in zip(t, near, strict=True)
                 ]
             )
             guarded[g] = float(((P[g] >= threshold) & ~flagged).mean())

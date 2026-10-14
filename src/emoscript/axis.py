@@ -48,13 +48,35 @@ def fit_mean_axis(E_pos: np.ndarray) -> np.ndarray:
     return l2_normalize(np.asarray(E_pos).mean(axis=0))
 
 
-def fit_diff_axis(E_pos: np.ndarray, E_neg: np.ndarray) -> np.ndarray:
-    """Unit vector: positive centroid minus negative centroid.
+def weighted_mean(E: np.ndarray, weights: np.ndarray | None = None) -> np.ndarray:
+    E = np.asarray(E, dtype=np.float64)
+    if weights is None:
+        return E.mean(axis=0)
+    w = np.asarray(weights, dtype=np.float64)
+    if w.shape != (len(E),) or (w < 0).any() or w.sum() <= 0:
+        raise ValueError("weights must be a non-negative vector with one entry per row and a positive sum")
+    return (E * w[:, None]).sum(axis=0) / w.sum()
+
+
+def family_weights(families: list) -> np.ndarray:
+    """Per-row weights that give every family (e.g. negative kind) equal total weight.
+
+    The diff axis subtracts a plain mean, so whichever negative family has
+    the most lines decides the direction. Balancing families keeps a large
+    new family from drowning out the others.
+    """
+    fam = np.asarray(families)
+    counts = {f: int((fam == f).sum()) for f in np.unique(fam)}
+    return np.array([1.0 / (len(counts) * counts[f]) for f in fam]) * len(fam)
+
+
+def fit_diff_axis(E_pos: np.ndarray, E_neg: np.ndarray, neg_weights: np.ndarray | None = None) -> np.ndarray:
+    """Unit vector: positive centroid minus (optionally weighted) negative centroid.
 
     Works best when negatives include "hard negatives": fluent, ad-like but
     generic copy that a naive centroid would incorrectly score highly.
     """
-    return l2_normalize(np.asarray(E_pos).mean(axis=0) - np.asarray(E_neg).mean(axis=0))
+    return l2_normalize(np.asarray(E_pos).mean(axis=0) - weighted_mean(E_neg, neg_weights))
 
 
 def score(E: np.ndarray, axes: np.ndarray) -> np.ndarray:
@@ -151,6 +173,7 @@ def fit_multi_axis(
     *,
     seed: int = 0,
     n_init: int = 10,
+    neg_weights: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """k diff-axes, one per k-means cluster of the positives.
 
@@ -166,9 +189,9 @@ def fit_multi_axis(
     E_pos = np.asarray(E_pos, dtype=np.float64)
     E_neg = np.asarray(E_neg, dtype=np.float64)
     if k == 1:
-        return fit_diff_axis(E_pos, E_neg)[None, :], np.zeros(len(E_pos), dtype=int)
+        return fit_diff_axis(E_pos, E_neg, neg_weights)[None, :], np.zeros(len(E_pos), dtype=int)
     _, labels, _ = kmeans(E_pos, k, seed=seed, n_init=n_init)
-    neg_centroid = E_neg.mean(axis=0)
+    neg_centroid = weighted_mean(E_neg, neg_weights)
     means = np.vstack([E_pos[labels == c].mean(axis=0) for c in range(k)])
     axes = l2_normalize(means - neg_centroid[None, :])
     return axes, labels

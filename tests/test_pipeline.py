@@ -119,16 +119,21 @@ def test_near_famous_flags_copies_and_parodies_not_fresh_copy(fake_embed_fn, tmp
             '1. "Think Different."',  # wrapped verbatim
             "Sleep like you mean it.",  # fresh copy
             "Everything you need for a newborn, in one box.",  # fresh copy
-            "Think fresh.",  # shares one word with several famous lines only
+            "Think fresh.",  # keeps the first word of two-word famous lines: a possible riff
+            "Got Mold?",  # two-word swap on "Got Milk?": possible riff
+            "Chew Slow",  # two-word swap with a different first word: no hit
         ]
     )
-    assert hits[0]["text"] == "Just Do It." and hits[0]["brand"] == "Nike" and hits[0]["edits"] == 0
-    assert hits[1]["text"] == "Just Do It."
-    assert hits[2]["text"] == "Just Do It." and hits[2]["edits"] == 1
-    assert hits[3]["text"] == "Kills Bugs Dead"
-    assert hits[4]["text"] == "Flick Your Bic"
-    assert hits[5]["text"] == "Think Different."
-    assert hits[6] is None and hits[7] is None and hits[8] is None
+    assert hits[0]["text"] == "Just Do It." and hits[0]["brand"] == "Nike" and hits[0]["severity"] == "copy"
+    assert hits[1]["text"] == "Just Do It." and hits[1]["severity"] == "copy"
+    assert hits[2]["text"] == "Just Do It." and hits[2]["edits"] == 1 and hits[2]["severity"] == "parody"
+    assert hits[3]["text"] == "Kills Bugs Dead" and hits[3]["severity"] == "parody"
+    assert hits[4]["text"] == "Flick Your Bic" and hits[4]["severity"] == "copy"
+    assert hits[5]["text"] == "Think Different." and hits[5]["severity"] == "copy"
+    assert hits[6] is None and hits[7] is None
+    assert hits[8]["severity"] == "possible" and hits[8]["text"].startswith("Think ")
+    assert hits[9]["severity"] == "possible" and hits[9]["text"] == "Got Milk?"
+    assert hits[10] is None
     model.save(tmp_path / "m.npz")
     loaded = AxisModel.load(tmp_path / "m.npz")
     assert loaded.famous_texts == model.famous_texts and loaded.famous_brands == model.famous_brands
@@ -160,6 +165,29 @@ def test_brief_relevance(fake_embed_fn):
     )
     assert np.isfinite(rel[0]) and -1 <= rel[0] <= 1 and np.isnan(rel[1])
     assert np.isnan(brief_relevance(model, ["x"], "...", fake_embed_fn)).all()
+
+
+def test_negative_family_weighting(fake_embed_fn):
+    from emoscript.axis import family_weights, weighted_mean
+    from emoscript.pipeline import negative_family
+
+    w = family_weights(["a", "a", "a", "b"])
+    assert np.isclose(w.sum(), 4) and np.isclose(w[:3].sum(), w[3])
+    E = np.array([[1.0, 0.0], [1.0, 0.0], [1.0, 0.0], [0.0, 1.0]])
+    assert np.allclose(weighted_mean(E, w), [0.5, 0.5]) and np.allclose(weighted_mean(E), [0.75, 0.25])
+    with pytest.raises(ValueError):
+        weighted_mean(E, np.array([1.0, -1.0, 1.0, 1.0]))
+    assert negative_family({"note": "generic-trust"}) == "ad-speak"
+    assert negative_family({"note": "short-titlecase"}) == "short"
+    assert negative_family({"note": "topic-descriptive"}) == "topic"
+    assert negative_family({"note": "ui-boilerplate"}) == "ui"
+    assert negative_family({"note": "nonsense"}) == "nonsense"
+    assert negative_family({"note": "factual"}) == "prose" and negative_family({}) == "prose"
+    plain = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False)
+    balanced = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False, balance_negatives=True)
+    assert balanced.meta["neg_weighted"] and not plain.meta["neg_weighted"]
+    assert not np.allclose(plain.axes, balanced.axes)
+    assert np.isclose(np.linalg.norm(balanced.axes[0]), 1.0)
 
 
 def test_save_appends_npz_suffix(fake_embed_fn, tmp_path):

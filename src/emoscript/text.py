@@ -37,7 +37,20 @@ _LABEL = re.compile(
     re.I,
 )
 _PLACEHOLDER = re.compile(
-    r"\{\{.*?\}\}|\$\{.*?\}|\[(?:insert|your|tagline|brand)[^\]]*\]|\bTODO\b|\bTBD\b|lorem ipsum", re.I
+    r"\{\{.*?\}\}|\$\{.*?\}|\[(?:insert|your|tagline|brand|slogan)[^\]]*\]|\bTODO\b|\bTBD\b|lorem ipsum"
+    r"|\bgoes here\b|^\s*(?:your|insert|add|enter) \w+ here\s*[.!]?$"
+    r"|^\s*(?:undefined|null|nan|none|n/?a|\[object object\])\s*$",
+    re.I,
+)
+# Text a chat model emits around (or instead of) the lines it was asked for.
+_LLM_CHATTER = re.compile(
+    r"^\s*(?:sure[!,.]|certainly[!,]|okay[!,]|"
+    r"here(?:'s| is| are) (?:a |an |the |\d+ |some |your |my )?(?:\w+ )?"
+    r"(?:tagline|slogan|option|line|headline|idea|copy)s?\b"
+    r"|as an ai\b|i(?:'m| am) (?:sorry|unable|afraid)\b"
+    r"|i (?:can(?:'t|not)|am unable to|cannot) (?:write|help|assist|create|generate|provide)\b"
+    r"|error[:\s]+(?:\d|rate|loading|message|code)|note:)",
+    re.I,
 )
 
 
@@ -98,6 +111,10 @@ def has_letters(text: str) -> bool:
 
 MAX_WORDS = 17  # longest famous tagline in the corpus
 
+# Flags that make a line unusable as a candidate, whatever its score. The CLI
+# reports such rows as not passing and sorts them below unflagged rows.
+BLOCKING_FLAGS = frozenset({"no_letters", "single_word", "too_long", "placeholder", "llm_chatter"})
+
 
 def input_flags(text: str, max_words: int = MAX_WORDS) -> list[str]:
     """Cheap warnings for inputs the scorer handles badly (it still scores them).
@@ -106,7 +123,10 @@ def input_flags(text: str, max_words: int = MAX_WORDS) -> list[str]:
     - ``single_word``:  one word; famous one-word lines exist ("Think") but a
                         single noun is not a tagline and scores high by length
     - ``too_long``:     longer than any famous line; the axis was not fitted on these
-    - ``placeholder``:  template artefacts such as {{tagline}}, TODO, lorem ipsum
+    - ``placeholder``:  template artefacts such as {{tagline}}, TODO, lorem ipsum,
+                        "Your slogan here", "null"
+    - ``llm_chatter``:  chat-model framing instead of a line ("Sure! Here's a
+                        tagline:", "As an AI language model, I cannot ...")
     - ``non_latin``:    mostly non-Latin script; scores for other languages are
                         not calibrated against this corpus (Japanese lines score
                         ~0.04 higher than their English counterparts)
@@ -122,6 +142,8 @@ def input_flags(text: str, max_words: int = MAX_WORDS) -> list[str]:
         flags.append("too_long")
     if _PLACEHOLDER.search(text):
         flags.append("placeholder")
+    if _LLM_CHATTER.search(text):
+        flags.append("llm_chatter")
     letters = [ch for ch in text if ch.isalpha()]
     if letters and sum(ch.isascii() for ch in letters) / len(letters) < 0.9:
         flags.append("non_latin")

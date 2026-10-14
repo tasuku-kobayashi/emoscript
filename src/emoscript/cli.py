@@ -24,7 +24,7 @@ from . import __version__
 from .dataio import DATA_DIR, corpus_warnings, validate_corpus
 from .embed import DEFAULT_MODEL, make_embed_fn
 from .pipeline import AxisModel, brief_relevance, evaluate, fit_from_corpus, score_texts
-from .text import CASINGS, input_flags
+from .text import BLOCKING_FLAGS, CASINGS, input_flags
 
 DEFAULT_REPO = "tasuku-kobayashi/emoscript"
 
@@ -53,6 +53,7 @@ def cmd_fit(args) -> int:
         seed=args.seed,
         model_name=args.model,
         casing=args.casing,
+        balance_negatives=args.balance_negatives,
     )
     saved = model.save(args.out)
     oof = model.meta.get("oof", {})
@@ -106,9 +107,6 @@ def cmd_score(args) -> int:
         row = {"text": t, "score": None if skipped else float(scores[i])}
         if skipped:
             row["skipped"] = "no letters"
-        if probs is not None:
-            row["prob"] = None if skipped else float(probs[i])
-            row["pass"] = False if skipped else bool(probs[i] >= args.threshold)
         if explanations is not None and not skipped:
             row["axis"] = explanations[i]["axis"]
             row["nearest"] = [{"text": a, "cos": b} for a, b in explanations[i]["nearest"]]
@@ -118,9 +116,36 @@ def cmd_score(args) -> int:
             row["flags"] = flags[i]
         if near[i] is not None:
             row["near_famous"] = near[i]
+        # A row passes only if the score says so AND nothing disqualifies it: a blocking
+        # input flag, a copy / parody of a famous line, or (with --brief) low relevance.
+        blocked = sorted(BLOCKING_FLAGS & set(flags[i]))
+        if near[i] is not None and near[i]["severity"] != "possible":
+            blocked.append(f"near_famous:{near[i]['severity']}")
+        if relevance is not None and args.min_rel is not None and not skipped and relevance[i] < args.min_rel:
+            blocked.append("off_brief")
+        if probs is not None:
+            row["prob"] = None if skipped else float(probs[i])
+            row["pass"] = (not skipped) and bool(probs[i] >= args.threshold) and not blocked
+        if blocked:
+            row["blocked_by"] = blocked
         rows.append(row)
     if args.sort:
-        rows.sort(key=lambda r: -(r["score"] if r["score"] is not None else float("-inf")))
+        # with a brief, rank by style AND relevance (z-scored within this batch); blocked rows last
+        if relevance is not None:
+            valid = [r for r in rows if r["score"] is not None and r["brief_relevance"] is not None]
+            s = np.array([r["score"] for r in valid])
+            rel = np.array([r["brief_relevance"] for r in valid])
+            zs = (s - s.mean()) / (s.std() + 1e-12) if len(s) > 1 else np.zeros(len(s))
+            zr = (rel - rel.mean()) / (rel.std() + 1e-12) if len(rel) > 1 else np.zeros(len(rel))
+            for r, a, b in zip(valid, zs, zr, strict=True):
+                r["rank_score"] = float(a + b)
+        key_name = "rank_score" if relevance is not None else "score"
+        rows.sort(
+            key=lambda r: (
+                "blocked_by" in r or r["score"] is None,
+                -(r.get(key_name) if r.get(key_name) is not None else float("-inf")),
+            )
+        )
     if args.json:
         _print_json(rows)
         return 0
@@ -138,9 +163,16 @@ def cmd_score(args) -> int:
         if "near_famous" in r:
             nf = r["near_famous"]
             who = f" ({nf['brand']})" if nf.get("brand") else ""
-            notes.append(f'near famous line: "{nf["text"]}"{who}')
+            label = {
+                "copy": "copies famous line",
+                "parody": "parodies famous line",
+                "possible": "possibly riffs on",
+            }
+            notes.append(f'{label[nf["severity"]]}: "{nf["text"]}"{who}')
         if r.get("flags"):
             notes.append("flags: " + ", ".join(r["flags"]))
+        if r.get("blocked_by"):
+            notes.append("not passing: " + ", ".join(r["blocked_by"]))
         if notes:
             print("          ! " + "; ".join(notes))
         if "nearest" in r:
@@ -273,6 +305,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--folds", type=int, default=5, help="folds for out-of-fold calibration")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument(
+        "--balance-negatives",
+        action="store_true",
+        help="equal weight per negative family in the negative centroid (instead of per line)",
+    )
+    p.add_argument(
         "--casing",
         choices=CASINGS,
         default="canonical",
@@ -296,7 +333,18 @@ def build_parser() -> argparse.ArgumentParser:
         default=0.5,
         help="base rate of great copy among your candidates (default 0.5; try 0.05 for raw LLM output)",
     )
-    p.add_argument("--brief", help="product / campaign brief; adds rel= cosine(line, brief) to each row")
+    p.add_argument(
+        "--brief",
+        help="product / campaign brief; adds rel= cosine(line, brief) and, with --sort, "
+        "ranks by style + relevance",
+    )
+    p.add_argument(
+        "--min-rel",
+        type=float,
+        default=None,
+        help="with --brief: lines whose relevance is below this do not PASS (e5 cosines sit around "
+        "0.75-0.90; read the rel= column of a few known-good lines to pick a value)",
+    )
     p.add_argument("--no-famous-check", action="store_true", help="skip the near-famous-line warning")
     p.set_defaults(fn=cmd_score)
 

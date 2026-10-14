@@ -45,12 +45,15 @@ missing:
   regression on *out-of-fold* scores maps the cosine to P(great). `p = 0.5`
   means a 50/50 prior; `--prior 0.05` is the honest setting for raw
   machine-generated candidate lists.
-- **Guards the score cannot provide.** Input flags (single word, over 17
-  words, placeholder, non-Latin script, wrapped), a lexical check that warns
-  when a candidate copies or parodies one of the 278 famous lines in the
-  corpus (*"Just Chew It."*, *"Kills Kids Dead"*), and an optional brief
-  relevance (`--brief`) so on-brief copy can be required alongside the
-  topic-blind style score.
+- **Guards the score cannot provide, and they decide.** Input flags (single
+  word, over 17 words, placeholder, chat-model chatter such as *"Sure, here
+  is a tagline:"*, non-Latin script, wrapped) and a lexical check against the
+  278 famous lines in the corpus (*"Just Chew It."* parodies *"Just Do
+  It."*; *"Got Mold?"* possibly riffs on *"Got Milk?"*). A blocked row is
+  reported as not passing and sorted last, however high its score. With
+  `--brief`, relevance to the brief is shown, `--sort` ranks by style and
+  relevance together, and `--min-rel` turns relevance into a gate, because
+  the style axis alone prefers *"Chase the Gravy"* to on-brief copy.
 - **Explanations.** `--explain` shows the nearest famous taglines to a
   candidate.
 - **Optional multi-axis scoring (`--k`).** Spherical k-means over the
@@ -75,14 +78,14 @@ default model here, `intfloat/multilingual-e5-large` (ONNX), downloads once
 
 ```bash
 # Fit the axis (+ calibrator) from the bundled corpus; prints honest out-of-fold metrics
-emoscript fit --out axis.npz
+emoscript fit --out axis.npz            # add --balance-negatives for equal weight per negative family
 
 # Score candidates (higher = more great-copy-like); p = calibrated probability
 emoscript score "Sleep like you mean it." "We sell high quality furniture at low prices." --axis axis.npz
 
-# A raw LLM candidate list: strict prior, product brief, ranked, with explanations
+# A raw LLM candidate list: strict prior, product brief with a relevance gate, ranked, explained
 emoscript score --file candidates.txt --axis axis.npz --prior 0.05 \
-    --brief "meal-kit delivery for busy parents" --sort --explain
+    --brief "meal-kit delivery for busy parents" --min-rel 0.82 --sort --explain
 
 # Machine-readable
 emoscript score --file candidates.txt --axis axis.npz --json
@@ -99,10 +102,10 @@ emoscript info --axis axis.npz
 ```
 
 Each scored row shows the raw cosine, the calibrated probability, `PASS` or
-`fail` at the chosen threshold, `rel=` when a brief is given, then the line;
-warnings (`near famous line`, `flags: ...`) follow on an indented line and
-inputs without letters are reported as `n/a skipped`. See `docs/results.md`
-for real output.
+`fail`, `rel=` when a brief is given, then the line; an indented line below
+carries the famous-line match, the input flags and the reasons a row does
+not pass (`not passing: near_famous:parody`). Inputs without letters are
+reported as `n/a skipped`. Real output is in `docs/results.md`.
 
 Python:
 
@@ -214,10 +217,15 @@ Axis files are `.npz` and backward compatible: a v0.1 file with a single
 - **Short beats long.** Famous taglines are short; the axis still rewards
   brevity more than it should, and long benefit-led copy scores low. Compare
   candidates of similar length, or read `--explain` before cutting a line.
-- **Memorable is not usable.** Proverbs, lyrics, whimsical nonsense and
-  parodies of famous slogans score like great copy. Use `--brief`, read the
-  near-famous warnings, and treat the junk PASS rate in `docs/results.md` as
-  the honest floor.
+- **Memorable is not usable.** Proverbs, lyrics and whimsical nonsense score
+  like great copy (held-out famous taglines vs famous non-ad quotes: AUC
+  about 0.5). Parodies and copies of corpus slogans are caught lexically;
+  nonsense is not. Use `--brief` with `--min-rel`, and treat the junk PASS
+  rate in `docs/results.md` as the honest floor.
+- **One-word lines are blocked.** *"Think"*, *"Lemon."* and *"Zoom-Zoom"*
+  are famous, but a single word is also the easiest way to game a
+  brevity-loving axis, so `single_word` is a blocking flag; the score is
+  still printed.
 - **Topic still leaks a little**, and the corpus is Anglophone with a
   20th-century US/UK canon; the axis inherits that taste. Other languages
   score, but are not calibrated against this corpus (Japanese lines came out

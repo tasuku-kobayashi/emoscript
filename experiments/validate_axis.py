@@ -59,7 +59,7 @@ from emoscript.axis import (  # noqa: E402
 from emoscript.dataio import DATA_DIR, load_corpus, texts  # noqa: E402
 from emoscript.embed import DEFAULT_MODEL, make_embed_fn  # noqa: E402
 from emoscript.pipeline import fit_from_embeddings  # noqa: E402
-from emoscript.text import CASINGS, input_flags, normalizer  # noqa: E402
+from emoscript.text import BLOCKING_FLAGS, CASINGS, input_flags, normalizer  # noqa: E402
 
 # Probes are illustrative only (not metrics). They are new lines, not paraphrases of corpus entries.
 PROBES = [
@@ -175,7 +175,7 @@ def run(
                 g: float((calibrator.predict_proba(sc) >= 0.5).mean()) for g, sc in s.items() if g != "probe"
             }
             if "junk" in s:
-                flagged = np.array([bool(input_flags(t)) for t in groups["junk"]])
+                flagged = np.array([bool(BLOCKING_FLAGS & set(input_flags(t))) for t in groups["junk"]])
                 v["junk_pass_rate_after_flags"] = float(
                     ((calibrator.predict_proba(s["junk"]) >= 0.5) & ~flagged).mean()
                 )
