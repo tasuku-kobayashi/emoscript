@@ -4,105 +4,79 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>emoscript</title>
-  <meta name="description" content="Score tagline candidates against the direction of famous ad copy, entirely in your browser." />
+  <meta name="description" content="Does your tagline read like famous ad copy? Scored in your browser." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Ctext y=%2713%27 font-size=%2713%27 font-family=%27sans-serif%27 font-weight=%27bold%27 fill=%27%23c8102e%27%3Ee%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
-    <h1>emoscript <span class="sub">browser edition</span></h1>
-    <p class="lede">
-      Paste candidate taglines, one per line. Each is embedded <strong>in your browser</strong> and scored
-      against the direction of famous ad copy. Your lines are never sent anywhere. The page loads its
-      code from cdn.jsdelivr.net and the embedding model once from huggingface.co (cached by the browser).
-    </p>
+    <div class="brand">
+      <h1>emoscript</h1>
+      <p class="tag">Does it read like famous ad copy?</p>
+    </div>
+    <div class="menu">
+      <details class="pop" id="help">
+        <summary aria-label="How to read the results">?</summary>
+        <div class="pop-body">
+          <p><strong>The ring is the chance a line sits with famous taglines rather than bland ad-speak.</strong> Above the threshold (50% by default) it passes.</p>
+          <ul>
+            <li><strong>Green</strong>: passes. <strong>Amber</strong>: close. <strong>Red</strong>: reads as ordinary copy.</li>
+            <li><strong>Gray</strong>: disqualified before scoring. Tap the line to see why (copies a famous line, not a message, placeholder, chat-bot text, too long).</li>
+            <li>Add a <em>brief</em> and lines that drift off topic lose their place in the ranking.</li>
+            <li>Tap any line for the raw numbers: cosine <em>score</em>, <em>sense</em> (does it read as a message), <em>relevance</em> to the brief.</li>
+          </ul>
+          <p>Scope: tagline-length lines, in English. Failing is weak evidence (most good-but-unknown lines fail); passing is the useful signal. Quotes and proverbs pass. This browser build runs a small model; the Python package with the full model is stricter about on-topic product descriptions. Details and numbers: <a href="https://github.com/tasuku-kobayashi/emoscript/blob/main/docs/results.md">docs/results.md</a>.</p>
+          <p>Privacy: your lines are embedded on your device and never sent anywhere. The page loads its code from cdn.jsdelivr.net and the model once from huggingface.co.</p>
+        </div>
+      </details>
+      <details class="pop" id="settings">
+        <summary aria-label="Settings">⚙</summary>
+        <div class="pop-body">
+          <label>Pass threshold <span class="val" id="threshold-val">50%</span>
+            <input id="threshold" type="range" min="0.05" max="0.95" step="0.05" value="0.5" />
+          </label>
+          <label>Expected share of usable lines (prior) <span class="val" id="prior-val">50%</span>
+            <input id="prior" type="range" min="0.05" max="0.95" step="0.05" value="0.5" />
+          </label>
+          <label>With a brief, keep the top share by relevance <span class="val" id="top-rel-val">all</span>
+            <input id="top-rel" type="range" min="0.1" max="1" step="0.1" value="1" />
+          </label>
+          <label class="check"><input id="sense-gate" type="checkbox" checked /> Disqualify lines that do not read as a message</label>
+          <label class="check"><input id="famous-check" type="checkbox" checked /> Disqualify copies of famous lines</label>
+          <label>Model precision
+            <select id="dtype">
+              <option value="fp32">exact (130 MB, once)</option>
+              <option value="fp16" hidden disabled>fp16 (WebGPU, 65 MB)</option>
+              <option value="q8">fast, approximate (35 MB)</option>
+            </select>
+          </label>
+          <div class="row">
+            <button id="download-json" type="button" class="ghost" disabled>JSON</button>
+            <button id="download-csv" type="button" class="ghost" disabled>CSV</button>
+            <button id="example" type="button" class="ghost">Example</button>
+          </div>
+          <p class="fine">emoscript <span id="model-version"></span> · <a href="https://github.com/tasuku-kobayashi/emoscript">GitHub</a></p>
+        </div>
+      </details>
+    </div>
   </header>
 
   <main>
-    <section class="panel" id="status-panel">
-      <div id="status" class="status">Loading scorer…</div>
-      <progress id="progress" max="100" value="0" hidden></progress>
-    </section>
-
-    <section class="panel">
-      <label for="lines">Candidate lines <span class="hint">(one per line, tagline length; body copy is out of scope)</span></label>
-      <textarea id="lines" rows="10" spellcheck="false" placeholder="Just chew it.
-Sleep like you mean it.
-Quality products at affordable prices for everyone."></textarea>
-
-      <label for="brief">Brief <span class="hint">(optional: a few words on the product; adds a relevance check so off-topic lines cannot win on style alone)</span></label>
-      <input id="brief" type="text" placeholder="a breakfast cereal for busy families" />
-
-      <details class="options">
-        <summary>Options</summary>
-        <div class="grid">
-          <label>PASS threshold on p
-            <input id="threshold" type="number" min="0.01" max="0.99" step="0.01" value="0.5" />
-          </label>
-          <label>Prior (expected share of usable lines)
-            <input id="prior" type="number" min="0.01" max="0.99" step="0.01" value="0.5" />
-          </label>
-          <label>Keep top share by brief relevance
-            <input id="top-rel" type="number" min="0.05" max="1" step="0.05" value="1" />
-          </label>
-          <label>Minimum brief relevance
-            <input id="min-rel" type="number" min="-1" max="1" step="0.01" placeholder="off" />
-          </label>
-          <label class="check"><input id="sense-gate" type="checkbox" checked /> Sense gate (block lines that do not read as a message)</label>
-          <label class="check"><input id="famous-check" type="checkbox" checked /> Famous-line check (block copies, flag parodies)</label>
-          <label>Model precision
-            <select id="dtype">
-              <option value="fp32">fp32 (~130 MB; matches the Python scorer within 0.001)</option>
-              <option value="fp16" hidden disabled>fp16 (WebGPU only, ~65 MB)</option>
-              <option value="q8">q8 (approximate, ~35 MB; scores drift up to ±0.03)</option>
-            </select>
-          </label>
-        </div>
-      </details>
-
-      <div class="actions">
-        <button id="score" type="button" disabled>Score</button>
-        <button id="example" type="button" class="secondary">Load example</button>
-        <button id="download-json" type="button" class="secondary" disabled>Download JSON</button>
-        <button id="download-csv" type="button" class="secondary" disabled>Download CSV</button>
+    <textarea id="lines" rows="6" spellcheck="false" placeholder="One line per candidate…"></textarea>
+    <input id="brief" type="text" placeholder="Brief (optional): what is it for?" />
+    <div class="go">
+      <button id="score" type="button" disabled>Score</button>
+      <div class="status-wrap">
+        <span id="status" class="status">Loading…</span>
+        <progress id="progress" max="100" value="0" hidden></progress>
       </div>
-    </section>
+    </div>
 
-    <section class="panel" id="results-panel" hidden>
-      <h2>Results <span id="summary" class="hint"></span></h2>
-      <div class="table-wrap">
-        <table id="results">
-          <thead>
-            <tr>
-              <th>#</th><th>verdict</th><th>p</th><th>score</th><th>sense</th><th class="rel">rel</th><th>line</th><th>notes</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <p class="hint">
-        <strong>p</strong> is the calibrated probability that a line sits with famous copy rather than bland ad-speak
-        (50/50 prior unless you change it). <strong>score</strong> is the raw cosine against the axis.
-        <strong>sense</strong> is P(this reads as a message, not nonsense). <strong>rel</strong> is cosine to the brief.
-        PASS means p ≥ threshold and nothing disqualifies the line. Read the limitations below before trusting a number.
-      </p>
-    </section>
-
-    <section class="panel limits">
-      <h2>What this is, and is not</h2>
-      <ul>
-        <li>It ranks <em>stylistic proximity</em> to classic taglines. It is a triage signal for hundreds of candidates, not a judge of a single line, and never legal clearance.</li>
-        <li>The browser build uses a small English model (<code id="model-name">…</code>). It is weaker than the Python package's default (multilingual-e5-large): on the held-out set it still separates famous lines from bland ad-speak well, but it is more easily fooled by on-topic product descriptions and by fluent junk. Numbers are in the repository's <a id="results-link" href="https://github.com/tasuku-kobayashi/emoscript/blob/main/docs/results.md">docs/results.md</a>.</li>
-        <li>Failing is weak evidence: most good-but-unknown lines fail. Passing is the useful side.</li>
-        <li>Quotes and proverbs pass. Non-English lines are flagged, not scored reliably.</li>
-      </ul>
+    <section id="results" hidden>
+      <div id="summary" class="summary"></div>
+      <ol id="cards" class="cards"></ol>
     </section>
   </main>
-
-  <footer>
-    <a href="https://github.com/tasuku-kobayashi/emoscript">github.com/tasuku-kobayashi/emoscript</a>
-    · model <span id="model-version"></span>
-  </footer>
 
   <script type="module" src="app.js"></script>
 </body>

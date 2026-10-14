@@ -29,6 +29,12 @@
   2000 characters), neutralises formula-like cells in the CSV and marks
   results stale when the input changes.
 
+- UI redesign: one text box, one button, result cards with a ring per line
+  (the calibrated p, colored by state: green passes, amber close, red
+  ordinary, gray disqualified, always with the word next to it). Raw numbers
+  and reasons open on tap; options and explanations sit behind the ? and ⚙
+  buttons. Dark mode.
+
 ### Fixed
 - `placeholder` flag: the `<BRAND>` pattern was case-insensitive, so
   `<strong>Fresh every day</strong>` and `<em>…</em>` were blocked as

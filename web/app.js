@@ -60,7 +60,7 @@ function startWorker() {
       if (m.total) {
         progress.value = (100 * m.loaded) / m.total;
         setStatus(
-          `Downloading model… ${fmtMB(m.loaded)} / ${fmtMB(m.total)} MB (cached by your browser after the first time)` +
+          `Downloading the model once… ${fmtMB(m.loaded)} / ${fmtMB(m.total)} MB` +
             (lastNotice ? ` — ${lastNotice}` : ""),
         );
       }
@@ -76,11 +76,7 @@ function startWorker() {
       const fp16 = $("dtype").querySelector('option[value="fp16"]');
       fp16.hidden = !m.webgpu;
       fp16.disabled = !m.webgpu;
-      setStatus(
-        `Ready: ${model.embedding.web_model} (${m.dtype}, ${m.device}).` +
-          (lastNotice ? ` ${lastNotice}.` : "") +
-          " Your lines are embedded here in the browser.",
-      );
+      setStatus(`Ready (${m.dtype}, ${m.device}).` + (lastNotice ? ` ${lastNotice}.` : ""));
     } else if (m.type === "embedded") {
       const p = pending.get(m.id);
       if (p) {
@@ -135,20 +131,12 @@ async function embed(inputs) {
 function readOptions() {
   const brief = $("brief").value.trim();
   const topRel = Number($("top-rel").value);
-  const minRelRaw = $("min-rel").value.trim();
-  const threshold = Number($("threshold").value);
-  const prior = Number($("prior").value);
-  if (!(threshold > 0 && threshold < 1)) throw new Error("PASS threshold must be strictly between 0 and 1.");
-  if (!(prior > 0 && prior < 1)) throw new Error("Prior must be strictly between 0 and 1.");
-  if (!(topRel > 0 && topRel <= 1)) throw new Error("Keep top share must be a fraction in (0, 1]; 1 keeps every line.");
-  if (minRelRaw !== "" && !brief) throw new Error("Minimum brief relevance needs a brief.");
-  if (minRelRaw !== "" && !Number.isFinite(Number(minRelRaw))) throw new Error("Minimum brief relevance must be a number.");
   return {
-    threshold,
-    prior,
+    threshold: Number($("threshold").value),
+    prior: Number($("prior").value),
     brief: brief ? brief : null,
     topRel: brief && topRel < 1 ? topRel : null,
-    minRel: brief && minRelRaw !== "" ? Number(minRelRaw) : null,
+    minRel: null,
     senseGate: $("sense-gate").checked,
     famousCheck: $("famous-check").checked,
   };
@@ -156,55 +144,115 @@ function readOptions() {
 
 function markStale() {
   if (!lastResult) return;
-  $("summary").textContent += " (input changed: score again)";
+  $("summary").textContent += " · input changed, score again";
   jsonBtn.disabled = csvBtn.disabled = true;
   lastResult = null;
 }
 
-const NOTE_LABEL = { copy: "copies famous line", parody: "parodies famous line", possible: "possibly riffs on" };
+const NEAR_LABEL = { copy: "copies", parody: "parodies", possible: "riffs on" };
+const BLOCK_REASON = {
+  "near_famous:copy": "copies a famous line",
+  sense_gate: "does not read as a message",
+  off_brief: "off brief",
+  placeholder: "placeholder text",
+  llm_chatter: "chat-bot text, not a line",
+  single_word: "one word",
+  too_long: "too long for a tagline",
+  no_letters: "no words",
+};
 
-function notesFor(r) {
-  const notes = [];
-  if (r.near_famous) {
-    const nf = r.near_famous;
-    notes.push(`${NOTE_LABEL[nf.severity]}: “${nf.text}”${nf.brand ? ` (${nf.brand})` : ""}`);
+// State of a row -> (css class, word). Color never stands alone: the word says it too.
+function verdictOf(r, threshold) {
+  if (r.score === null) return ["off", "No words"];
+  if (r.blocked_by) {
+    const why = r.blocked_by.map((b) => BLOCK_REASON[b] || b);
+    return ["off", "Out: " + why[0]];
   }
-  if (r.flags) notes.push(`flags: ${r.flags.join(", ")}`);
-  if (r.blocked_by) notes.push(`not passing: ${r.blocked_by.join(", ")}`);
-  if (r.skipped) notes.push(`skipped (${r.skipped})`);
-  return notes.join("; ");
+  if (r.pass) return ["pass", "Passes"];
+  if (r.prob >= Math.min(0.3, threshold)) return ["close", "Close"];
+  return ["no", "Ordinary"];
 }
 
-function render(rows, withBrief, calibrated) {
-  const tbody = $("results").querySelector("tbody");
-  tbody.innerHTML = "";
-  document.querySelectorAll("#results .rel").forEach((el) => (el.hidden = !withBrief));
-  const fmt = (x, d = 2) => (x == null ? "" : x.toFixed(d));
-  rows.forEach((r, i) => {
-    const tr = document.createElement("tr");
-    tr.className = r.pass ? "pass" : r.blocked_by ? "fail blocked" : "fail";
-    const cells = [
-      ["num", String(i + 1)],
-      ["verdict", r.score == null ? "n/a" : !calibrated ? "" : r.pass ? "PASS" : "fail"],
-      ["num", fmt(r.prob)],
-      ["num", r.score == null ? "" : (r.score >= 0 ? "+" : "") + r.score.toFixed(4)],
-      ["num", fmt(r.sense)],
-      ["num rel", fmt(r.brief_relevance)],
-      ["line", r.text],
-      ["notes", notesFor(r)],
-    ];
-    for (const [cls, text] of cells) {
-      const td = document.createElement("td");
-      td.className = cls;
-      td.textContent = text;
-      if (cls.includes("rel")) td.hidden = !withBrief;
-      tr.appendChild(td);
+function ring(p) {
+  const R = 30;
+  const C = 2 * Math.PI * R;
+  const frac = p == null ? 0 : Math.max(0, Math.min(1, p));
+  const wrap = document.createElement("div");
+  wrap.className = "ring";
+  wrap.innerHTML =
+    `<svg viewBox="0 0 72 72" aria-hidden="true"><circle class="track" cx="36" cy="36" r="${R}"/>` +
+    `<circle class="fill" cx="36" cy="36" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>` +
+    `<div class="pct"></div>`;
+  wrap.querySelector(".pct").textContent = p == null ? "–" : `${Math.round(frac * 100)}%`;
+  requestAnimationFrame(() => (wrap.querySelector(".fill").style.strokeDashoffset = (C * (1 - frac)).toFixed(2)));
+  return wrap;
+}
+
+function detailsFor(r, withBrief) {
+  const dl = document.createElement("dl");
+  const add = (k, v) => {
+    if (v == null || v === "") return;
+    const dt = document.createElement("dt");
+    dt.textContent = k;
+    const dd = document.createElement("dd");
+    dd.textContent = v;
+    dl.append(dt, dd);
+  };
+  const f = (x, d = 2) => (x == null ? null : x.toFixed(d));
+  if (r.blocked_by) add("why out", r.blocked_by.map((b) => BLOCK_REASON[b] || b).join("; "));
+  if (r.near_famous) {
+    const nf = r.near_famous;
+    add("famous line", `${NEAR_LABEL[nf.severity]} “${nf.text}”${nf.brand ? ` (${nf.brand})` : ""}`);
+  }
+  add("p (great copy)", f(r.prob));
+  add("score (cosine)", r.score == null ? null : (r.score >= 0 ? "+" : "") + r.score.toFixed(4));
+  add("sense (is a message)", f(r.sense));
+  if (withBrief) add("relevance to brief", f(r.brief_relevance));
+  if (withBrief) add("rank (style + relevance)", f(r.rank_score));
+  if (r.flags) add("flags", r.flags.join(", "));
+  return dl;
+}
+
+function render(rows, opts, calibrated) {
+  const list = $("cards");
+  list.innerHTML = "";
+  const withBrief = opts.brief !== null;
+  for (const r of rows) {
+    const li = document.createElement("li");
+    const [cls, word] = calibrated ? verdictOf(r, opts.threshold) : [r.score === null ? "off" : "close", ""];
+    li.className = `card ${cls}`;
+    li.appendChild(ring(calibrated ? r.prob : null));
+    const text = document.createElement("div");
+    text.className = "text";
+    const line = document.createElement("p");
+    line.className = "line";
+    line.textContent = r.text;
+    const verdict = document.createElement("div");
+    verdict.className = "verdict";
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    verdict.append(dot, document.createTextNode(word));
+    if (withBrief && r.brief_relevance != null) {
+      const why = document.createElement("span");
+      why.className = "why";
+      why.textContent = ` · relevance ${Math.round(r.brief_relevance * 100)}%`;
+      verdict.appendChild(why);
     }
-    tbody.appendChild(tr);
-  });
+    text.append(line, verdict);
+    const details = document.createElement("div");
+    details.className = "details";
+    details.appendChild(detailsFor(r, withBrief));
+    li.append(text, details);
+    li.addEventListener("click", () => li.classList.toggle("open"));
+    list.appendChild(li);
+  }
   const passed = rows.filter((r) => r.pass).length;
-  $("summary").textContent = calibrated ? `${passed} of ${rows.length} pass` : `${rows.length} lines (uncalibrated axis: scores only)`;
-  $("results-panel").hidden = false;
+  const sum = $("summary");
+  sum.innerHTML = "";
+  const b = document.createElement("strong");
+  b.textContent = calibrated ? `${passed} of ${rows.length} pass` : `${rows.length} lines`;
+  sum.append(b, document.createTextNode(calibrated ? " · ranked best first · tap a line for details" : " · uncalibrated axis"));
+  $("results").hidden = false;
 }
 
 async function runScore() {
@@ -241,9 +289,9 @@ async function runScore() {
     const rows = await scoreTexts(model, texts, embed, opts);
     if (token !== run) return; // superseded by a reload
     lastResult = { rows, options: opts, dtype };
-    render(rows, opts.brief !== null, Boolean(model.calibrator));
+    render(rows, opts, Boolean(model.calibrator));
     jsonBtn.disabled = csvBtn.disabled = false;
-    setStatus(`Scored ${rows.length} lines in ${((performance.now() - t0) / 1000).toFixed(1)} s.`);
+    setStatus(`${rows.length} lines in ${((performance.now() - t0) / 1000).toFixed(1)} s`);
   } catch (err) {
     if (token === run) setStatus(`Scoring failed: ${err.message}`, true);
   } finally {
@@ -297,8 +345,7 @@ async function main() {
     setStatus(`Could not load model.json: ${err.message}`, true);
     return;
   }
-  $("model-name").textContent = model.embedding.fastembed_model;
-  $("model-version").textContent = `emoscript ${model.blob.emoscript_version}, k=${model.k}, dim=${model.embedding.dim}`;
+  $("model-version").textContent = `${model.blob.emoscript_version} · ${model.embedding.fastembed_model}`;
   startWorker();
 
   scoreBtn.addEventListener("click", runScore);
@@ -308,6 +355,9 @@ async function main() {
   $("example").addEventListener("click", () => {
     $("lines").value = EXAMPLE;
     $("brief").value = "a breakfast cereal for busy families";
+    $("settings").open = false;
+    markStale();
+    runScore();
   });
   $("dtype").addEventListener("change", () => {
     scoreBtn.disabled = true;
@@ -315,9 +365,23 @@ async function main() {
     markStale();
     startWorker();
   });
-  for (const id of ["lines", "brief", "threshold", "prior", "top-rel", "min-rel", "sense-gate", "famous-check"]) {
+  for (const id of ["lines", "brief", "threshold", "prior", "top-rel", "sense-gate", "famous-check"]) {
     $(id).addEventListener("input", markStale);
   }
+  const pct = (v) => `${Math.round(Number(v) * 100)}%`;
+  const showVals = () => {
+    $("threshold-val").textContent = pct($("threshold").value);
+    $("prior-val").textContent = pct($("prior").value);
+    $("top-rel-val").textContent = Number($("top-rel").value) >= 1 ? "all" : `top ${pct($("top-rel").value)}`;
+  };
+  for (const id of ["threshold", "prior", "top-rel"]) $(id).addEventListener("input", showVals);
+  showVals();
+  // one popover at a time; click outside closes
+  const pops = Array.from(document.querySelectorAll("details.pop"));
+  for (const d of pops) d.addEventListener("toggle", () => d.open && pops.forEach((o) => o !== d && (o.open = false)));
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("details.pop")) pops.forEach((o) => (o.open = false));
+  });
   jsonBtn.addEventListener("click", () => {
     if (lastResult) download("emoscript-scores.json", "application/json", JSON.stringify(exportBlob(), null, 2));
   });
