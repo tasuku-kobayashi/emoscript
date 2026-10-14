@@ -29,10 +29,12 @@
   2000 characters), neutralises formula-like cells in the CSV and marks
   results stale when the input changes.
 
-- UI redesign: one text box, one button, result cards with a ring per line
-  (the calibrated p, colored by state: green passes, amber close, red
-  ordinary, gray disqualified, always with the word next to it). Raw numbers
-  and reasons open on tap; options and explanations sit behind the ? and ⚙
+- UI redesign: one text box, one button. The result leads with a hero score
+  (a large ring and number for the selected line, colored by state: green
+  passes, amber close, red ordinary, gray disqualified, always with the word
+  beside it), an information list (sense, relevance, style score, famous-line
+  match, why it is out) and a ranking of all lines with their scores; tapping
+  a line puts it in the hero. Options and explanations sit behind the ? and ⚙
   buttons. Dark mode.
 
 ### Fixed

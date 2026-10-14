@@ -144,7 +144,7 @@ function readOptions() {
 
 function markStale() {
   if (!lastResult) return;
-  $("summary").textContent += " · input changed, score again";
+  $("summary").textContent += " · input changed";
   jsonBtn.disabled = csvBtn.disabled = true;
   lastResult = null;
 }
@@ -173,57 +173,90 @@ function verdictOf(r, threshold) {
   return ["no", "Ordinary"];
 }
 
-function ring(p) {
-  const R = 30;
-  const C = 2 * Math.PI * R;
+const HERO_R = 104;
+
+function heroRing(p) {
+  const C = 2 * Math.PI * HERO_R;
   const frac = p == null ? 0 : Math.max(0, Math.min(1, p));
-  const wrap = document.createElement("div");
-  wrap.className = "ring";
+  const wrap = $("hero-ring");
   wrap.innerHTML =
-    `<svg viewBox="0 0 72 72" aria-hidden="true"><circle class="track" cx="36" cy="36" r="${R}"/>` +
-    `<circle class="fill" cx="36" cy="36" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>` +
-    `<div class="pct"></div>`;
-  wrap.querySelector(".pct").textContent = p == null ? "–" : `${Math.round(frac * 100)}%`;
-  requestAnimationFrame(() => (wrap.querySelector(".fill").style.strokeDashoffset = (C * (1 - frac)).toFixed(2)));
-  return wrap;
+    `<svg viewBox="0 0 230 230" aria-hidden="true"><circle class="track" cx="115" cy="115" r="${HERO_R}"/>` +
+    `<circle class="fill" cx="115" cy="115" r="${HERO_R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>`;
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => (wrap.querySelector(".fill").style.strokeDashoffset = (C * (1 - frac)).toFixed(2))),
+  );
 }
 
-function detailsFor(r, withBrief) {
-  const dl = document.createElement("dl");
-  const add = (k, v) => {
-    if (v == null || v === "") return;
-    const dt = document.createElement("dt");
-    dt.textContent = k;
-    const dd = document.createElement("dd");
-    dd.textContent = v;
-    dl.append(dt, dd);
-  };
-  const f = (x, d = 2) => (x == null ? null : x.toFixed(d));
-  if (r.blocked_by) add("why out", r.blocked_by.map((b) => BLOCK_REASON[b] || b).join("; "));
+function infoRow(label, sub, value, unit = "", asText = false) {
+  if (value == null || value === "") return null;
+  const row = document.createElement("div");
+  row.className = "info-row";
+  const dt = document.createElement("dt");
+  dt.textContent = label;
+  const sb = document.createElement("span");
+  sb.className = "sub";
+  sb.textContent = sub;
+  dt.appendChild(sb);
+  const dd = document.createElement("dd");
+  if (asText) {
+    dd.className = "text";
+    dd.textContent = value;
+  } else {
+    dd.textContent = value;
+    if (unit) {
+      const u = document.createElement("span");
+      u.className = "unit";
+      u.textContent = unit;
+      dd.appendChild(u);
+    }
+  }
+  row.append(dt, dd);
+  return row;
+}
+
+function showHero(r, opts, calibrated) {
+  const hero = $("hero");
+  const [cls, word] = calibrated ? verdictOf(r, opts.threshold) : [r.score === null ? "off" : "close", ""];
+  hero.className = `hero ${cls}`;
+  const p = calibrated && r.prob != null ? r.prob : null;
+  heroRing(p);
+  $("hero-pct").textContent = p == null ? "–" : String(Math.round(p * 100));
+  $("hero-line").textContent = r.text;
+  const v = $("hero-verdict");
+  v.innerHTML = "";
+  const dot = document.createElement("span");
+  dot.className = "dot";
+  v.append(dot, document.createTextNode(word || (r.score === null ? "No words" : "Scored")));
+
+  const info = $("info");
+  info.innerHTML = "";
+  const pctOf = (x) => (x == null ? null : String(Math.round(x * 100)));
+  const rows = [];
+  if (r.blocked_by) rows.push(infoRow("Why it is out", "disqualified", r.blocked_by.map((b) => BLOCK_REASON[b] || b).join(", "), "", true));
   if (r.near_famous) {
     const nf = r.near_famous;
-    add("famous line", `${NEAR_LABEL[nf.severity]} “${nf.text}”${nf.brand ? ` (${nf.brand})` : ""}`);
+    rows.push(infoRow("Famous line", NEAR_LABEL[nf.severity], `“${nf.text}”${nf.brand ? ` — ${nf.brand}` : ""}`, "", true));
   }
-  add("p (great copy)", f(r.prob));
-  add("score (cosine)", r.score == null ? null : (r.score >= 0 ? "+" : "") + r.score.toFixed(4));
-  add("sense (is a message)", f(r.sense));
-  if (withBrief) add("relevance to brief", f(r.brief_relevance));
-  if (withBrief) add("rank (style + relevance)", f(r.rank_score));
-  if (r.flags) add("flags", r.flags.join(", "));
-  return dl;
+  rows.push(infoRow("Reads as a message", "sense", pctOf(r.sense), "%"));
+  if (opts.brief !== null) rows.push(infoRow("On brief", "relevance", pctOf(r.brief_relevance), "%"));
+  rows.push(infoRow("Style score", "cosine to the axis", r.score == null ? null : (r.score >= 0 ? "+" : "") + r.score.toFixed(3)));
+  if (opts.brief !== null && r.rank_score != null) rows.push(infoRow("Rank score", "style + relevance", r.rank_score.toFixed(2)));
+  if (r.flags) rows.push(infoRow("Flags", "input checks", r.flags.join(", "), "", true));
+  for (const row of rows) if (row) info.appendChild(row);
 }
 
 function render(rows, opts, calibrated) {
   const list = $("cards");
   list.innerHTML = "";
-  const withBrief = opts.brief !== null;
-  for (const r of rows) {
+  let selected = 0;
+  const items = rows.map((r, i) => {
     const li = document.createElement("li");
     const [cls, word] = calibrated ? verdictOf(r, opts.threshold) : [r.score === null ? "off" : "close", ""];
-    li.className = `card ${cls}`;
-    li.appendChild(ring(calibrated ? r.prob : null));
+    li.className = `row ${cls}`;
+    const rank = document.createElement("span");
+    rank.className = "rank";
+    rank.textContent = String(i + 1);
     const text = document.createElement("div");
-    text.className = "text";
     const line = document.createElement("p");
     line.className = "line";
     line.textContent = r.text;
@@ -232,26 +265,30 @@ function render(rows, opts, calibrated) {
     const dot = document.createElement("span");
     dot.className = "dot";
     verdict.append(dot, document.createTextNode(word));
-    if (withBrief && r.brief_relevance != null) {
-      const why = document.createElement("span");
-      why.className = "why";
-      why.textContent = ` · relevance ${Math.round(r.brief_relevance * 100)}%`;
-      verdict.appendChild(why);
-    }
     text.append(line, verdict);
-    const details = document.createElement("div");
-    details.className = "details";
-    details.appendChild(detailsFor(r, withBrief));
-    li.append(text, details);
-    li.addEventListener("click", () => li.classList.toggle("open"));
+    const num = document.createElement("div");
+    num.className = "num";
+    num.textContent = calibrated && r.prob != null ? String(Math.round(r.prob * 100)) : "–";
+    if (calibrated && r.prob != null) {
+      const u = document.createElement("span");
+      u.className = "unit";
+      u.textContent = "%";
+      num.appendChild(u);
+    }
+    li.append(rank, text, num);
+    li.addEventListener("click", () => {
+      selected = i;
+      items.forEach((el, j) => el.classList.toggle("selected", j === i));
+      showHero(r, opts, calibrated);
+      $("hero").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     list.appendChild(li);
-  }
+    return li;
+  });
+  items[selected].classList.add("selected");
+  showHero(rows[selected], opts, calibrated);
   const passed = rows.filter((r) => r.pass).length;
-  const sum = $("summary");
-  sum.innerHTML = "";
-  const b = document.createElement("strong");
-  b.textContent = calibrated ? `${passed} of ${rows.length} pass` : `${rows.length} lines`;
-  sum.append(b, document.createTextNode(calibrated ? " · ranked best first · tap a line for details" : " · uncalibrated axis"));
+  $("summary").textContent = calibrated ? `ranking · ${passed} of ${rows.length} pass` : `ranking · ${rows.length} lines`;
   $("results").hidden = false;
 }
 
