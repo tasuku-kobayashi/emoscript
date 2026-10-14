@@ -34,7 +34,7 @@ from .axis import (
 )
 from .dataio import DATA_DIR, load_corpus, texts
 from .embed import DEFAULT_MODEL, EmbedFn, prefix_for
-from .text import has_letters, normalizer
+from .text import canonicalize, has_letters, normalizer
 
 NegativeKinds = tuple[str, ...]
 
@@ -53,6 +53,11 @@ class AxisModel:
     exemplars: np.ndarray | None = None
     exemplar_texts: list[str] = field(default_factory=list)
     exemplar_labels: np.ndarray | None = None
+    # Every famous line the corpus knows (train and test) with its brand, for the
+    # lexical near-duplicate check: a candidate that copies or parodies one of
+    # these should be flagged, however well it scores.
+    famous_texts: list[str] = field(default_factory=list)
+    famous_brands: list[str] = field(default_factory=list)
 
     @property
     def k(self) -> int:
@@ -99,10 +104,68 @@ class AxisModel:
     def score_per_axis(self, E: np.ndarray) -> np.ndarray:
         return score_per_axis(E, self.axes)
 
-    def predict_proba(self, scores: np.ndarray) -> np.ndarray | None:
+    def predict_proba(self, scores: np.ndarray, prior: float = 0.5) -> np.ndarray | None:
+        """Calibrated P(great copy).
+
+        The calibrator is fitted with balanced classes, so its output assumes a
+        50/50 prior. ``prior`` shifts the logit so that p reflects a different
+        base rate: with hundreds of machine-generated candidates of which maybe
+        one in twenty is usable, ``prior=0.05`` gives probabilities (and a
+        PASS threshold) that mean what they say.
+        """
         if self.calibrator is None:
             return None
-        return self.calibrator.predict_proba(np.asarray(scores))
+        p = self.calibrator.predict_proba(np.asarray(scores))
+        if prior == 0.5:
+            return p
+        if not 0 < prior < 1:
+            raise ValueError("prior must be strictly between 0 and 1")
+        eps = 1e-12
+        logit = np.log(np.clip(p, eps, 1 - eps) / np.clip(1 - p, eps, 1)) + np.log(prior / (1 - prior))
+        return 1.0 / (1.0 + np.exp(-logit))
+
+    def near_famous(
+        self, texts_: list[str], *, max_edits: int = 2, trigram: float = 0.5
+    ) -> list[dict | None]:
+        """Lexical near-duplicate check against every famous line in the corpus.
+
+        Flags verbatim copies and one- or two-word parodies ("Just Chew It.",
+        "Kills Kids Dead") that the embedding scores like the originals. A
+        match is a famous line with token edit distance <= ``max_edits`` and at
+        most half of its tokens changed (so one-word lines only match exactly),
+        or character-trigram Jaccard >= ``trigram``.
+        Returns, per input, ``{"text", "brand", "edits", "trigram"}`` or None.
+        """
+        if not self.famous_texts:
+            return [None] * len(texts_)
+        canon = [canonicalize(t) for t in self.famous_texts]
+        toks = [c.split() for c in canon]
+        tris = [_trigrams(c) for c in canon]
+        out: list[dict | None] = []
+        for t in texts_:
+            c = canonicalize(t)
+            ct, ctri = c.split(), _trigrams(c)
+            best = None
+            for i, (ft, ftri) in enumerate(zip(toks, tris, strict=True)):
+                if abs(len(ft) - len(ct)) > max_edits:
+                    jac = len(ctri & ftri) / len(ctri | ftri) if (ctri or ftri) else 0.0
+                    if jac < trigram:
+                        continue
+                    edits = _token_edit_distance(ct, ft)
+                else:
+                    edits = _token_edit_distance(ct, ft)
+                    jac = len(ctri & ftri) / len(ctri | ftri) if (ctri or ftri) else 0.0
+                # short famous lines must match (almost) exactly: "Think" may not flag "Think fresh."
+                hit = (edits <= max_edits and edits <= len(ft) // 2) or jac >= trigram
+                if hit and (best is None or (edits, -jac) < (best["edits"], -best["trigram"])):
+                    best = {
+                        "text": self.famous_texts[i],
+                        "brand": self.famous_brands[i] if self.famous_brands else "",
+                        "edits": int(edits),
+                        "trigram": float(jac),
+                    }
+            out.append(best)
+        return out
 
     def threshold_for(self, prob: float = 0.5) -> float | None:
         """Raw score at which calibrated P(great) crosses ``prob``.
@@ -129,6 +192,9 @@ class AxisModel:
         }
         if self.calibrator is not None:
             arrays.update(self.calibrator.to_arrays())
+        if self.famous_texts:
+            arrays["famous_texts"] = np.asarray(self.famous_texts)
+            arrays["famous_brands"] = np.asarray(self.famous_brands or [""] * len(self.famous_texts))
         if self.exemplars is not None and self.exemplar_texts:
             arrays["ex_E"] = np.asarray(self.exemplars, dtype=np.float32)
             arrays["ex_texts"] = np.asarray(self.exemplar_texts)
@@ -159,6 +225,8 @@ class AxisModel:
                 exemplars = np.asarray(blob["ex_E"], dtype=np.float64)
                 exemplar_texts = [str(t) for t in blob["ex_texts"]]
                 exemplar_labels = np.asarray(blob["ex_labels"], dtype=int)
+            famous_texts = [str(t) for t in blob["famous_texts"]] if "famous_texts" in blob else []
+            famous_brands = [str(t) for t in blob["famous_brands"]] if "famous_brands" in blob else []
         return cls(
             axes=axes,
             model_name=model_name,
@@ -169,7 +237,24 @@ class AxisModel:
             exemplars=exemplars,
             exemplar_texts=exemplar_texts,
             exemplar_labels=exemplar_labels,
+            famous_texts=famous_texts,
+            famous_brands=famous_brands,
         )
+
+
+def _trigrams(s: str) -> set[str]:
+    s = s.replace(" ", "_")
+    return {s[i : i + 3] for i in range(len(s) - 2)} if len(s) >= 3 else ({s} if s else set())
+
+
+def _token_edit_distance(a: list[str], b: list[str]) -> int:
+    prev = list(range(len(b) + 1))
+    for i, ta in enumerate(a, 1):
+        cur = [i]
+        for j, tb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ta != tb)))
+        prev = cur
+    return prev[-1]
 
 
 # --------------------------------------------------------------------------- fitting
@@ -328,7 +413,7 @@ def fit_from_corpus(
         raise ValueError("fit_from_corpus: need at least one positive and one negative")
     E_pos = embed_fn(pos)
     E_neg = embed_fn(neg)
-    return fit_from_embeddings(
+    model = fit_from_embeddings(
         E_pos,
         E_neg,
         k=k,
@@ -345,24 +430,47 @@ def fit_from_corpus(
         pos_texts=pos_raw,
         keep_exemplars=keep_exemplars,
     )
+    famous = corpus.pos_train + corpus.pos_test
+    model.famous_texts = [r["text"] for r in famous]
+    model.famous_brands = [str(r.get("brand", "")) for r in famous]
+    return model
 
 
 # --------------------------------------------------------------------------- scoring
 def score_texts(
-    model: AxisModel, texts_: list[str], embed_fn: EmbedFn
+    model: AxisModel, texts_: list[str], embed_fn: EmbedFn, *, prior: float = 0.5
 ) -> tuple[np.ndarray, np.ndarray | None]:
     """Raw scores and calibrated probabilities (None when uncalibrated).
 
     Inputs with no letters at all (empty, punctuation, numbers, emoji) are not
-    copy and get NaN instead of a score.
+    copy and get NaN instead of a score. ``prior`` is passed to
+    :meth:`AxisModel.predict_proba`.
     """
     texts_ = list(texts_)
     ok = np.array([has_letters(t) for t in texts_], dtype=bool)
     s = np.full(len(texts_), np.nan)
     if ok.any():
         s[ok] = model.score(model.embed([t for t, o in zip(texts_, ok, strict=True) if o], embed_fn))
-    p = model.predict_proba(s) if model.calibrator is not None else None
+    p = model.predict_proba(s, prior=prior) if model.calibrator is not None else None
     return s, p
+
+
+def brief_relevance(model: AxisModel, texts_: list[str], brief: str, embed_fn: EmbedFn) -> np.ndarray:
+    """Cosine between each line and a short product / campaign brief.
+
+    The great-copy axis is deliberately topic-blind, so nonsense that *sounds*
+    like a tagline ("Chase the Gravy") can outscore on-brief copy. Reporting
+    relevance next to the score lets a ranking require both. Lines without
+    letters get NaN.
+    """
+    texts_ = list(texts_)
+    ok = np.array([has_letters(t) for t in texts_], dtype=bool)
+    out = np.full(len(texts_), np.nan)
+    if ok.any() and has_letters(brief):
+        B = model.embed([brief], embed_fn)[0]
+        E = model.embed([t for t, o in zip(texts_, ok, strict=True) if o], embed_fn)
+        out[ok] = E @ B
+    return out
 
 
 # --------------------------------------------------------------------------- evaluation

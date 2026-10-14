@@ -105,6 +105,39 @@ def test_cli_guards(patched_backend, tmp_path, capsys):
     assert "PASS rate" in text and "junk" in text and "Wilson" not in text
 
 
+def test_score_warns_about_famous_copies_flags_prior_and_brief(patched_backend, tmp_path, capsys):
+    out = tmp_path / "axis.npz"
+    cli.main(["fit", "--model", "fake", "--out", str(out), "--k", "1"])
+    capsys.readouterr()
+    rc = cli.main(
+        [
+            "score",
+            "Just Chew It.",
+            "{{tagline}}",
+            "Sleep like you mean it.",
+            "--axis",
+            str(out),
+            "--prior",
+            "0.05",
+            "--brief",
+            "chewing gum",
+        ]
+    )
+    assert rc == 0
+    text = capsys.readouterr().out
+    assert 'near famous line: "Just Do It." (Nike)' in text
+    assert "flags: single_word, placeholder" in text
+    assert "rel=" in text
+    cli.main(["score", "Just Chew It.", "--axis", str(out), "--json", "--no-famous-check"])
+    row = json.loads(capsys.readouterr().out)[0]
+    assert "near_famous" not in row and "flags" not in row
+    cli.main(["score", "1. Just Chew It.", "--axis", str(out), "--json"])
+    row = json.loads(capsys.readouterr().out)[0]
+    assert row["near_famous"]["text"] == "Just Do It." and row["flags"] == ["wrapped"]
+    with pytest.raises(SystemExit, match="prior"):
+        cli.main(["score", "x", "--axis", str(out), "--prior", "0"])
+
+
 def test_corpus_check(capsys):
     assert cli.main(["corpus-check"]) == 0
     assert "corpus OK" in capsys.readouterr().out

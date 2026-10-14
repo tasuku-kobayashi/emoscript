@@ -105,6 +105,63 @@ def test_degenerate_scores_do_not_crash_fit():
     assert any("degenerate" in w for w in m.meta.get("warnings", []))
 
 
+def test_near_famous_flags_copies_and_parodies_not_fresh_copy(fake_embed_fn, tmp_path):
+    model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False)
+    corpus = load_corpus()
+    assert len(model.famous_texts) == len(corpus.pos_train) + len(corpus.pos_test)
+    hits = model.near_famous(
+        [
+            "Just Do It.",  # verbatim (train)
+            "just do it",  # verbatim, different case/punct
+            "Just Chew It.",  # one-word parody
+            "Kills Kids Dead",  # harmful parody of "Kills Bugs Dead"
+            "Flick Your Bic",  # verbatim (held-out test line)
+            '1. "Think Different."',  # wrapped verbatim
+            "Sleep like you mean it.",  # fresh copy
+            "Everything you need for a newborn, in one box.",  # fresh copy
+            "Think fresh.",  # shares one word with several famous lines only
+        ]
+    )
+    assert hits[0]["text"] == "Just Do It." and hits[0]["brand"] == "Nike" and hits[0]["edits"] == 0
+    assert hits[1]["text"] == "Just Do It."
+    assert hits[2]["text"] == "Just Do It." and hits[2]["edits"] == 1
+    assert hits[3]["text"] == "Kills Bugs Dead"
+    assert hits[4]["text"] == "Flick Your Bic"
+    assert hits[5]["text"] == "Think Different."
+    assert hits[6] is None and hits[7] is None and hits[8] is None
+    model.save(tmp_path / "m.npz")
+    loaded = AxisModel.load(tmp_path / "m.npz")
+    assert loaded.famous_texts == model.famous_texts and loaded.famous_brands == model.famous_brands
+    assert loaded.near_famous(["Just Do It."])[0]["brand"] == "Nike"
+    slim = AxisModel(axes=model.axes)
+    assert slim.near_famous(["Just Do It."]) == [None]
+
+
+def test_prior_shifts_probabilities_monotonically(fake_embed_fn):
+    model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake")
+    s = np.linspace(-0.3, 0.6, 7)
+    p50 = model.predict_proba(s)
+    p05 = model.predict_proba(s, prior=0.05)
+    p95 = model.predict_proba(s, prior=0.95)
+    assert np.all(p05 < p50) and np.all(p95 > p50)
+    assert np.all(np.diff(p05) > 0)
+    with pytest.raises(ValueError):
+        model.predict_proba(s, prior=1.0)
+    _, p = score_texts(model, ["Think fresh."], fake_embed_fn, prior=0.05)
+    assert 0 <= p[0] <= 1
+
+
+def test_brief_relevance(fake_embed_fn):
+    from emoscript.pipeline import brief_relevance
+
+    model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False)
+    rel = brief_relevance(
+        model, ["meal kits for parents", "?!"], "meal-kit delivery for busy parents", fake_embed_fn
+    )
+    assert np.isfinite(rel[0]) and -1 <= rel[0] <= 1 and np.isnan(rel[1])
+    assert np.isnan(brief_relevance(model, ["x"], "...", fake_embed_fn)).all()
+
+
 def test_save_appends_npz_suffix(fake_embed_fn, tmp_path):
     model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False)
     saved = model.save(tmp_path / "myaxis")

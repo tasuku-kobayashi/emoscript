@@ -3,6 +3,7 @@
 emoscript fit --out axis.npz              # fit axes (+ calibrator) from the bundled corpus (k=2, lower-cased)
 emoscript score "Just ship it." --axis axis.npz
 emoscript score "Just ship it." --explain      # + nearest famous taglines, matched axis
+emoscript score --file c.txt --prior 0.05 --brief "meal-kit delivery for busy parents"
 emoscript score --file candidates.txt --sort --json
 emoscript eval --axis axis.npz            # held-out AUC / calibration report
 emoscript corpus-check                    # corpus integrity (no model needed)
@@ -22,8 +23,8 @@ import numpy as np
 from . import __version__
 from .dataio import DATA_DIR, corpus_warnings, validate_corpus
 from .embed import DEFAULT_MODEL, make_embed_fn
-from .pipeline import AxisModel, evaluate, fit_from_corpus, score_texts
-from .text import CASINGS
+from .pipeline import AxisModel, brief_relevance, evaluate, fit_from_corpus, score_texts
+from .text import CASINGS, input_flags
 
 DEFAULT_REPO = "tasuku-kobayashi/emoscript"
 
@@ -86,10 +87,15 @@ def _read_texts(args) -> list[str]:
 def cmd_score(args) -> int:
     if not 0 < args.threshold < 1:
         raise SystemExit("--threshold must be strictly between 0 and 1")
+    if not 0 < args.prior < 1:
+        raise SystemExit("--prior must be strictly between 0 and 1")
     model = AxisModel.load(args.axis)
     texts = _read_texts(args)
     embed_fn = make_embed_fn(model.model_name, model.prefix)
-    scores, probs = score_texts(model, texts, embed_fn)
+    scores, probs = score_texts(model, texts, embed_fn, prior=args.prior)
+    relevance = brief_relevance(model, texts, args.brief, embed_fn) if args.brief else None
+    near = model.near_famous(texts) if not args.no_famous_check else [None] * len(texts)
+    flags = [input_flags(t) for t in texts]
     explanations = None
     if args.explain:
         safe = [t if not np.isnan(scores[i]) else "placeholder" for i, t in enumerate(texts)]
@@ -106,6 +112,12 @@ def cmd_score(args) -> int:
         if explanations is not None and not skipped:
             row["axis"] = explanations[i]["axis"]
             row["nearest"] = [{"text": a, "cos": b} for a, b in explanations[i]["nearest"]]
+        if relevance is not None:
+            row["brief_relevance"] = None if skipped else float(relevance[i])
+        if flags[i]:
+            row["flags"] = flags[i]
+        if near[i] is not None:
+            row["near_famous"] = near[i]
         rows.append(row)
     if args.sort:
         rows.sort(key=lambda r: -(r["score"] if r["score"] is not None else float("-inf")))
@@ -113,12 +125,24 @@ def cmd_score(args) -> int:
         _print_json(rows)
         return 0
     for r in rows:
+        rel = f"  rel={r['brief_relevance']:.2f}" if r.get("brief_relevance") is not None else ""
         if r["score"] is None:
             print(f"   n/a   skipped ({r['skipped']})  {r['text']}")
         elif "prob" in r:
-            print(f"{r['score']:+.4f}  p={r['prob']:.2f}  {'PASS' if r['pass'] else 'fail'}  {r['text']}")
+            print(
+                f"{r['score']:+.4f}  p={r['prob']:.2f}  {'PASS' if r['pass'] else 'fail'}{rel}  {r['text']}"
+            )
         else:
-            print(f"{r['score']:+.4f}  {r['text']}")
+            print(f"{r['score']:+.4f}{rel}  {r['text']}")
+        notes = []
+        if "near_famous" in r:
+            nf = r["near_famous"]
+            who = f" ({nf['brand']})" if nf.get("brand") else ""
+            notes.append(f'near famous line: "{nf["text"]}"{who}')
+        if r.get("flags"):
+            notes.append("flags: " + ", ".join(r["flags"]))
+        if notes:
+            print("          ! " + "; ".join(notes))
         if "nearest" in r:
             axis_note = f" (axis {r['axis']})" if model.k > 1 else ""
             near = "; ".join(f"{n['text']} ({n['cos']:.2f})" for n in r["nearest"])
@@ -263,6 +287,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--threshold", type=float, default=0.5, help="probability for PASS")
     p.add_argument("--explain", action="store_true", help="show the nearest famous taglines and matched axis")
     p.add_argument("--neighbors", type=int, default=3, help="how many nearest taglines with --explain")
+    p.add_argument(
+        "--prior",
+        type=float,
+        default=0.5,
+        help="base rate of great copy among your candidates (default 0.5; try 0.05 for raw LLM output)",
+    )
+    p.add_argument("--brief", help="product / campaign brief; adds rel= cosine(line, brief) to each row")
+    p.add_argument("--no-famous-check", action="store_true", help="skip the near-famous-line warning")
     p.set_defaults(fn=cmd_score)
 
     p = sub.add_parser("eval", help="evaluate a fitted axis on the held-out splits")
