@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>emoscript</title>
+  <meta name="description" content="Score tagline candidates against the direction of famous ad copy, entirely in your browser." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>emoscript <span class="sub">browser edition</span></h1>
+    <p class="lede">
+      Paste candidate taglines, one per line. Each is embedded <strong>in your browser</strong> and scored
+      against the direction of famous ad copy. Nothing you type leaves this page; the embedding model
+      is downloaded once from huggingface.co and cached.
+    </p>
+  </header>
+
+  <main>
+    <section class="panel" id="status-panel">
+      <div id="status" class="status">Loading scorer…</div>
+      <progress id="progress" max="100" value="0" hidden></progress>
+    </section>
+
+    <section class="panel">
+      <label for="lines">Candidate lines <span class="hint">(one per line, tagline length; body copy is out of scope)</span></label>
+      <textarea id="lines" rows="10" spellcheck="false" placeholder="Just chew it.
+Sleep like you mean it.
+Quality products at affordable prices for everyone."></textarea>
+
+      <label for="brief">Brief <span class="hint">(optional: a few words on the product; adds a relevance check so off-topic lines cannot win on style alone)</span></label>
+      <input id="brief" type="text" placeholder="a breakfast cereal for busy families" />
+
+      <details class="options">
+        <summary>Options</summary>
+        <div class="grid">
+          <label>PASS threshold on p
+            <input id="threshold" type="number" min="0.01" max="0.99" step="0.01" value="0.5" />
+          </label>
+          <label>Prior (expected share of usable lines)
+            <input id="prior" type="number" min="0.01" max="0.99" step="0.01" value="0.5" />
+          </label>
+          <label>Keep top share by brief relevance
+            <input id="top-rel" type="number" min="0.05" max="1" step="0.05" value="1" />
+          </label>
+          <label>Minimum brief relevance
+            <input id="min-rel" type="number" min="-1" max="1" step="0.01" placeholder="off" />
+          </label>
+          <label class="check"><input id="sense-gate" type="checkbox" checked /> Sense gate (block lines that do not read as a message)</label>
+          <label class="check"><input id="famous-check" type="checkbox" checked /> Famous-line check (block copies, flag parodies)</label>
+          <label>Model precision
+            <select id="dtype">
+              <option value="fp32">fp32 (exact, ~130 MB download)</option>
+              <option value="fp16">fp16 (WebGPU only, ~65 MB)</option>
+              <option value="q8">q8 (approximate, ~35 MB; scores drift up to ±0.03)</option>
+            </select>
+          </label>
+        </div>
+      </details>
+
+      <div class="actions">
+        <button id="score" type="button" disabled>Score</button>
+        <button id="example" type="button" class="secondary">Load example</button>
+        <button id="download-json" type="button" class="secondary" disabled>Download JSON</button>
+        <button id="download-csv" type="button" class="secondary" disabled>Download CSV</button>
+      </div>
+    </section>
+
+    <section class="panel" id="results-panel" hidden>
+      <h2>Results <span id="summary" class="hint"></span></h2>
+      <div class="table-wrap">
+        <table id="results">
+          <thead>
+            <tr>
+              <th>#</th><th>verdict</th><th>p</th><th>score</th><th>sense</th><th class="rel">rel</th><th>line</th><th>notes</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint">
+        <strong>p</strong> is the calibrated probability that a line sits with famous copy rather than bland ad-speak
+        (50/50 prior unless you change it). <strong>score</strong> is the raw cosine against the axis.
+        <strong>sense</strong> is P(this reads as a message, not nonsense). <strong>rel</strong> is cosine to the brief.
+        PASS means p ≥ threshold and nothing disqualifies the line. Read the limitations below before trusting a number.
+      </p>
+    </section>
+
+    <section class="panel limits">
+      <h2>What this is, and is not</h2>
+      <ul>
+        <li>It ranks <em>stylistic proximity</em> to classic taglines. It is a triage signal for hundreds of candidates, not a judge of a single line, and never legal clearance.</li>
+        <li>The browser build uses a small English model (<code id="model-name">…</code>). It is weaker than the Python package's default (multilingual-e5-large): on the held-out set it still separates famous lines from bland ad-speak well, but it is more easily fooled by on-topic product descriptions and by fluent junk. Numbers are in the repository's <a id="results-link" href="https://github.com/tasuku-kobayashi/emoscript/blob/main/docs/results.md">docs/results.md</a>.</li>
+        <li>Failing is weak evidence: most good-but-unknown lines fail. Passing is the useful side.</li>
+        <li>Quotes and proverbs pass. Non-English lines are flagged, not scored reliably.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <a href="https://github.com/tasuku-kobayashi/emoscript">github.com/tasuku-kobayashi/emoscript</a>
+    · model <span id="model-version"></span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

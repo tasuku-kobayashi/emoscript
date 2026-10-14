@@ -1,0 +1,3413 @@
+{
+ "axis_model": "BAAI/bge-small-en-v1.5",
+ "casing": "canonical",
+ "brief": "a breakfast cereal for busy families",
+ "lines": [
+  {
+   "text": "Just Do It.",
+   "canonical": "just do it",
+   "flags": [],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "just do it",
+   "canonical": "just do it",
+   "flags": [],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "\"Just. Do. It.\"",
+   "canonical": "just. do. it",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "1. Tagline: \"Just Do It.\"",
+   "canonical": "just do it",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "<h1>Think Small.</h1>",
+   "canonical": "think small",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Think Small.",
+    "brand": "Volkswagen",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "**Just Chew It.**",
+   "canonical": "just chew it",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 1,
+    "trigram": 0.2857142857142857,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Got Mold?",
+   "canonical": "got mold",
+   "flags": [],
+   "near_famous": {
+    "text": "Got Milk?",
+    "brand": "California Milk Processor Board",
+    "edits": 1,
+    "trigram": 0.3333333333333333,
+    "severity": "possible"
+   }
+  },
+  {
+   "text": "Got milk",
+   "canonical": "got milk",
+   "flags": [],
+   "near_famous": {
+    "text": "Got Milk?",
+    "brand": "California Milk Processor Board",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Kills Kids Dead",
+   "canonical": "kills kids dead",
+   "flags": [],
+   "near_famous": {
+    "text": "Kills Bugs Dead",
+    "brand": "Raid",
+    "edits": 1,
+    "trigram": 0.4444444444444444,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Chase the gravy.",
+   "canonical": "chase the gravy",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Sleep like you mean it.",
+   "canonical": "sleep like you mean it",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Quality products at affordable prices for everyone.",
+   "canonical": "quality products at affordable prices for everyone",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Premium Quality",
+   "canonical": "premium quality",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Add to Cart",
+   "canonical": "add to cart",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Athletic shoes designed for serious runners.",
+   "canonical": "athletic shoes designed for serious runners",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Sure! Here are five taglines for your brand:",
+   "canonical": "sure! here are five taglines for your brand:",
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "As an AI language model, I cannot write slogans.",
+   "canonical": "as an ai language model, i cannot write slogans",
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Here's a tagline: Fresh every day.",
+   "canonical": "here's a tagline: fresh every day",
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "{{tagline}}",
+   "canonical": "{{tagline}}",
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "<BRAND> makes it easy",
+   "canonical": "makes it easy",
+   "flags": [
+    "placeholder",
+    "wrapped"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Your slogan here",
+   "canonical": "your slogan here",
+   "flags": [
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "TODO",
+   "canonical": "todo",
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "null",
+   "canonical": "null",
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "lorem ipsum dolor sit amet",
+   "canonical": "lorem ipsum dolor sit amet",
+   "flags": [
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Think",
+   "canonical": "think",
+   "flags": [
+    "single_word"
+   ],
+   "near_famous": {
+    "text": "Think",
+    "brand": "IBM",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "!!!",
+   "canonical": "",
+   "flags": [
+    "no_letters"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "12345",
+   "canonical": "12345",
+   "flags": [
+    "no_letters"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "   ",
+   "canonical": "",
+   "flags": [
+    "no_letters"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "- Option 3: Less talk. More walk.",
+   "canonical": "less talk. more walk",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "> 2) **Headline:** \"Eat the frog first.\"",
+   "canonical": "eat the frog first",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Tagline (short): Do more with less",
+   "canonical": "do more with less",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Copy-paste less.",
+   "canonical": "copy-paste less",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "America's #1 pizza",
+   "canonical": "america's #1 pizza",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "I’m lovin’ it",
+   "canonical": "i'm lovin' it",
+   "flags": [],
+   "near_famous": {
+    "text": "I'm Lovin' It",
+    "brand": "McDonald's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "We’re lovin’ it",
+   "canonical": "we're lovin' it",
+   "flags": [],
+   "near_famous": {
+    "text": "I'm Lovin' It",
+    "brand": "McDonald's",
+    "edits": 1,
+    "trigram": 0.5384615384615384,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "東京で一番おいしいコーヒー",
+   "canonical": "東京で一番おいしいコーヒー",
+   "flags": [
+    "single_word",
+    "non_latin"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Café crème, chaque matin",
+   "canonical": "café crème, chaque matin",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Es ist Zeit für Veränderung",
+   "canonical": "es ist zeit für veränderung",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Because you're worth it.",
+   "canonical": "because you're worth it",
+   "flags": [],
+   "near_famous": {
+    "text": "Because You're Worth It",
+    "brand": "L'Oréal",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Because you're worth more than that, really.",
+   "canonical": "because you're worth more than that, really",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Do the math.",
+   "canonical": "do the math",
+   "flags": [],
+   "near_famous": {
+    "text": "Do the Dew",
+    "brand": "Mountain Dew",
+    "edits": 1,
+    "trigram": 0.4166666666666667,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Like a pro.",
+   "canonical": "like a pro",
+   "flags": [],
+   "near_famous": {
+    "text": "Like a Rock",
+    "brand": "Chevrolet",
+    "edits": 1,
+    "trigram": 0.4166666666666667,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "The ultimate driving machine",
+   "canonical": "the ultimate driving machine",
+   "flags": [],
+   "near_famous": {
+    "text": "The Ultimate Driving Machine",
+    "brand": "BMW",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "The ultimate cleaning machine",
+   "canonical": "the ultimate cleaning machine",
+   "flags": [],
+   "near_famous": {
+    "text": "The Ultimate Driving Machine",
+    "brand": "BMW",
+    "edits": 1,
+    "trigram": 0.6060606060606061,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "When it absolutely, positively has to be there overnight, you know who to call, and it is us.",
+   "canonical": "when it absolutely, positively has to be there overnight, you know who to call, and it is us",
+   "flags": [
+    "too_long"
+   ],
+   "near_famous": {
+    "text": "When It Absolutely, Positively Has to Be There Overnight",
+    "brand": "FedEx",
+    "edits": 9,
+    "trigram": 0.6296296296296297,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "This is a deliberately long line that goes on and on and on and on and on and on and on and on and on and on and on.",
+   "canonical": "this is a deliberately long line that goes on and on and on and on and on and on and on and on and on and on and on",
+   "flags": [
+    "too_long"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Error: 429 rate limit exceeded",
+   "canonical": "error: 429 rate limit exceeded",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Here you go: Taste the rainbow",
+   "canonical": "here you go: taste the rainbow",
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": {
+    "text": "Taste the Rainbow",
+    "brand": "Skittles",
+    "edits": 3,
+    "trigram": 0.5555555555555556,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Taste the rainbow",
+   "canonical": "taste the rainbow",
+   "flags": [],
+   "near_famous": {
+    "text": "Taste the Rainbow",
+    "brand": "Skittles",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Where's the beef?",
+   "canonical": "where's the beef",
+   "flags": [],
+   "near_famous": {
+    "text": "Where's the Beef?",
+    "brand": "Wendy's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Where is the beef",
+   "canonical": "where is the beef",
+   "flags": [],
+   "near_famous": {
+    "text": "Where's the Beef?",
+    "brand": "Wendy's",
+    "edits": 2,
+    "trigram": 0.6470588235294118,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Open happiness",
+   "canonical": "open happiness",
+   "flags": [],
+   "near_famous": {
+    "text": "Open Happiness",
+    "brand": "Coca-Cola",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "open   happiness   ",
+   "canonical": "open happiness",
+   "flags": [],
+   "near_famous": {
+    "text": "Open Happiness",
+    "brand": "Coca-Cola",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Melts in your mouth, not in your hands",
+   "canonical": "melts in your mouth, not in your hands",
+   "flags": [],
+   "near_famous": {
+    "text": "Melts in Your Mouth, Not in Your Hands",
+    "brand": "M&M's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Melts in your hand, not in your mouth",
+   "canonical": "melts in your hand, not in your mouth",
+   "flags": [],
+   "near_famous": {
+    "text": "Melts in Your Mouth, Not in Your Hands",
+    "brand": "M&M's",
+    "edits": 2,
+    "trigram": 0.8333333333333334,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Impossible is nothing",
+   "canonical": "impossible is nothing",
+   "flags": [],
+   "near_famous": {
+    "text": "Impossible Is Nothing",
+    "brand": "Adidas",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Nothing is impossible",
+   "canonical": "nothing is impossible",
+   "flags": [],
+   "near_famous": {
+    "text": "Impossible Is Nothing",
+    "brand": "Adidas",
+    "edits": 2,
+    "trigram": 0.6521739130434783,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Finger lickin' good",
+   "canonical": "finger lickin' good",
+   "flags": [],
+   "near_famous": {
+    "text": "Finger Lickin' Good",
+    "brand": "KFC",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Finger licking good food here",
+   "canonical": "finger licking good food here",
+   "flags": [],
+   "near_famous": {
+    "text": "Finger Lickin' Good",
+    "brand": "KFC",
+    "edits": 3,
+    "trigram": 0.5384615384615384,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Snap! Crackle! Pop!",
+   "canonical": "snap! crackle! pop",
+   "flags": [],
+   "near_famous": {
+    "text": "Snap! Crackle! Pop!",
+    "brand": "Rice Krispies",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Save money. Live better.",
+   "canonical": "save money. live better",
+   "flags": [],
+   "near_famous": {
+    "text": "Save Money. Live Better.",
+    "brand": "Walmart",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Save time. Live better.",
+   "canonical": "save time. live better",
+   "flags": [],
+   "near_famous": {
+    "text": "Save Money. Live Better.",
+    "brand": "Walmart",
+    "edits": 1,
+    "trigram": 0.48,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Breakfast of champions",
+   "canonical": "breakfast of champions",
+   "flags": [],
+   "near_famous": {
+    "text": "Breakfast of Champions",
+    "brand": "Wheaties",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Lunch of champions",
+   "canonical": "lunch of champions",
+   "flags": [],
+   "near_famous": {
+    "text": "Breakfast of Champions",
+    "brand": "Wheaties",
+    "edits": 1,
+    "trigram": 0.44,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Insert tagline here",
+   "canonical": "insert tagline here",
+   "flags": [
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Insert your tagline here.",
+   "canonical": "insert your tagline here",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Enter text here",
+   "canonical": "enter text here",
+   "flags": [
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "undefined",
+   "canonical": "undefined",
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "N/A",
+   "canonical": "n/a",
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Option B - Bold moves only",
+   "canonical": "bold moves only",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "v2: Small steps, big leaps",
+   "canonical": "small steps, big leaps",
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Certainly, here you go:",
+   "canonical": "certainly, here you go:",
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Okay. I think these work:",
+   "canonical": "okay. i think these work:",
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "Okay. I think this one works best.",
+   "canonical": "okay. i think this one works best",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Sorry, but I can't write that.",
+   "canonical": "sorry, but i can't write that",
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": null
+  },
+  {
+   "text": "I'm afraid I can't help.",
+   "canonical": "i'm afraid i can't help",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "A diamond is forever",
+   "canonical": "a diamond is forever",
+   "flags": [],
+   "near_famous": {
+    "text": "A Diamond Is Forever",
+    "brand": "De Beers",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Diamonds are forever",
+   "canonical": "diamonds are forever",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Lower prices every day",
+   "canonical": "lower prices every day",
+   "flags": [],
+   "near_famous": null
+  },
+  {
+   "text": "Live más",
+   "canonical": "live más",
+   "flags": [],
+   "near_famous": {
+    "text": "Live Young",
+    "brand": "Evian",
+    "edits": 1,
+    "trigram": 0.2727272727272727,
+    "severity": "possible"
+   }
+  },
+  {
+   "text": "Red Bull gives you wings",
+   "canonical": "red bull gives you wings",
+   "flags": [],
+   "near_famous": {
+    "text": "Red Bull Gives You Wings",
+    "brand": "Red Bull",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Energy drink gives you wings",
+   "canonical": "energy drink gives you wings",
+   "flags": [],
+   "near_famous": {
+    "text": "Red Bull Gives You Wings",
+    "brand": "Red Bull",
+    "edits": 2,
+    "trigram": 0.4117647058823529,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "Say it with flowers",
+   "canonical": "say it with flowers",
+   "flags": [],
+   "near_famous": {
+    "text": "Say It with Flowers",
+    "brand": "Society of American Florists",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   }
+  },
+  {
+   "text": "Say it with chocolate",
+   "canonical": "say it with chocolate",
+   "flags": [],
+   "near_famous": {
+    "text": "Say It with Flowers",
+    "brand": "Society of American Florists",
+    "edits": 1,
+    "trigram": 0.38461538461538464,
+    "severity": "parody"
+   }
+  },
+  {
+   "text": "The quick brown fox jumps over the lazy dog",
+   "canonical": "the quick brown fox jumps over the lazy dog",
+   "flags": [],
+   "near_famous": null
+  }
+ ],
+ "score_sorted": [
+  {
+   "text": "Melts in your hand, not in your mouth",
+   "score": 0.24754787150634405,
+   "sense": 0.9679783751431045,
+   "near_famous": {
+    "text": "Melts in Your Mouth, Not in Your Hands",
+    "brand": "M&M's",
+    "edits": 2,
+    "trigram": 0.8333333333333334,
+    "severity": "parody"
+   },
+   "prob": 0.976373102773433,
+   "pass": true
+  },
+  {
+   "text": "**Just Chew It.**",
+   "score": 0.22914407112374166,
+   "sense": 0.7464103733272587,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 1,
+    "trigram": 0.2857142857142857,
+    "severity": "parody"
+   },
+   "prob": 0.9601154672088618,
+   "pass": true
+  },
+  {
+   "text": "We’re lovin’ it",
+   "score": 0.1920821809391946,
+   "sense": 0.9956354011656207,
+   "near_famous": {
+    "text": "I'm Lovin' It",
+    "brand": "McDonald's",
+    "edits": 1,
+    "trigram": 0.5384615384615384,
+    "severity": "parody"
+   },
+   "prob": 0.9571382399601491,
+   "pass": true
+  },
+  {
+   "text": "Kills Kids Dead",
+   "score": 0.16684600855159315,
+   "sense": 0.7466662565888066,
+   "near_famous": {
+    "text": "Kills Bugs Dead",
+    "brand": "Raid",
+    "edits": 1,
+    "trigram": 0.4444444444444444,
+    "severity": "parody"
+   },
+   "prob": 0.9033944520805473,
+   "pass": true
+  },
+  {
+   "text": "Finger licking good food here",
+   "score": 0.1651618743185563,
+   "sense": 0.9793630574413655,
+   "near_famous": {
+    "text": "Finger Lickin' Good",
+    "brand": "KFC",
+    "edits": 3,
+    "trigram": 0.5384615384615384,
+    "severity": "parody"
+   },
+   "prob": 0.925626476560805,
+   "pass": true
+  },
+  {
+   "text": "Say it with chocolate",
+   "score": 0.16063195987515777,
+   "sense": 0.7582089779669599,
+   "near_famous": {
+    "text": "Say It with Flowers",
+    "brand": "Society of American Florists",
+    "edits": 1,
+    "trigram": 0.38461538461538464,
+    "severity": "parody"
+   },
+   "prob": 0.895494656242936,
+   "pass": true
+  },
+  {
+   "text": "Nothing is impossible",
+   "score": 0.1597365818576407,
+   "sense": 0.9969084259790026,
+   "near_famous": {
+    "text": "Impossible Is Nothing",
+    "brand": "Adidas",
+    "edits": 2,
+    "trigram": 0.6521739130434783,
+    "severity": "parody"
+   },
+   "prob": 0.9342414181689068,
+   "pass": true
+  },
+  {
+   "text": "Sleep like you mean it.",
+   "score": 0.15951477608565515,
+   "sense": 0.9421398840927503,
+   "prob": 0.9101750215637193,
+   "pass": true
+  },
+  {
+   "text": "Chase the gravy.",
+   "score": 0.15599421139514924,
+   "sense": 0.9364232412283818,
+   "prob": 0.9047445636246495,
+   "pass": true
+  },
+  {
+   "text": "Where is the beef",
+   "score": 0.15553171262780602,
+   "sense": 0.8317343647162111,
+   "near_famous": {
+    "text": "Where's the Beef?",
+    "brand": "Wendy's",
+    "edits": 2,
+    "trigram": 0.6470588235294118,
+    "severity": "parody"
+   },
+   "prob": 0.8929957891514304,
+   "pass": true
+  },
+  {
+   "text": "Energy drink gives you wings",
+   "score": 0.14703362377361123,
+   "sense": 0.9767388331810007,
+   "near_famous": {
+    "text": "Red Bull Gives You Wings",
+    "brand": "Red Bull",
+    "edits": 2,
+    "trigram": 0.4117647058823529,
+    "severity": "parody"
+   },
+   "prob": 0.9031273599023318,
+   "pass": true
+  },
+  {
+   "text": "The quick brown fox jumps over the lazy dog",
+   "score": 0.13709912974685465,
+   "sense": 0.6367448896728196,
+   "prob": 0.8488651781979556,
+   "pass": true
+  },
+  {
+   "text": "I'm afraid I can't help.",
+   "score": 0.12718392477230736,
+   "sense": 0.8431804776789611,
+   "prob": 0.8456413538760952,
+   "pass": true
+  },
+  {
+   "text": "Okay. I think this one works best.",
+   "score": 0.10356425246530779,
+   "sense": 0.9813803427704849,
+   "prob": 0.8317482046539105,
+   "pass": true
+  },
+  {
+   "text": "Because you're worth more than that, really.",
+   "score": 0.09050532655853359,
+   "sense": 0.999607949590018,
+   "prob": 0.8622996390246348,
+   "pass": true
+  },
+  {
+   "text": "Diamonds are forever",
+   "score": 0.07431548876926286,
+   "sense": 0.9876337672544562,
+   "prob": 0.7686388252145897,
+   "pass": true
+  },
+  {
+   "text": "Like a pro.",
+   "score": 0.06892445224025008,
+   "sense": 0.9719682269436298,
+   "near_famous": {
+    "text": "Like a Rock",
+    "brand": "Chevrolet",
+    "edits": 1,
+    "trigram": 0.4166666666666667,
+    "severity": "parody"
+   },
+   "prob": 0.7360044238896735,
+   "pass": true
+  },
+  {
+   "text": "- Option 3: Less talk. More walk.",
+   "score": 0.06781461964578789,
+   "sense": 0.6558740067921577,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.6644879300388367,
+   "pass": true
+  },
+  {
+   "text": "America's #1 pizza",
+   "score": 0.060417619603350826,
+   "sense": 0.9613245745901176,
+   "prob": 0.7024236059077398,
+   "pass": true
+  },
+  {
+   "text": "Do the math.",
+   "score": 0.055297361215988536,
+   "sense": 0.515296714886057,
+   "near_famous": {
+    "text": "Do the Dew",
+    "brand": "Mountain Dew",
+    "edits": 1,
+    "trigram": 0.4166666666666667,
+    "severity": "parody"
+   },
+   "prob": 0.6053787069650055,
+   "pass": true
+  },
+  {
+   "text": "Live más",
+   "score": 0.03538988314534905,
+   "sense": 0.547603602321397,
+   "near_famous": {
+    "text": "Live Young",
+    "brand": "Evian",
+    "edits": 1,
+    "trigram": 0.2727272727272727,
+    "severity": "possible"
+   },
+   "prob": 0.5350110259327168,
+   "pass": true
+  },
+  {
+   "text": "Lunch of champions",
+   "score": 0.030563310965333657,
+   "sense": 0.6438743834835536,
+   "near_famous": {
+    "text": "Breakfast of Champions",
+    "brand": "Wheaties",
+    "edits": 1,
+    "trigram": 0.44,
+    "severity": "parody"
+   },
+   "prob": 0.5279628837248497,
+   "pass": true
+  },
+  {
+   "text": "v2: Small steps, big leaps",
+   "score": 0.014977594126543262,
+   "sense": 0.8116124364245499,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.4931703001547359,
+   "pass": false
+  },
+  {
+   "text": "Save time. Live better.",
+   "score": -0.010761308913804554,
+   "sense": 0.9187640789321938,
+   "near_famous": {
+    "text": "Save Money. Live Better.",
+    "brand": "Walmart",
+    "edits": 1,
+    "trigram": 0.48,
+    "severity": "parody"
+   },
+   "prob": 0.42314329979217163,
+   "pass": false
+  },
+  {
+   "text": "The ultimate cleaning machine",
+   "score": -0.07923723896016284,
+   "sense": 0.8635864810534136,
+   "near_famous": {
+    "text": "The Ultimate Driving Machine",
+    "brand": "BMW",
+    "edits": 1,
+    "trigram": 0.6060606060606061,
+    "severity": "parody"
+   },
+   "prob": 0.19554351106592507,
+   "pass": false
+  },
+  {
+   "text": "Athletic shoes designed for serious runners.",
+   "score": -0.16765092146144595,
+   "sense": 0.6372457424380386,
+   "prob": 0.05214476358146753,
+   "pass": false
+  },
+  {
+   "text": "Premium Quality",
+   "score": -0.1943949259816631,
+   "sense": 0.8713202310951508,
+   "prob": 0.040896505246989706,
+   "pass": false
+  },
+  {
+   "text": "Quality products at affordable prices for everyone.",
+   "score": -0.30374788271176323,
+   "sense": 0.9020372658091192,
+   "prob": 0.008321956760618303,
+   "pass": false
+  },
+  {
+   "text": "Melts in your mouth, not in your hands",
+   "score": 0.29897915229213895,
+   "sense": 0.9826074795063808,
+   "near_famous": {
+    "text": "Melts in Your Mouth, Not in Your Hands",
+    "brand": "M&M's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.9897712769007112,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "I’m lovin’ it",
+   "score": 0.21446131537703167,
+   "sense": 0.9932413379046285,
+   "near_famous": {
+    "text": "I'm Lovin' It",
+    "brand": "McDonald's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.9675921938249311,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Finger lickin' good",
+   "score": 0.21053849002768263,
+   "sense": 0.968737151119971,
+   "near_famous": {
+    "text": "Finger Lickin' Good",
+    "brand": "KFC",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.9593955805705937,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Where's the beef?",
+   "score": 0.18529387574893313,
+   "sense": 0.8482155033995022,
+   "near_famous": {
+    "text": "Where's the Beef?",
+    "brand": "Wendy's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.930037015632804,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Got milk",
+   "score": 0.18322301323818135,
+   "sense": 0.895460494944501,
+   "near_famous": {
+    "text": "Got Milk?",
+    "brand": "California Milk Processor Board",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.9310983146291087,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Snap! Crackle! Pop!",
+   "score": 0.17742691720601195,
+   "sense": 0.40224158599553267,
+   "near_famous": {
+    "text": "Snap! Crackle! Pop!",
+    "brand": "Rice Krispies",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.9029657564550312,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Impossible is nothing",
+   "score": 0.16782439222408352,
+   "sense": 0.9472262498729179,
+   "near_famous": {
+    "text": "Impossible Is Nothing",
+    "brand": "Adidas",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.9207681390214028,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Red Bull gives you wings",
+   "score": 0.15509406098030212,
+   "sense": 0.9916196419188434,
+   "near_famous": {
+    "text": "Red Bull Gives You Wings",
+    "brand": "Red Bull",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.922078183096601,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Sorry, but I can't write that.",
+   "score": 0.15239609088322673,
+   "sense": 0.298943904233361,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.858091255858157,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Just Do It.",
+   "score": 0.14261796922252057,
+   "sense": 0.6521023011145288,
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8602077265139537,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "just do it",
+   "score": 0.14261796922252057,
+   "sense": 0.6521023011145288,
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8602077265139537,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "1. Tagline: \"Just Do It.\"",
+   "score": 0.14261796922252057,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8602077265139537,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "When it absolutely, positively has to be there overnight, you know who to call, and it is us.",
+   "score": 0.1386171593223936,
+   "sense": 0.9990114713870768,
+   "flags": [
+    "too_long"
+   ],
+   "near_famous": {
+    "text": "When It Absolutely, Positively Has to Be There Overnight",
+    "brand": "FedEx",
+    "edits": 9,
+    "trigram": 0.6296296296296297,
+    "severity": "parody"
+   },
+   "prob": 0.9213738376064452,
+   "pass": false,
+   "blocked_by": [
+    "too_long"
+   ]
+  },
+  {
+   "text": "> 2) **Headline:** \"Eat the frog first.\"",
+   "score": 0.12699928844272262,
+   "sense": 0.4970712040902498,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.8187944826448332,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "\"Just. Do. It.\"",
+   "score": 0.12610162142306974,
+   "sense": 0.6188494112159918,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8249427215736516,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Say it with flowers",
+   "score": 0.12533759541130562,
+   "sense": 0.443364673781149,
+   "near_famous": {
+    "text": "Say It with Flowers",
+    "brand": "Society of American Florists",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8113480076481283,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Here you go: Taste the rainbow",
+   "score": 0.12294979104415252,
+   "sense": 0.8221595182752234,
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": {
+    "text": "Taste the Rainbow",
+    "brand": "Skittles",
+    "edits": 3,
+    "trigram": 0.5555555555555556,
+    "severity": "parody"
+   },
+   "prob": 0.8347421713590915,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter"
+   ]
+  },
+  {
+   "text": "Taste the rainbow",
+   "score": 0.12023959695599223,
+   "sense": 0.6758760103623984,
+   "near_famous": {
+    "text": "Taste the Rainbow",
+    "brand": "Skittles",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8159663284404856,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "A diamond is forever",
+   "score": 0.1082503510173344,
+   "sense": 0.9901643342555445,
+   "near_famous": {
+    "text": "A Diamond Is Forever",
+    "brand": "De Beers",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8509055680547122,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Think",
+   "score": 0.09135233334362933,
+   "sense": 0.7236508952804892,
+   "flags": [
+    "single_word"
+   ],
+   "near_famous": {
+    "text": "Think",
+    "brand": "IBM",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.7457865495969178,
+   "pass": false,
+   "blocked_by": [
+    "single_word",
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Got Mold?",
+   "score": 0.08264941640767613,
+   "sense": 0.20052893507632744,
+   "near_famous": {
+    "text": "Got Milk?",
+    "brand": "California Milk Processor Board",
+    "edits": 1,
+    "trigram": 0.3333333333333333,
+    "severity": "possible"
+   },
+   "prob": 0.664027558160669,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "This is a deliberately long line that goes on and on and on and on and on and on and on and on and on and on and on.",
+   "score": 0.08073519099385734,
+   "sense": 0.6598661392743335,
+   "flags": [
+    "too_long"
+   ],
+   "prob": 0.7071293436052859,
+   "pass": false,
+   "blocked_by": [
+    "too_long"
+   ]
+  },
+  {
+   "text": "Because you're worth it.",
+   "score": 0.0789267835187898,
+   "sense": 0.9993969962232568,
+   "near_famous": {
+    "text": "Because You're Worth It",
+    "brand": "L'Oréal",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8334791794795038,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "<h1>Think Small.</h1>",
+   "score": 0.07546412866139202,
+   "sense": 0.8642471692255832,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Think Small.",
+    "brand": "Volkswagen",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.718014562793129,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Certainly, here you go:",
+   "score": 0.07297598295684889,
+   "sense": 0.8381647997827061,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.7055224212714942,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter"
+   ]
+  },
+  {
+   "text": "Option B - Bold moves only",
+   "score": 0.061361538625229334,
+   "sense": 0.13452308784064035,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.575545482649557,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "The ultimate driving machine",
+   "score": 0.05520709962013374,
+   "sense": 0.9881786879205378,
+   "near_famous": {
+    "text": "The Ultimate Driving Machine",
+    "brand": "BMW",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.7141621055883456,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Your slogan here",
+   "score": 0.05119850905449122,
+   "sense": 0.8001865499982447,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.6258211372479746,
+   "pass": false,
+   "blocked_by": [
+    "placeholder"
+   ]
+  },
+  {
+   "text": "N/A",
+   "score": 0.04701711450194614,
+   "sense": 0.25800857560197143,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.5441338903697176,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Okay. I think these work:",
+   "score": 0.04132387831053683,
+   "sense": 0.9548094703085831,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.63432386548117,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter"
+   ]
+  },
+  {
+   "text": "Enter text here",
+   "score": 0.03798964263668829,
+   "sense": 0.022389695021399293,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.43416639998612466,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Breakfast of champions",
+   "score": 0.03362624869295327,
+   "sense": 0.44793389822268814,
+   "near_famous": {
+    "text": "Breakfast of Champions",
+    "brand": "Wheaties",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.5171618897776113,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "<BRAND> makes it easy",
+   "score": 0.03108106861163648,
+   "sense": 0.8370438805814095,
+   "flags": [
+    "placeholder",
+    "wrapped"
+   ],
+   "prob": 0.5589351385227607,
+   "pass": false,
+   "blocked_by": [
+    "placeholder"
+   ]
+  },
+  {
+   "text": "As an AI language model, I cannot write slogans.",
+   "score": 0.018898274358618718,
+   "sense": 0.1450665205607208,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.41817845843350315,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Open happiness",
+   "score": -0.0035076816829288995,
+   "sense": 0.8301251423829034,
+   "near_famous": {
+    "text": "Open Happiness",
+    "brand": "Coca-Cola",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.42707126215158964,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "open   happiness   ",
+   "score": -0.0035076816829288995,
+   "sense": 0.8301251423829034,
+   "near_famous": {
+    "text": "Open Happiness",
+    "brand": "Coca-Cola",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.42707126215158964,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Tagline (short): Do more with less",
+   "score": -0.006159865890730992,
+   "sense": 0.35699602266279734,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.3594386267627348,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Insert your tagline here.",
+   "score": -0.020699412073090527,
+   "sense": 0.047977668826508425,
+   "prob": 0.2558976677124192,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Es ist Zeit für Veränderung",
+   "score": -0.02892825792582301,
+   "sense": 0.35041215994473784,
+   "prob": 0.28360352785371773,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Café crème, chaque matin",
+   "score": -0.03387548671740439,
+   "sense": 0.4493281204919381,
+   "prob": 0.2778042065596504,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "{{tagline}}",
+   "score": -0.04116411712674938,
+   "sense": 0.04513057552460491,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.2001674347070744,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Insert tagline here",
+   "score": -0.04396735745243784,
+   "sense": 0.012726348478539989,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.17173214327262765,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Copy-paste less.",
+   "score": -0.04488892466158263,
+   "sense": 0.006915506703362587,
+   "prob": 0.16024638518325263,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Save money. Live better.",
+   "score": -0.054191080740263825,
+   "sense": 0.9491905268330566,
+   "near_famous": {
+    "text": "Save Money. Live Better.",
+    "brand": "Walmart",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.2864039808140949,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ]
+  },
+  {
+   "text": "Here's a tagline: Fresh every day.",
+   "score": -0.05603754115126901,
+   "sense": 0.44528510693656265,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.21523810329772738,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "null",
+   "score": -0.06341853324274757,
+   "sense": 0.003939673871473989,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.11909086570334826,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "TODO",
+   "score": -0.06449893679628581,
+   "sense": 0.01119951990179151,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.13015735839680043,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "lorem ipsum dolor sit amet",
+   "score": -0.06918849585774632,
+   "sense": 0.2151073475805857,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.166075596399966,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "東京で一番おいしいコーヒー",
+   "score": -0.0799120950211401,
+   "sense": 0.06038996392018255,
+   "flags": [
+    "single_word",
+    "non_latin"
+   ],
+   "prob": 0.1257574411964334,
+   "pass": false,
+   "blocked_by": [
+    "single_word",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "undefined",
+   "score": -0.08626816115639772,
+   "sense": 0.003127305460174619,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.08518488784658593,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Sure! Here are five taglines for your brand:",
+   "score": -0.12168621610261043,
+   "sense": 0.26688948550260827,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.08480346733832213,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Add to Cart",
+   "score": -0.15443636570570418,
+   "sense": 0.009032762245601983,
+   "prob": 0.035944551170664515,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Lower prices every day",
+   "score": -0.16834948641804287,
+   "sense": 0.18037237996473282,
+   "prob": 0.04134554405059993,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "Error: 429 rate limit exceeded",
+   "score": -0.22515077630214247,
+   "sense": 0.004069828132632795,
+   "prob": 0.0115149311001693,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ]
+  },
+  {
+   "text": "!!!",
+   "score": null,
+   "skipped": "no letters",
+   "sense": null,
+   "flags": [
+    "no_letters"
+   ],
+   "prob": null,
+   "pass": false,
+   "blocked_by": [
+    "no_letters"
+   ]
+  },
+  {
+   "text": "12345",
+   "score": null,
+   "skipped": "no letters",
+   "sense": null,
+   "flags": [
+    "no_letters"
+   ],
+   "prob": null,
+   "pass": false,
+   "blocked_by": [
+    "no_letters"
+   ]
+  }
+ ],
+ "score_brief_top_rel": [
+  {
+   "text": "Chase the gravy.",
+   "score": 0.15599421139514924,
+   "brief_relevance": 0.6343165497110783,
+   "sense": 0.9364232412283818,
+   "prob": 0.7036617441311039,
+   "pass": true,
+   "rank_score": 2.2534812301617677
+  },
+  {
+   "text": "Energy drink gives you wings",
+   "score": 0.14703362377361123,
+   "brief_relevance": 0.6008285631016982,
+   "sense": 0.9767388331810007,
+   "near_famous": {
+    "text": "Red Bull Gives You Wings",
+    "brand": "Red Bull",
+    "edits": 2,
+    "trigram": 0.4117647058823529,
+    "severity": "parody"
+   },
+   "prob": 0.6997635362891118,
+   "pass": true,
+   "rank_score": 1.2958932478683403
+  },
+  {
+   "text": "**Just Chew It.**",
+   "score": 0.22914407112374166,
+   "brief_relevance": 0.5762512406628226,
+   "sense": 0.7464103733272587,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 1,
+    "trigram": 0.2857142857142857,
+    "severity": "parody"
+   },
+   "prob": 0.8575111700651674,
+   "pass": true,
+   "rank_score": 1.2789473653349115
+  },
+  {
+   "text": "Lunch of champions",
+   "score": 0.030563310965333657,
+   "brief_relevance": 0.6335268337168951,
+   "sense": 0.6438743834835536,
+   "near_famous": {
+    "text": "Breakfast of Champions",
+    "brand": "Wheaties",
+    "edits": 1,
+    "trigram": 0.44,
+    "severity": "parody"
+   },
+   "prob": 0.21851761260155053,
+   "pass": false,
+   "rank_score": 1.2625377393861879
+  },
+  {
+   "text": "Say it with chocolate",
+   "score": 0.16063195987515777,
+   "brief_relevance": 0.5893661587040282,
+   "sense": 0.7582089779669599,
+   "near_famous": {
+    "text": "Say It with Flowers",
+    "brand": "Society of American Florists",
+    "edits": 1,
+    "trigram": 0.38461538461538464,
+    "severity": "parody"
+   },
+   "prob": 0.6817538841732262,
+   "pass": true,
+   "rank_score": 1.0970048143880815
+  },
+  {
+   "text": "Finger licking good food here",
+   "score": 0.1651618743185563,
+   "brief_relevance": 0.5879270359568047,
+   "sense": 0.9793630574413655,
+   "near_famous": {
+    "text": "Finger Lickin' Good",
+    "brand": "KFC",
+    "edits": 3,
+    "trigram": 0.5384615384615384,
+    "severity": "parody"
+   },
+   "prob": 0.7567745151407802,
+   "pass": true,
+   "rank_score": 1.0938622659497557
+  },
+  {
+   "text": "Live más",
+   "score": 0.03538988314534905,
+   "brief_relevance": 0.6062400662259114,
+   "sense": 0.547603602321397,
+   "near_famous": {
+    "text": "Live Young",
+    "brand": "Evian",
+    "edits": 1,
+    "trigram": 0.2727272727272727,
+    "severity": "possible"
+   },
+   "prob": 0.22338973493665046,
+   "pass": false,
+   "rank_score": 0.5760619122151363
+  },
+  {
+   "text": "Melts in your hand, not in your mouth",
+   "score": 0.24754787150634405,
+   "brief_relevance": 0.5245634431467879,
+   "sense": 0.9679783751431045,
+   "near_famous": {
+    "text": "Melts in Your Mouth, Not in Your Hands",
+    "brand": "M&M's",
+    "edits": 2,
+    "trigram": 0.8333333333333334,
+    "severity": "parody"
+   },
+   "prob": 0.9117477888614925,
+   "pass": true,
+   "rank_score": 0.05021349168771394
+  },
+  {
+   "text": "Save time. Live better.",
+   "score": -0.010761308913804554,
+   "brief_relevance": 0.579208250476787,
+   "sense": 0.9187640789321938,
+   "near_famous": {
+    "text": "Save Money. Live Better.",
+    "brand": "Walmart",
+    "edits": 1,
+    "trigram": 0.48,
+    "severity": "parody"
+   },
+   "prob": 0.15496518463142667,
+   "pass": false,
+   "rank_score": -0.4978778549867385
+  },
+  {
+   "text": "Do the math.",
+   "score": 0.055297361215988536,
+   "brief_relevance": 0.5581924634433891,
+   "sense": 0.515296714886057,
+   "near_famous": {
+    "text": "Do the Dew",
+    "brand": "Mountain Dew",
+    "edits": 1,
+    "trigram": 0.4166666666666667,
+    "severity": "parody"
+   },
+   "prob": 0.2772053298546743,
+   "pass": false,
+   "rank_score": -0.5444847682487876
+  },
+  {
+   "text": "Where is the beef",
+   "score": 0.15553171262780602,
+   "brief_relevance": 0.5289682640200191,
+   "sense": 0.8317343647162111,
+   "near_famous": {
+    "text": "Where's the Beef?",
+    "brand": "Wendy's",
+    "edits": 2,
+    "trigram": 0.6470588235294118,
+    "severity": "parody"
+   },
+   "prob": 0.6759933759532248,
+   "pass": true,
+   "rank_score": -0.5445346947050647
+  },
+  {
+   "text": "Sleep like you mean it.",
+   "score": 0.15951477608565515,
+   "brief_relevance": 0.5249254181182404,
+   "sense": 0.9421398840927503,
+   "prob": 0.716969666945247,
+   "pass": true,
+   "rank_score": -0.6209718449776679
+  },
+  {
+   "text": "America's #1 pizza",
+   "score": 0.060417619603350826,
+   "brief_relevance": 0.5341287707880003,
+   "sense": 0.9613245745901176,
+   "prob": 0.3711168044985645,
+   "pass": true,
+   "rank_score": -1.1431950444650827
+  },
+  {
+   "text": "v2: Small steps, big leaps",
+   "score": 0.014977594126543262,
+   "brief_relevance": 0.5325225393814013,
+   "sense": 0.8116124364245499,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.19566452409794785,
+   "pass": false,
+   "rank_score": -1.537203174351468
+  },
+  {
+   "text": "Quality products at affordable prices for everyone.",
+   "score": -0.30374788271176323,
+   "brief_relevance": 0.5318541527344135,
+   "sense": 0.9020372658091192,
+   "prob": 0.002093556052362343,
+   "pass": false,
+   "rank_score": -4.0197346852570774
+  },
+  {
+   "text": "Breakfast of champions",
+   "score": 0.03362624869295327,
+   "brief_relevance": 0.6984438184325301,
+   "sense": 0.44793389822268814,
+   "near_famous": {
+    "text": "Breakfast of Champions",
+    "brand": "Wheaties",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.21121456521624532,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "sense_gate"
+   ],
+   "rank_score": 3.0081942311070047
+  },
+  {
+   "text": "Got milk",
+   "score": 0.18322301323818135,
+   "brief_relevance": 0.6429050668216238,
+   "sense": 0.895460494944501,
+   "near_famous": {
+    "text": "Got Milk?",
+    "brand": "California Milk Processor Board",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.7716038893783911,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ],
+   "rank_score": 2.691866536008122
+  },
+  {
+   "text": "Snap! Crackle! Pop!",
+   "score": 0.17742691720601195,
+   "brief_relevance": 0.6008401257428229,
+   "sense": 0.40224158599553267,
+   "near_famous": {
+    "text": "Snap! Crackle! Pop!",
+    "brand": "Rice Krispies",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.6993756074011191,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "sense_gate"
+   ],
+   "rank_score": 1.5312406347794394
+  },
+  {
+   "text": "<BRAND> makes it easy",
+   "score": 0.03108106861163648,
+   "brief_relevance": 0.6206103537666698,
+   "sense": 0.8370438805814095,
+   "flags": [
+    "placeholder",
+    "wrapped"
+   ],
+   "prob": 0.24058903299289636,
+   "pass": false,
+   "blocked_by": [
+    "placeholder"
+   ],
+   "rank_score": 0.9239227693357235
+  },
+  {
+   "text": "Say it with flowers",
+   "score": 0.12533759541130562,
+   "brief_relevance": 0.5805640360469011,
+   "sense": 0.443364673781149,
+   "near_famous": {
+    "text": "Say It with Flowers",
+    "brand": "Society of American Florists",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.5181167411702489,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "sense_gate"
+   ],
+   "rank_score": 0.5905799926130932
+  },
+  {
+   "text": "<h1>Think Small.</h1>",
+   "score": 0.07546412866139202,
+   "brief_relevance": 0.5869311457553914,
+   "sense": 0.8642471692255832,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Think Small.",
+    "brand": "Volkswagen",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.3889661733991773,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ],
+   "rank_score": 0.3737853240544059
+  },
+  {
+   "text": "Melts in your mouth, not in your hands",
+   "score": 0.29897915229213895,
+   "brief_relevance": 0.5107184700756707,
+   "sense": 0.9826074795063808,
+   "near_famous": {
+    "text": "Melts in Your Mouth, Not in Your Hands",
+    "brand": "M&M's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.960303248829828,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": 0.08069949450549196
+  },
+  {
+   "text": "Where's the beef?",
+   "score": 0.18529387574893313,
+   "brief_relevance": 0.5408409908643924,
+   "sense": 0.8482155033995022,
+   "near_famous": {
+    "text": "Where's the Beef?",
+    "brand": "Wendy's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.7686961793052374,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ],
+   "rank_score": 0.0005579050643031991
+  },
+  {
+   "text": "Taste the rainbow",
+   "score": 0.12023959695599223,
+   "brief_relevance": 0.5534436428511837,
+   "sense": 0.6758760103623984,
+   "near_famous": {
+    "text": "Taste the Rainbow",
+    "brand": "Skittles",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.5257172830400352,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ],
+   "rank_score": -0.16823239139500812
+  },
+  {
+   "text": "Finger lickin' good",
+   "score": 0.21053849002768263,
+   "brief_relevance": 0.5215755766277309,
+   "sense": 0.968737151119971,
+   "near_famous": {
+    "text": "Finger Lickin' Good",
+    "brand": "KFC",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8552186145798819,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -0.315246745112404
+  },
+  {
+   "text": "Enter text here",
+   "score": 0.03798964263668829,
+   "brief_relevance": 0.5698310627306087,
+   "sense": 0.022389695021399293,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.16095135170281508,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ],
+   "rank_score": -0.3696084329921819
+  },
+  {
+   "text": "Here's a tagline: Fresh every day.",
+   "score": -0.05603754115126901,
+   "brief_relevance": 0.5971212818387572,
+   "sense": 0.44528510693656265,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.06416808917992702,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "sense_gate"
+   ],
+   "rank_score": -0.3728567946227672
+  },
+  {
+   "text": "Here you go: Taste the rainbow",
+   "score": 0.12294979104415252,
+   "brief_relevance": 0.5415652489149355,
+   "sense": 0.8221595182752234,
+   "flags": [
+    "llm_chatter"
+   ],
+   "near_famous": {
+    "text": "Taste the Rainbow",
+    "brand": "Skittles",
+    "edits": 3,
+    "trigram": 0.5555555555555556,
+    "severity": "parody"
+   },
+   "prob": 0.5580672335852701,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter"
+   ],
+   "rank_score": -0.4623565961627704
+  },
+  {
+   "text": "lorem ipsum dolor sit amet",
+   "score": -0.06918849585774632,
+   "brief_relevance": 0.5931440961409182,
+   "sense": 0.2151073475805857,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.04742614281466283,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ],
+   "rank_score": -0.580054889234071
+  },
+  {
+   "text": "> 2) **Headline:** \"Eat the frog first.\"",
+   "score": 0.12699928844272262,
+   "brief_relevance": 0.5353762632915411,
+   "sense": 0.4970712040902498,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.5304390404140271,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -0.5952078967664496
+  },
+  {
+   "text": "Your slogan here",
+   "score": 0.05119850905449122,
+   "brief_relevance": 0.5573002359535755,
+   "sense": 0.8001865499982447,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.29484586541905666,
+   "pass": false,
+   "blocked_by": [
+    "placeholder"
+   ],
+   "rank_score": -0.5998494296490464
+  },
+  {
+   "text": "Open happiness",
+   "score": -0.0035076816829288995,
+   "brief_relevance": 0.5717987160273118,
+   "sense": 0.8301251423829034,
+   "near_famous": {
+    "text": "Open Happiness",
+    "brand": "Coca-Cola",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.15708159031551772,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ],
+   "rank_score": -0.6383265729623071
+  },
+  {
+   "text": "open   happiness   ",
+   "score": -0.0035076816829288995,
+   "brief_relevance": 0.5717987160273118,
+   "sense": 0.8301251423829034,
+   "near_famous": {
+    "text": "Open Happiness",
+    "brand": "Coca-Cola",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.15708159031551772,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy"
+   ],
+   "rank_score": -0.6383265729623071
+  },
+  {
+   "text": "{{tagline}}",
+   "score": -0.04116411712674938,
+   "brief_relevance": 0.5818680323124531,
+   "sense": 0.04513057552460491,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.05888147385707545,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "sense_gate"
+   ],
+   "rank_score": -0.6624394831755902
+  },
+  {
+   "text": "Café crème, chaque matin",
+   "score": -0.03387548671740439,
+   "brief_relevance": 0.5772244968682546,
+   "sense": 0.4493281204919381,
+   "prob": 0.08772984073835503,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -0.7292473917141836
+  },
+  {
+   "text": "We’re lovin’ it",
+   "score": 0.1920821809391946,
+   "brief_relevance": 0.5081136902173555,
+   "sense": 0.9956354011656207,
+   "near_famous": {
+    "text": "I'm Lovin' It",
+    "brand": "McDonald's",
+    "edits": 1,
+    "trigram": 0.5384615384615384,
+    "severity": "parody"
+   },
+   "prob": 0.8480867656352545,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -0.8150613047462465
+  },
+  {
+   "text": "Think",
+   "score": 0.09135233334362933,
+   "brief_relevance": 0.5324530857035255,
+   "sense": 0.7236508952804892,
+   "flags": [
+    "single_word"
+   ],
+   "near_famous": {
+    "text": "Think",
+    "brand": "IBM",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.42310761187628343,
+   "pass": false,
+   "blocked_by": [
+    "single_word",
+    "near_famous:copy"
+   ],
+   "rank_score": -0.9484161510659869
+  },
+  {
+   "text": "Red Bull gives you wings",
+   "score": 0.15509406098030212,
+   "brief_relevance": 0.5136898090699441,
+   "sense": 0.9916196419188434,
+   "near_famous": {
+    "text": "Red Bull Gives You Wings",
+    "brand": "Red Bull",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.747369106960988,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -0.9531912293494466
+  },
+  {
+   "text": "Tagline (short): Do more with less",
+   "score": -0.006159865890730992,
+   "brief_relevance": 0.558577826863755,
+   "sense": 0.35699602266279734,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.12302446535465682,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -1.0095303516491552
+  },
+  {
+   "text": "N/A",
+   "score": 0.04701711450194614,
+   "brief_relevance": 0.5385638746147773,
+   "sense": 0.25800857560197143,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.22982525529346393,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "sense_gate"
+   ],
+   "rank_score": -1.129180940430996
+  },
+  {
+   "text": "Add to Cart",
+   "score": -0.15443636570570418,
+   "brief_relevance": 0.5947349988541235,
+   "sense": 0.009032762245601983,
+   "prob": 0.009235101475839573,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -1.197103025564647
+  },
+  {
+   "text": "\"Just. Do. It.\"",
+   "score": 0.12610162142306974,
+   "brief_relevance": 0.505740557537213,
+   "sense": 0.6188494112159918,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.5408851006107912,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.3882583070558414
+  },
+  {
+   "text": "Insert your tagline here.",
+   "score": -0.020699412073090527,
+   "brief_relevance": 0.5435135573594941,
+   "sense": 0.047977668826508425,
+   "prob": 0.07916873860087915,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -1.5215597474883156
+  },
+  {
+   "text": "- Option 3: Less talk. More walk.",
+   "score": 0.06781461964578789,
+   "brief_relevance": 0.5153911090134411,
+   "sense": 0.6558740067921577,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.33116169385122646,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -1.5830217662127761
+  },
+  {
+   "text": "This is a deliberately long line that goes on and on and on and on and on and on and on and on and on and on and on.",
+   "score": 0.08073519099385734,
+   "brief_relevance": 0.5086129041465215,
+   "sense": 0.6598661392743335,
+   "flags": [
+    "too_long"
+   ],
+   "prob": 0.37641053884713793,
+   "pass": false,
+   "blocked_by": [
+    "too_long",
+    "off_brief"
+   ],
+   "rank_score": -1.662899790951021
+  },
+  {
+   "text": "TODO",
+   "score": -0.06449893679628581,
+   "brief_relevance": 0.5427844049181503,
+   "sense": 0.01119951990179151,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.03605938535678906,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "sense_gate"
+   ],
+   "rank_score": -1.8796162285302793
+  },
+  {
+   "text": "Just Do It.",
+   "score": 0.14261796922252057,
+   "brief_relevance": 0.48225233078419216,
+   "sense": 0.6521023011145288,
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.60604605775956,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.883574473031333
+  },
+  {
+   "text": "just do it",
+   "score": 0.14261796922252057,
+   "brief_relevance": 0.48225233078419216,
+   "sense": 0.6521023011145288,
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.60604605775956,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.883574473031333
+  },
+  {
+   "text": "1. Tagline: \"Just Do It.\"",
+   "score": 0.14261796922252057,
+   "brief_relevance": 0.48225233078419216,
+   "sense": 0.6521023011145288,
+   "flags": [
+    "wrapped"
+   ],
+   "near_famous": {
+    "text": "Just Do It.",
+    "brand": "Nike",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.60604605775956,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.883574473031333
+  },
+  {
+   "text": "I’m lovin’ it",
+   "score": 0.21446131537703167,
+   "brief_relevance": 0.46026942989122294,
+   "sense": 0.9932413379046285,
+   "near_famous": {
+    "text": "I'm Lovin' It",
+    "brand": "McDonald's",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.8818552151625467,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -1.9111001015034303
+  },
+  {
+   "text": "Insert tagline here",
+   "score": -0.04396735745243784,
+   "brief_relevance": 0.5327882452409499,
+   "sense": 0.012726348478539989,
+   "flags": [
+    "placeholder"
+   ],
+   "prob": 0.04928029365616522,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "sense_gate"
+   ],
+   "rank_score": -1.9859945620717876
+  },
+  {
+   "text": "Certainly, here you go:",
+   "score": 0.07297598295684889,
+   "brief_relevance": 0.49770885945606774,
+   "sense": 0.8381647997827061,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.374593903841969,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "off_brief"
+   ],
+   "rank_score": -2.0121417834580737
+  },
+  {
+   "text": "When it absolutely, positively has to be there overnight, you know who to call, and it is us.",
+   "score": 0.1386171593223936,
+   "brief_relevance": 0.4756531150354034,
+   "sense": 0.9990114713870768,
+   "flags": [
+    "too_long"
+   ],
+   "near_famous": {
+    "text": "When It Absolutely, Positively Has to Be There Overnight",
+    "brand": "FedEx",
+    "edits": 9,
+    "trigram": 0.6296296296296297,
+    "severity": "parody"
+   },
+   "prob": 0.7455213818862728,
+   "pass": false,
+   "blocked_by": [
+    "too_long",
+    "off_brief"
+   ],
+   "rank_score": -2.089562924273524
+  },
+  {
+   "text": "The ultimate driving machine",
+   "score": 0.05520709962013374,
+   "brief_relevance": 0.49875591748354886,
+   "sense": 0.9881786879205378,
+   "near_famous": {
+    "text": "The Ultimate Driving Machine",
+    "brand": "BMW",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.3844720564020786,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -2.1217800500183133
+  },
+  {
+   "text": "Copy-paste less.",
+   "score": -0.04488892466158263,
+   "brief_relevance": 0.5211583057198667,
+   "sense": 0.006915506703362587,
+   "prob": 0.04553410283183637,
+   "pass": false,
+   "blocked_by": [
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -2.3016138605704684
+  },
+  {
+   "text": "Got Mold?",
+   "score": 0.08264941640767613,
+   "brief_relevance": 0.48333932309446437,
+   "sense": 0.20052893507632744,
+   "near_famous": {
+    "text": "Got Milk?",
+    "brand": "California Milk Processor Board",
+    "edits": 1,
+    "trigram": 0.3333333333333333,
+    "severity": "possible"
+   },
+   "prob": 0.3307046309734722,
+   "pass": false,
+   "blocked_by": [
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -2.318496468104075
+  },
+  {
+   "text": "Like a pro.",
+   "score": 0.06892445224025008,
+   "brief_relevance": 0.485729388177748,
+   "sense": 0.9719682269436298,
+   "near_famous": {
+    "text": "Like a Rock",
+    "brand": "Chevrolet",
+    "edits": 1,
+    "trigram": 0.4166666666666667,
+    "severity": "parody"
+   },
+   "prob": 0.41071979622035104,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -2.3612376337811116
+  },
+  {
+   "text": "Option B - Bold moves only",
+   "score": 0.061361538625229334,
+   "brief_relevance": 0.48549972821577897,
+   "sense": 0.13452308784064035,
+   "flags": [
+    "wrapped"
+   ],
+   "prob": 0.25316913440009353,
+   "pass": false,
+   "blocked_by": [
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -2.42581586540871
+  },
+  {
+   "text": "東京で一番おいしいコーヒー",
+   "score": -0.0799120950211401,
+   "brief_relevance": 0.5242246479022818,
+   "sense": 0.06038996392018255,
+   "flags": [
+    "single_word",
+    "non_latin"
+   ],
+   "prob": 0.03471346798030109,
+   "pass": false,
+   "blocked_by": [
+    "single_word",
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -2.4911218628069207
+  },
+  {
+   "text": "Because you're worth it.",
+   "score": 0.0789267835187898,
+   "brief_relevance": 0.47647744720904217,
+   "sense": 0.9993969962232568,
+   "near_famous": {
+    "text": "Because You're Worth It",
+    "brand": "L'Oréal",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.5558149132458311,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -2.529300940636489
+  },
+  {
+   "text": "Nothing is impossible",
+   "score": 0.1597365818576407,
+   "brief_relevance": 0.4523266646549847,
+   "sense": 0.9969084259790026,
+   "near_famous": {
+    "text": "Impossible Is Nothing",
+    "brand": "Adidas",
+    "edits": 2,
+    "trigram": 0.6521739130434783,
+    "severity": "parody"
+   },
+   "prob": 0.780305975198719,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -2.544990863564551
+  },
+  {
+   "text": "Save money. Live better.",
+   "score": -0.054191080740263825,
+   "brief_relevance": 0.513768803065465,
+   "sense": 0.9491905268330566,
+   "near_famous": {
+    "text": "Save Money. Live Better.",
+    "brand": "Walmart",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.09118857292039101,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -2.5695621814949403
+  },
+  {
+   "text": "The quick brown fox jumps over the lazy dog",
+   "score": 0.13709912974685465,
+   "brief_relevance": 0.4528631103325008,
+   "sense": 0.6367448896728196,
+   "prob": 0.5840529586929213,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -2.705823629768567
+  },
+  {
+   "text": "Lower prices every day",
+   "score": -0.16834948641804287,
+   "brief_relevance": 0.5391719240343978,
+   "sense": 0.18037237996473282,
+   "prob": 0.010667165844127554,
+   "pass": false,
+   "blocked_by": [
+    "sense_gate"
+   ],
+   "rank_score": -2.778548108903926
+  },
+  {
+   "text": "Impossible is nothing",
+   "score": 0.16782439222408352,
+   "brief_relevance": 0.4358107200766217,
+   "sense": 0.9472262498729179,
+   "near_famous": {
+    "text": "Impossible Is Nothing",
+    "brand": "Adidas",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.7439374848840918,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -2.9205426853050875
+  },
+  {
+   "text": "Kills Kids Dead",
+   "score": 0.16684600855159315,
+   "brief_relevance": 0.43581274526178976,
+   "sense": 0.7466662565888066,
+   "near_famous": {
+    "text": "Kills Bugs Dead",
+    "brand": "Raid",
+    "edits": 1,
+    "trigram": 0.4444444444444444,
+    "severity": "parody"
+   },
+   "prob": 0.7004053300538696,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -2.928055107453769
+  },
+  {
+   "text": "Okay. I think this one works best.",
+   "score": 0.10356425246530779,
+   "brief_relevance": 0.4499965068859309,
+   "sense": 0.9813803427704849,
+   "prob": 0.5527464545873756,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -3.04119786724003
+  },
+  {
+   "text": "Sorry, but I can't write that.",
+   "score": 0.15239609088322673,
+   "brief_relevance": 0.4343620200048079,
+   "sense": 0.298943904233361,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.6018625710479648,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -3.078282296019355
+  },
+  {
+   "text": "Okay. I think these work:",
+   "score": 0.04132387831053683,
+   "brief_relevance": 0.45857644139703374,
+   "sense": 0.9548094703085831,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.3024870165827883,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "off_brief"
+   ],
+   "rank_score": -3.2949328574429737
+  },
+  {
+   "text": "Sure! Here are five taglines for your brand:",
+   "score": -0.12168621610261043,
+   "brief_relevance": 0.5059592793049492,
+   "sense": 0.26688948550260827,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.022640886066092974,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -3.2986760597315117
+  },
+  {
+   "text": "I'm afraid I can't help.",
+   "score": 0.12718392477230736,
+   "brief_relevance": 0.43160578739659344,
+   "sense": 0.8431804776789611,
+   "prob": 0.577988696073579,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -3.346366783904415
+  },
+  {
+   "text": "As an AI language model, I cannot write slogans.",
+   "score": 0.018898274358618718,
+   "brief_relevance": 0.46004079039242474,
+   "sense": 0.1450665205607208,
+   "flags": [
+    "llm_chatter"
+   ],
+   "prob": 0.1523160978551219,
+   "pass": false,
+   "blocked_by": [
+    "llm_chatter",
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -3.4295140317955046
+  },
+  {
+   "text": "Diamonds are forever",
+   "score": 0.07431548876926286,
+   "brief_relevance": 0.4377041406425308,
+   "sense": 0.9876337672544562,
+   "prob": 0.4537195564230993,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -3.5934514292627022
+  },
+  {
+   "text": "Es ist Zeit für Veränderung",
+   "score": -0.02892825792582301,
+   "brief_relevance": 0.46579948041446756,
+   "sense": 0.35041215994473784,
+   "prob": 0.09005603993627703,
+   "pass": false,
+   "blocked_by": [
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -3.6466178981233335
+  },
+  {
+   "text": "A diamond is forever",
+   "score": 0.1082503510173344,
+   "brief_relevance": 0.4257793624943029,
+   "sense": 0.9901643342555445,
+   "near_famous": {
+    "text": "A Diamond Is Forever",
+    "brand": "De Beers",
+    "edits": 0,
+    "trigram": 1.0,
+    "severity": "copy"
+   },
+   "prob": 0.5879329710381825,
+   "pass": false,
+   "blocked_by": [
+    "near_famous:copy",
+    "off_brief"
+   ],
+   "rank_score": -3.6473360529112995
+  },
+  {
+   "text": "undefined",
+   "score": -0.08626816115639772,
+   "brief_relevance": 0.48241053959037244,
+   "sense": 0.003127305460174619,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.022749667892632188,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -3.6494246648490147
+  },
+  {
+   "text": "The ultimate cleaning machine",
+   "score": -0.07923723896016284,
+   "brief_relevance": 0.46375238632822124,
+   "sense": 0.8635864810534136,
+   "near_famous": {
+    "text": "The Ultimate Driving Machine",
+    "brand": "BMW",
+    "edits": 1,
+    "trigram": 0.6060606060606061,
+    "severity": "parody"
+   },
+   "prob": 0.057287531563091444,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -4.089973358443947
+  },
+  {
+   "text": "Because you're worth more than that, really.",
+   "score": 0.09050532655853359,
+   "brief_relevance": 0.41211166184377807,
+   "sense": 0.999607949590018,
+   "prob": 0.6102179450878905,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -4.147109401091199
+  },
+  {
+   "text": "Premium Quality",
+   "score": -0.1943949259816631,
+   "brief_relevance": 0.49282376230750347,
+   "sense": 0.8713202310951508,
+   "prob": 0.010547647760740315,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -4.209383925061797
+  },
+  {
+   "text": "null",
+   "score": -0.06341853324274757,
+   "brief_relevance": 0.443673486235051,
+   "sense": 0.003939673871473989,
+   "flags": [
+    "single_word",
+    "placeholder"
+   ],
+   "prob": 0.03269277454274168,
+   "pass": false,
+   "blocked_by": [
+    "placeholder",
+    "single_word",
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -4.500249755805236
+  },
+  {
+   "text": "Athletic shoes designed for serious runners.",
+   "score": -0.16765092146144595,
+   "brief_relevance": 0.45082884437255144,
+   "sense": 0.6372457424380386,
+   "prob": 0.013566767820802178,
+   "pass": false,
+   "blocked_by": [
+    "off_brief"
+   ],
+   "rank_score": -5.116509813087666
+  },
+  {
+   "text": "Error: 429 rate limit exceeded",
+   "score": -0.22515077630214247,
+   "brief_relevance": 0.4237927832409853,
+   "sense": 0.004069828132632795,
+   "prob": 0.0029038106597989665,
+   "pass": false,
+   "blocked_by": [
+    "off_brief",
+    "sense_gate"
+   ],
+   "rank_score": -6.2783248894309995
+  },
+  {
+   "text": "!!!",
+   "score": null,
+   "skipped": "no letters",
+   "brief_relevance": null,
+   "sense": null,
+   "flags": [
+    "no_letters"
+   ],
+   "prob": null,
+   "pass": false,
+   "blocked_by": [
+    "no_letters"
+   ]
+  },
+  {
+   "text": "12345",
+   "score": null,
+   "skipped": "no letters",
+   "brief_relevance": null,
+   "sense": null,
+   "flags": [
+    "no_letters"
+   ],
+   "prob": null,
+   "pass": false,
+   "blocked_by": [
+    "no_letters"
+   ]
+  }
+ ]
+}

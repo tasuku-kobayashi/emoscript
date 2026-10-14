@@ -165,6 +165,35 @@ print(model.explain(model.embed(lines, embed)))
 Any `texts -> (n, dim)` callable works as `embed`; `fit_from_embeddings`
 takes precomputed matrices directly.
 
+## Browser edition
+
+The same scorer runs as a static page on GitHub Pages, with the embedding
+model executed in the browser by [transformers.js](https://github.com/huggingface/transformers.js):
+paste lines, optionally a brief, and get the same table as `emoscript score
+--sort` (p, score, sense, relevance, flags, near-famous warnings, CSV / JSON
+download). Text never leaves the page; the model (`BAAI/bge-small-en-v1.5`,
+130 MB fp32) is fetched once from the Hugging Face hub and cached by the
+browser.
+
+It is a smaller model than the Python default, and measurably weaker on
+on-topic product descriptions (see the browser section of
+[docs/results.md](docs/results.md)); for ranking a large batch it is
+convenient, for numbers that matter use the package.
+
+```bash
+# refit on the browser model and export what the page needs
+emoscript fit --model BAAI/bge-small-en-v1.5 --out axis-bge-small.npz
+emoscript export-web --axis axis-bge-small.npz --out web/model.json
+python web/test/make_fixture.py --axis axis-bge-small.npz   # parity fixture for the JS port
+cd web && npm test                                            # model-free parity (canonical, flags, near-famous)
+npm install && npm run parity                                 # end-to-end through transformers.js
+```
+
+Deployment: `.github/workflows/pages.yml` publishes `web/` on every push to
+`main` that touches it. Enable it once in the repository settings (Pages →
+Source: GitHub Actions); the page then lives at
+`https://<owner>.github.io/emoscript/`.
+
 ## The corpus
 
 | split | v0.1 | v0.2 | contents |
@@ -243,15 +272,16 @@ src/emoscript/pipeline.py    fit_from_corpus, cross-fitted calibration, AxisMode
 src/emoscript/text.py        canonical normalization and input flags
 src/emoscript/embed.py       fastembed backend, model prefixes, pluggable embed function
 src/emoscript/dataio.py      corpus loading, integrity checks, soft warnings
-src/emoscript/cli.py         fit / score / eval / info / corpus-check / fetch-axis
+src/emoscript/cli.py         fit / score / eval / info / corpus-check / fetch-axis / export-web
 src/emoscript/data/          corpora as JSONL
 experiments/validate_axis.py held-out validation protocol
 experiments/select_settings.py train-only nested CV for k / normalization / L2
 experiments/report.py        validation JSON -> Markdown
 experiments/compare_models.py the protocol across embedding models
 docs/results.md              current numbers
+web/                         browser edition (GitHub Pages): JS port of the scorer, transformers.js worker, parity tests
 tests/                       model-free test suite (a surface-feature fake embedder drives the pipeline)
-.github/workflows/           ci.yml (lint, tests, real evaluation), release.yml (prebuilt axes on tags)
+.github/workflows/           ci.yml (lint, tests, JS parity, real evaluation), release.yml (prebuilt axes on tags), pages.yml (web/)
 ```
 
 Axis files are `.npz` and backward compatible: a v0.1 file with a single

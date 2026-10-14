@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Browser edition
+- `web/`: a static GitHub Pages app that embeds in the browser with
+  transformers.js (`Xenova/bge-small-en-v1.5`, fp32 by default) and ports the
+  scorer to JavaScript: canonical normalization, input flags, the near-famous
+  check, calibrated p with prior shift, the sense gate, brief relevance with
+  `--min-rel` / `--top-rel` equivalents, the same sort order, CSV / JSON export.
+- `emoscript export-web` writes the axis, calibrators, sense axis and famous
+  catalogue as JSON; `WEB_MODELS` maps fastembed names to transformers.js ids
+  and pooling.
+- Parity tests (`web/test`): model-free checks against a Python-generated
+  fixture, and an end-to-end run through transformers.js that must agree with
+  fastembed within 0.01 in score (observed 0.0004 at fp32; int8 drifts to
+  0.03–0.05, so it is labelled approximate in the UI). CI runs both; a Pages
+  workflow deploys `web/`.
+- Held-out numbers for the browser model are in docs/results.md: hard 0.942,
+  topic-matched 0.789 (e5-large: 0.942), topic_bland PASS 0.43 (0.17).
+
 ## 0.2.0
 
 ### Evaluation set and controls (second review round)

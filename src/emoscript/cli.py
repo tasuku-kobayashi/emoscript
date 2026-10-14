@@ -23,7 +23,7 @@ import numpy as np
 from . import __version__
 from .dataio import DATA_DIR, corpus_warnings, validate_corpus
 from .embed import DEFAULT_MODEL, make_embed_fn
-from .pipeline import AxisModel, embed_valid, evaluate, fit_from_corpus
+from .pipeline import AxisModel, embed_valid, evaluate, fit_from_corpus, web_export
 from .text import BLOCKING_FLAGS, CASINGS, input_flags
 
 DEFAULT_REPO = "tasuku-kobayashi/emoscript"
@@ -333,6 +333,22 @@ def cmd_info(args) -> int:
     return 0
 
 
+def cmd_export_web(args) -> int:
+    model = AxisModel.load(args.axis)
+    blob = web_export(model, web_model=args.web_model, pooling=args.pooling)
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(
+        json.dumps(blob, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n", encoding="utf-8"
+    )
+    emb = blob["embedding"]
+    print(
+        f"web model written to {out} (k={model.k}, dim={emb['dim']}, {emb['web_model']} / "
+        f"{emb['pooling']} pooling, {len(blob['famous'])} famous lines)"
+    )
+    return 0
+
+
 def _http_get_json(url: str) -> dict:
     import urllib.request
 
@@ -458,6 +474,17 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("info", help="describe an axis file")
     p.add_argument("--axis", default="axis.npz")
     p.set_defaults(fn=cmd_info)
+
+    p = sub.add_parser("export-web", help="write an axis as JSON for the browser app in web/")
+    p.add_argument("--axis", default="axis.npz")
+    p.add_argument("--out", default="web/model.json")
+    p.add_argument(
+        "--web-model", help="transformers.js model id (default: known mapping for the axis's model)"
+    )
+    p.add_argument(
+        "--pooling", choices=("cls", "mean"), help="pooling used by that model (default: known mapping)"
+    )
+    p.set_defaults(fn=cmd_export_web)
 
     p = sub.add_parser("fetch-axis", help="download a prebuilt axis from GitHub Releases")
     p.add_argument("--repo", default=DEFAULT_REPO, help="owner/name")

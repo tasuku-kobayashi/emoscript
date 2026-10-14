@@ -27,6 +27,20 @@ MODEL_PREFIXES: dict[str, str] = {
 
 EmbedFn = Callable[[list[str]], np.ndarray]
 
+# fastembed model name -> (transformers.js model id, pooling) for the browser build
+# (``emoscript export-web``). Pooling must match what fastembed does for that model.
+WEB_MODELS: dict[str, tuple[str, str]] = {
+    "BAAI/bge-small-en-v1.5": ("Xenova/bge-small-en-v1.5", "cls"),
+    "BAAI/bge-base-en-v1.5": ("Xenova/bge-base-en-v1.5", "cls"),
+    "sentence-transformers/all-MiniLM-L6-v2": ("Xenova/all-MiniLM-L6-v2", "mean"),
+    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2": (
+        "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
+        "mean",
+    ),
+    "thenlper/gte-base": ("Xenova/gte-base", "mean"),
+    "intfloat/multilingual-e5-large": ("Xenova/multilingual-e5-large", "mean"),
+}
+
 
 class Embedder(Protocol):
     def embed(self, documents: list[str], **kwargs: Any) -> Iterable[np.ndarray]: ...

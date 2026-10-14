@@ -81,6 +81,42 @@ train 211 taglines / 329 hard / 30 generic · test 173 taglines / 85 hard / 22 g
 | M2 diff + sense axis, balanced families | 0.952 [0.93, 0.97] | 0.971 [0.94, 1.00] | 0.942 [0.92, 0.96] | 0.965 [0.93, 0.98] | 0.469 [0.38, 0.56] | 0.786 [0.72, 0.84] | 0.418 (0.952) | 0.891 | 0.75 / 0.31 / 0.09 / 0.04 (0.04 after flags) | 0.756 |
 
 
+## Browser edition (web/)
+
+The GitHub Pages app embeds in the browser with transformers.js, so it needs a
+model small enough to download: `BAAI/bge-small-en-v1.5` (384-d, English,
+130 MB fp32). The axis, sense gate and calibrator are refitted on that model
+with the same corpus and settings (`emoscript fit --model BAAI/bge-small-en-v1.5`,
+then `emoscript export-web`). Same held-out protocol as above:
+
+```
+  AUC held-out taglines vs hard         0.942  [0.911, 0.966]
+  AUC held-out taglines vs generic      0.933  [0.881, 0.972]
+  AUC held-out taglines vs topic_bland  0.789  [0.753, 0.826]
+  AUC held-out taglines vs quotes       0.386
+  AUC held-out taglines vs junk         0.752
+  without sister-brand lines:           hard 0.932  generic 0.919  topic_bland (paired) 0.813
+  good (unknown) copy vs junk by p      0.532   vs hard 0.794
+  PASS rate at p>=0.5:                  pos 0.73  hard 0.07  generic 0.05  topic_bland 0.43  quotes 0.86  junk 0.10  good_copy 0.25
+```
+
+Against the e5-large numbers above: famous-vs-bland separation holds
+(hard 0.952 → 0.942), but the small model leaks topic. Plain product
+descriptions on a famous brand's subject pass 43% of the time instead of
+17%, and the topic-matched AUC drops from 0.942 to 0.789. Use the brief
+relevance gate in the app for on-topic batches, and the Python package with
+the default model when the numbers matter. Of the other browser-sized models
+tried (`experiments/compare_models.py`: all-MiniLM-L6-v2, bge-base,
+paraphrase-multilingual-MiniLM-L12-v2, gte-base) none fixed the topic leak
+(0.79–0.87) and the better ones are 3–4× the download; their int8 builds drift
+up to 0.05 in score against fastembed, so only fp32 / fp16 are offered as
+exact.
+
+The JavaScript port is checked against the Python scorer on every push
+(`web/test`): canonical forms, input flags and near-famous matches must be
+identical, and end-to-end scores through transformers.js agree within 0.001
+at fp32.
+
 ## Example output
 
 `emoscript score --file lines.txt --axis axis.npz --prior 0.3 --brief "a mattress brand" --sort`

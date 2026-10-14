@@ -193,3 +193,48 @@ def test_brief_gate_and_blocked_rows_sort_last(patched_backend, tmp_path, capsys
 def test_corpus_check(capsys):
     assert cli.main(["corpus-check"]) == 0
     assert "corpus OK" in capsys.readouterr().out
+
+
+def test_export_web_writes_json_the_browser_app_can_read(patched_backend, tmp_path, capsys):
+    out = tmp_path / "axis.npz"
+    assert cli.main(["fit", "--model", "fake", "--out", str(out)]) == 0
+    capsys.readouterr()
+    # an unknown fastembed model has no transformers.js mapping: both ids must be given
+    with pytest.raises(ValueError, match="no transformers.js mapping"):
+        cli.main(["export-web", "--axis", str(out), "--out", str(tmp_path / "w" / "model.json")])
+    web = tmp_path / "w" / "model.json"
+    rc = cli.main(
+        [
+            "export-web",
+            "--axis",
+            str(out),
+            "--out",
+            str(web),
+            "--web-model",
+            "Xenova/fake",
+            "--pooling",
+            "cls",
+        ]
+    )
+    assert rc == 0 and "web model written" in capsys.readouterr().out
+    blob = json.loads(web.read_text(encoding="utf-8"))
+    assert blob["format"] == "emoscript-web/1" and blob["casing"] == "canonical"
+    assert blob["embedding"] == {
+        "fastembed_model": "fake",
+        "web_model": "Xenova/fake",
+        "pooling": "cls",
+        "prefix": "",
+        "dim": 32,
+    }
+    assert len(blob["axes"]) == 1 and len(blob["axes"][0]) == 32
+    assert set(blob["calibrator"]) == {"w", "b", "mu", "sd"} and len(blob["calibrator"]["w"]) == 2
+    assert len(blob["sense_axis"]) == 32 and len(blob["sense_gate"]["w"]) == 1
+    assert blob["famous"] and {"text", "brand"} <= set(blob["famous"][0])
+    assert "oof" in blob["meta"] and "emoscript_version" in blob
+    # a known model needs no explicit mapping
+    assert cli.main(["fit", "--model", "BAAI/bge-small-en-v1.5", "--out", str(out)]) == 0
+    assert cli.main(["export-web", "--axis", str(out), "--out", str(web)]) == 0
+    blob = json.loads(web.read_text(encoding="utf-8"))
+    assert (
+        blob["embedding"]["web_model"] == "Xenova/bge-small-en-v1.5" and blob["embedding"]["pooling"] == "cls"
+    )

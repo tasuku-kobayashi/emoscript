@@ -32,6 +32,33 @@ jobs:
       - run: pytest
       - run: emoscript corpus-check
 
+  web:
+    # The browser edition: the JavaScript port must agree with the Python source.
+    # Model-free tests always; the end-to-end parity test (downloads the small
+    # embedding model from the Hugging Face hub) on PRs, main and manual runs.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm test
+        working-directory: web
+      - name: Cache the browser embedding model
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        uses: actions/cache@v4
+        with:
+          path: web/.hfcache
+          key: transformersjs-bge-small-en-v1.5-fp32
+      - name: End-to-end parity with the Python scorer (transformers.js, fp32)
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        working-directory: web
+        env:
+          EMOSCRIPT_HF_CACHE: .hfcache
+        run: |
+          npm install --no-audit --no-fund
+          npm run parity
+
   evaluate:
     # Real embeddings: fits on the train splits, reports held-out metrics,
     # publishes the report and the fitted axes as workflow artifacts.

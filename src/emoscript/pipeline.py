@@ -333,6 +333,66 @@ class AxisModel:
         )
 
 
+def web_export(model: AxisModel, web_model: str | None = None, pooling: str | None = None) -> dict:
+    """Everything the browser app (``web/``) needs, as plain JSON types.
+
+    The embedding model itself is not exported: the app loads the transformers.js
+    port named here from the Hugging Face hub. ``web_model`` / ``pooling``
+    default to the known mapping for the axis's fastembed model.
+    """
+    from .embed import WEB_MODELS
+
+    if web_model is None or pooling is None:
+        if model.model_name not in WEB_MODELS:
+            raise ValueError(
+                f"no transformers.js mapping for {model.model_name!r}; pass web_model and pooling "
+                f"(known: {', '.join(sorted(WEB_MODELS))})"
+            )
+        wm, pl = WEB_MODELS[model.model_name]
+        web_model, pooling = web_model or wm, pooling or pl
+    if pooling not in ("cls", "mean"):
+        raise ValueError("pooling must be 'cls' or 'mean'")
+
+    def calib(c: Calibrator | None) -> dict | None:
+        if c is None:
+            return None
+        return {
+            "w": [float(x) for x in c.w],
+            "b": float(c.b),
+            "mu": [float(x) for x in c.mu],
+            "sd": [float(x) for x in c.sd],
+        }
+
+    meta = {
+        k: v
+        for k, v in model.meta.items()
+        if k in ("k", "n_pos", "n_neg", "oof", "sense_gate_oof", "data_dir")
+    }
+    return {
+        "format": "emoscript-web/1",
+        "emoscript_version": __version__,
+        "embedding": {
+            "fastembed_model": model.model_name,
+            "web_model": web_model,
+            "pooling": pooling,
+            "prefix": model.prefix,
+            "dim": int(model.axes.shape[1]),
+        },
+        "casing": model.casing,
+        "axes": [[float(x) for x in row] for row in model.axes],
+        "calibrator": calib(model.calibrator),
+        "sense_axis": [float(x) for x in model.sense_axis] if model.sense_axis is not None else None,
+        "sense_gate": calib(model.sense_gate),
+        "famous": [
+            {"text": t, "brand": b}
+            for t, b in zip(
+                model.famous_texts, model.famous_brands or [""] * len(model.famous_texts), strict=True
+            )
+        ],
+        "meta": meta,
+    }
+
+
 def _trigrams(s: str) -> set[str]:
     s = s.replace(" ", "_")
     return {s[i : i + 3] for i in range(len(s) - 2)} if len(s) >= 3 else ({s} if s else set())

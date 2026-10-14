@@ -1,0 +1,14 @@
+{
+  "name": "emoscript-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Browser UI for emoscript: in-browser embeddings with transformers.js, served from GitHub Pages.",
+  "scripts": {
+    "test": "node --test test/logic.test.mjs",
+    "parity": "node test/parity.mjs"
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "^3.3.0"
+  }
+}
