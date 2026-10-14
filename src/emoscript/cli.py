@@ -241,6 +241,9 @@ def cmd_eval(args) -> int:
             f"  good (unknown) copy vs junk      {gc['auc_vs_junk']:.3f}{extra}   "
             f"vs hard {gc['auc_vs_hard']:.3f}   famous vs good {gc['auc_famous_vs_good']:.3f}"
         )
+        if "by_register" in gc:
+            reg = "  ".join(f"{k} {v['pass_rate']:.2f} (n={v['n']})" for k, v in gc["by_register"].items())
+            print(f"  good copy PASS by register:      {reg}")
     if "contrast_pair_win_rate" in report:
         lo, hi = report["contrast_pair_win_ci95"]
         print(

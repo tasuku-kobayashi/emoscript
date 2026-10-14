@@ -742,6 +742,19 @@ def evaluate(
         out["pass_rate"] = {g: float((p >= threshold).mean()) for g, p in P.items()}
         if "good_copy" in P and "junk" in P:
             out["good_copy"]["auc_proba_vs_junk"] = auc(P["good_copy"], P["junk"])
+            # the scorer is built for tagline-length lines; show the register split explicitly
+            gw = np.array([len(t.split()) for t in groups["good_copy"]])
+            short = gw <= 6
+            out["good_copy"]["by_register"] = {
+                "tagline_length<=6w": {
+                    "n": int(short.sum()),
+                    "pass_rate": float((P["good_copy"][short] >= threshold).mean()),
+                },
+                "longer>6w": {
+                    "n": int((~short).sum()),
+                    "pass_rate": float((P["good_copy"][~short] >= threshold).mean()),
+                },
+            }
         # what a CLI user actually sees: a line with an input flag (placeholder, single
         # word, wrapped, ...) or a near-famous warning is not an unqualified PASS
         guarded = {}

@@ -204,6 +204,11 @@ def run(
                 v["junk_pass_rate_after_flags"] = float(((P["junk"] >= 0.5) & ~flagged).mean())
             if "good" in P and "junk" in P:
                 v["good_copy"]["auc_proba_vs_junk"] = auc(P["good"], P["junk"])
+                gw = np.array([len(t.split()) for t in groups["good"]])
+                v["good_copy"]["pass_rate_by_register"] = {
+                    "tagline_length<=6w": float((P["good"][gw <= 6] >= 0.5).mean()),
+                    "longer>6w": float((P["good"][gw > 6] >= 0.5).mean()),
+                }
         variants[name] = v
         return s
 
@@ -343,6 +348,9 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
                 f"  good unknown copy: vs junk {gc['auc_vs_junk']:.3f}{extra}   "
                 f"vs hard {gc['auc_vs_hard']:.3f}   famous vs good {gc['auc_famous_vs_good']:.3f}"
             )
+            if "pass_rate_by_register" in gc:
+                reg = "  ".join(f"{k} {r:.2f}" for k, r in gc["pass_rate_by_register"].items())
+                print(f"  good copy PASS by register: {reg}")
         if "pass_rate@0.5" in v:
             rates = "  ".join(f"{g} {r:.2f}" for g, r in v["pass_rate@0.5"].items())
             extra = (
