@@ -47,6 +47,10 @@ def test_strip_wrappers_keeps_plain_text():
     assert strip_wrappers("Just Do It.") == "Just Do It."
     assert strip_wrappers("A. B. C.") == "A. B. C."
     assert strip_wrappers("15 Minutes Could Save You 15%") == "15 Minutes Could Save You 15%"
+    for t in ["Copy-paste less.", "Line-dried freshness, bottled.", "V-Neck season.", "America's #1 pizza."]:
+        assert strip_wrappers(t) == t, t
+    assert canonicalize("Slogan idea 2: Just do it") == "just do it"
+    assert canonicalize("Tagline (punchy): Got milk?") == "got milk"
 
 
 def test_llm_chatter_and_placeholder_flags_do_not_hit_real_copy():
@@ -58,13 +62,45 @@ def test_llm_chatter_and_placeholder_flags_do_not_hit_real_copy():
         "Sure, here is a tagline:",
         "Here are 10 taglines:",
         "Error: rate limit exceeded",
-        "Note: subject to availability",
+        "Sure thing! Here are five taglines:",
+        "Of course! Here you go:",
+        "Here’s a tagline for you:",
+        "I’m sorry, but I can’t write that.",
+        "**Sure!** Here are some taglines:",
     ]:
         assert "llm_chatter" in input_flags(t), t
-    for t in ["Tagline goes here", "Your slogan here", "null", "undefined", "N/A"]:
+    for t in [
+        "Tagline goes here",
+        "Your slogan here",
+        "null",
+        "undefined",
+        "N/A",
+        "<BRAND> — eat better",
+        "TODO: x",
+    ]:
         assert "placeholder" in input_flags(t), t
-    for t in ["Certainly the best.", "Sure Thing.", "Here Comes the Sun", "Error-proof your inbox."]:
+    for t in [
+        "Certainly the best.",
+        "Sure Thing.",
+        "Here Comes the Sun",
+        "Error-proof your inbox.",
+        "I'm afraid of nothing.",
+        "I can't help it.",
+        "Okay, one more slice.",
+        "Here's the bottom line.",
+        "Note: this is not a drill.",
+        "Sure, you could pay more.",
+    ]:
         assert "llm_chatter" not in input_flags(t), t
+    for t in [
+        "Your todo list, done.",
+        "Your future here.",
+        "Everything you love goes here.",
+        "Anything goes here.",
+    ]:
+        assert "placeholder" not in input_flags(t), t
+    assert input_flags("Tagline: Banana") == ["single_word", "wrapped"]
+    assert "non_latin" not in input_flags("Café Olé") and "non_latin" not in input_flags("Crème de la crème")
     corpus = load_corpus()
     blocked = [
         r["text"] for r in corpus.pos_train + corpus.pos_test if BLOCKING_FLAGS & set(input_flags(r["text"]))

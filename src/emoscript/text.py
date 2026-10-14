@@ -22,53 +22,77 @@ stored in the fitted model and applied identically at score time.
 from __future__ import annotations
 
 import re
+import unicodedata
 from collections.abc import Callable
 
 CASINGS = ("none", "lower", "sentence", "lower_nopunct", "canonical")
 
-_TRAILING = re.compile(r"""[\s.!?…'"”’)\]]+$""")
-_LEADING = re.compile(r"""^[\s'"“‘(\[]+""")
+_QUOTES = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"', "´": "'", "`": "'"})
+_TRAILING = re.compile(r"""[\s.!?…'")\]]+$""")
+_LEADING = re.compile(r"""^[\s'"(\[]+""")
 _WS = re.compile(r"\s+")
-_HTML = re.compile(r"<[^>]{1,80}>")
-_MD = re.compile(r"[*_`~#>]+")
+_HTML = re.compile(r"</?[a-z][a-z0-9]*(?:\s[^<>]{0,80})?/?>", re.I)
+_MD_LEAD = re.compile(r"^(?:[#>]+\s*)+")
+_MD_PAIR = re.compile(r"(\*\*|__|~~|\*|_)(\S(?:.*?\S)?)\1")
+_MD_EDGE = re.compile(r"^[*_~]+|[*_~]+$")
 _LIST = re.compile(r"^\s*(?:[-•▪·]|\(?\d{1,3}[.)]|[a-z]\))\s+", re.I)
 _LABEL = re.compile(
-    r"^\s*(?:tagline|slogan|headline|option|variant|idea|line|candidate|copy|v\d*)\s*(?:\d+)?\s*[:：\-–—]\s*",
+    r"^\s*(?:tagline|slogan|headline|option|variant|idea|line|candidate|copy|v\d+)"
+    r"(?:\s+(?:idea|option|variant|line|candidate))?"
+    r"(?:\s*(?:\d+|[a-z]|#\d+))?(?:\s*\([^)]{0,40}\))?(?:\s*[:：]|\s+[-–—])\s*",
     re.I,
 )
 _PLACEHOLDER = re.compile(
-    r"\{\{.*?\}\}|\$\{.*?\}|\[(?:insert|your|tagline|brand|slogan)[^\]]*\]|\bTODO\b|\bTBD\b|lorem ipsum"
-    r"|\bgoes here\b|^\s*(?:your|insert|add|enter) \w+ here\s*[.!]?$"
+    r"\{\{.*?\}\}|\$\{.*?\}|<[A-Z][A-Z _-]{1,30}>|\[(?:insert|your|tagline|brand|slogan)[^\]]*\]"
+    r"|^\s*todo\b[:\s]|^\s*tbd\b|lorem ipsum"
+    r"|^\W*(?:(?:your|the|a|an|new|catchy|best|insert) )?"
+    r"(?:tagline|slogan|headline|copy|text|title|name|brand|logo|content|description|body)s? goes here\W*$"
+    r"|^\s*(?:insert|add|enter) \w+ here\s*[.!]?$"
+    r"|^\s*your (?:tagline|slogan|text|copy|headline|logo|name|brand|message|title) here\s*[.!]?$"
     r"|^\s*(?:undefined|null|nan|none|n/?a|\[object object\])\s*$",
     re.I,
 )
 # Text a chat model emits around (or instead of) the lines it was asked for.
 _LLM_CHATTER = re.compile(
-    r"^\s*(?:sure[!,.]|certainly[!,]|okay[!,]|"
-    r"here(?:'s| is| are) (?:a |an |the |\d+ |some |your |my )?(?:\w+ )?"
-    r"(?:tagline|slogan|option|line|headline|idea|copy)s?\b"
-    r"|as an ai\b|i(?:'m| am) (?:sorry|unable|afraid)\b"
-    r"|i (?:can(?:'t|not)|am unable to|cannot) (?:write|help|assist|create|generate|provide)\b"
-    r"|error[:\s]+(?:\d|rate|loading|message|code)|note:)",
+    r"^(?:sure|certainly|okay|of course|absolutely|got it)(?: thing)?[!,.:]\s+(?:here|i|below|these)\b"
+    r"|^here(?:'s| is| are) (?:\w+ ){0,4}(?:tagline|slogan|headline)s?\b"
+    r"|^here you go[:!]"
+    r"|^as an? (?:ai|language model|assistant)\b"
+    r"|^i(?:'m| am) (?:sorry|afraid)(?:,? but| i can|,? i cannot)\b"
+    r"|^sorry,? (?:but )?i can(?:'t|not)\b"
+    r"|^i (?:can(?:'t|not)|am unable to) (?:help (?:you |with )|assist|"
+    r"(?:write|generate|create|provide|come up with) (?:a |an |the |any |that|this|slogan|tagline))"
+    r"|^error[:\s]+(?:\d{3}\s*$|rate limit|loading|message|code)",
     re.I,
 )
 
 
+def normalize_quotes(text: str) -> str:
+    return text.translate(_QUOTES)
+
+
 def strip_terminal_punctuation(text: str) -> str:
     """Trim surrounding quotes/brackets, trailing ``.!?…`` and collapse whitespace."""
-    t = _WS.sub(" ", text).strip()
+    t = _WS.sub(" ", normalize_quotes(text)).strip()
     t = _LEADING.sub("", t)
     t = _TRAILING.sub("", t)
     return t.strip()
 
 
 def strip_wrappers(text: str) -> str:
-    """Remove HTML tags, markdown emphasis, list markers and 'Tagline:' style labels."""
-    t = _HTML.sub(" ", text)
-    t = _MD.sub("", t)
+    """Remove HTML tags, markdown emphasis, list markers and 'Tagline:' style labels.
+
+    Markdown is removed only where it is markup: leading ``#``/``>``, paired
+    emphasis (``**bold**``, ``_x_``) and stray edge characters. Hyphens and
+    ``#`` inside copy ("Copy-paste less.", "America's #1 pizza") stay.
+    """
+    t = _HTML.sub(" ", normalize_quotes(text))
     t = _WS.sub(" ", t).strip()
-    for _ in range(3):  # markers can nest: '1. Tagline: "..."'
-        t2 = _LABEL.sub("", _LIST.sub("", t)).strip()
+    for _ in range(3):  # markers can nest: '> 1. **Tagline:** "..."'
+        t2 = _MD_LEAD.sub("", t)
+        t2 = _MD_PAIR.sub(r"\2", t2)
+        t2 = _MD_EDGE.sub("", t2).strip()
+        t2 = _LABEL.sub("", _LIST.sub("", t2)).strip()
         t2 = _LEADING.sub("", t2)
         if t2 == t:
             break
@@ -78,6 +102,11 @@ def strip_wrappers(text: str) -> str:
 
 def canonicalize(text: str) -> str:
     return strip_terminal_punctuation(strip_wrappers(text).lower())
+
+
+def word_tokens(text: str) -> list[str]:
+    """Lower-case word tokens with punctuation and apostrophes removed ("I'm" -> "im")."""
+    return re.findall(r"[^\W_]+", normalize_quotes(text).replace("'", "").lower())
 
 
 def normalize_text(text: str, casing: str = "none") -> str:
@@ -116,17 +145,27 @@ MAX_WORDS = 17  # longest famous tagline in the corpus
 BLOCKING_FLAGS = frozenset({"no_letters", "single_word", "too_long", "placeholder", "llm_chatter"})
 
 
+def _is_latin(ch: str) -> bool:
+    try:
+        return unicodedata.name(ch).startswith("LATIN")
+    except ValueError:
+        return False
+
+
 def input_flags(text: str, max_words: int = MAX_WORDS) -> list[str]:
     """Cheap warnings for inputs the scorer handles badly (it still scores them).
+
+    Flags are computed on the text with wrappers removed (the same view the
+    canonical normalization embeds), so ``"Tagline: Banana"`` is still one word.
 
     - ``no_letters``:   nothing to score (score_texts returns NaN for these)
     - ``single_word``:  one word; famous one-word lines exist ("Think") but a
                         single noun is not a tagline and scores high by length
     - ``too_long``:     longer than any famous line; the axis was not fitted on these
-    - ``placeholder``:  template artefacts such as {{tagline}}, TODO, lorem ipsum,
-                        "Your slogan here", "null"
-    - ``llm_chatter``:  chat-model framing instead of a line ("Sure! Here's a
-                        tagline:", "As an AI language model, I cannot ...")
+    - ``placeholder``:  template artefacts such as {{tagline}}, <BRAND>, TODO:,
+                        lorem ipsum, "Your slogan here", "null"
+    - ``llm_chatter``:  chat-model framing instead of a line ("Sure! Here are
+                        five taglines:", "As an AI language model, I cannot ...")
     - ``non_latin``:    mostly non-Latin script; scores for other languages are
                         not calibrated against this corpus (Japanese lines score
                         ~0.04 higher than their English counterparts)
@@ -135,18 +174,20 @@ def input_flags(text: str, max_words: int = MAX_WORDS) -> list[str]:
     flags: list[str] = []
     if not has_letters(text):
         return ["no_letters"]
-    words = [w for w in re.findall(r"[^\s]+", text) if any(ch.isalpha() for ch in w)]
+    raw = normalize_quotes(text)
+    stripped = strip_wrappers(raw)
+    words = [w for w in stripped.split() if any(ch.isalpha() for ch in w)]
     if len(words) <= 1:
         flags.append("single_word")
     if len(words) > max_words:
         flags.append("too_long")
-    if _PLACEHOLDER.search(text):
+    if _PLACEHOLDER.search(raw) or _PLACEHOLDER.search(stripped):
         flags.append("placeholder")
-    if _LLM_CHATTER.search(text):
+    if _LLM_CHATTER.search(stripped.strip()):
         flags.append("llm_chatter")
-    letters = [ch for ch in text if ch.isalpha()]
-    if letters and sum(ch.isascii() for ch in letters) / len(letters) < 0.9:
+    letters = [ch for ch in stripped if ch.isalpha()]
+    if letters and sum(_is_latin(ch) for ch in letters) / len(letters) < 0.9:
         flags.append("non_latin")
-    if strip_wrappers(text) != _WS.sub(" ", text).strip():
+    if stripped != _WS.sub(" ", raw).strip():
         flags.append("wrapped")
     return flags

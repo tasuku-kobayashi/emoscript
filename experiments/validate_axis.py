@@ -68,7 +68,7 @@ PROBES = [
     ("The sofa that forgives.", "coined, concrete image"),
     ("Comfort, redefined for modern living.", "bland ad-speak"),
     ("We sell high quality furniture at low prices.", "bland ad-speak"),
-    ("Lorem Ipsum", "placeholder"),
+    ("Alphabetize the Fog", "whimsical nonsense"),
 ]
 
 
@@ -183,6 +183,7 @@ def run(
             }
             if "junk" in s:
                 flagged = np.array([bool(BLOCKING_FLAGS & set(input_flags(t))) for t in groups["junk"]])
+                # (the famous-line check only blocks verbatim copies; junk never contains one)
                 v["junk_pass_rate_after_flags"] = float(
                     ((calibrator.predict_proba(s["junk"]) >= 0.5) & ~flagged).mean()
                 )

@@ -122,6 +122,9 @@ def test_near_famous_flags_copies_and_parodies_not_fresh_copy(fake_embed_fn, tmp
             "Think fresh.",  # keeps the first word of two-word famous lines: a possible riff
             "Got Mold?",  # two-word swap on "Got Milk?": possible riff
             "Chew Slow",  # two-word swap with a different first word: no hit
+            "Just. Do. It.",  # punctuation inside: still a copy
+            "I’m lovin’ it",  # curly apostrophes, no caps: still a copy
+            "Do the math.",  # one word from "Do the Dew": a warning at most, never a block
         ]
     )
     assert hits[0]["text"] == "Just Do It." and hits[0]["brand"] == "Nike" and hits[0]["severity"] == "copy"
@@ -134,6 +137,9 @@ def test_near_famous_flags_copies_and_parodies_not_fresh_copy(fake_embed_fn, tmp
     assert hits[8]["severity"] == "possible" and hits[8]["text"].startswith("Think ")
     assert hits[9]["severity"] == "possible" and hits[9]["text"] == "Got Milk?"
     assert hits[10] is None
+    assert hits[11]["severity"] == "copy" and hits[11]["text"] == "Just Do It."
+    assert hits[12]["severity"] == "copy" and hits[12]["text"] == "I'm Lovin' It"
+    assert hits[13] is None or hits[13]["severity"] != "copy"
     model.save(tmp_path / "m.npz")
     loaded = AxisModel.load(tmp_path / "m.npz")
     assert loaded.famous_texts == model.famous_texts and loaded.famous_brands == model.famous_brands

@@ -52,12 +52,16 @@ missing:
 - **Guards the score cannot provide, and they decide.** Input flags (single
   word, over 17 words, placeholder, chat-model chatter such as *"Sure, here
   is a tagline:"*, non-Latin script, wrapped) and a lexical check against the
-  278 famous lines in the corpus (*"Just Chew It."* parodies *"Just Do
-  It."*; *"Got Mold?"* possibly riffs on *"Got Milk?"*). A blocked row is
-  reported as not passing and sorted last, however high its score. With
+  278 famous lines in the corpus, compared word by word so *"Just. Do. It."*
+  and *"I’m lovin’ it"* count as copies. A verbatim copy or a blocking flag
+  makes a row not pass and sorts it last, however high its score; a parody
+  (*"Just Chew It."*, *"Kills Kids Dead"*) or a possible riff (*"Got Mold?"*)
+  is a warning, because ordinary short copy sits one word away from some
+  famous line too often for a lexical rule to be allowed a veto. With
   `--brief`, relevance to the brief is shown, `--sort` ranks by style and
-  relevance together, and `--min-rel` turns relevance into a gate, because
-  the style axis alone prefers *"Chase the Gravy"* to on-brief copy.
+  relevance together (z-scored over the unblocked rows), and `--min-rel`
+  turns relevance into a gate, because the style axis alone prefers *"Chase
+  the Gravy"* to on-brief copy.
 - **Explanations.** `--explain` shows the nearest famous taglines to a
   candidate.
 - **Optional multi-axis scoring (`--k`).** Spherical k-means over the
@@ -242,9 +246,11 @@ Axis files are `.npz` and backward compatible: a v0.1 file with a single
   candidates of similar length, or read `--explain` before cutting a line.
 - **Memorable is not usable.** Proverbs, lyrics and whimsical nonsense score
   like great copy (held-out famous taglines vs famous non-ad quotes: AUC
-  about 0.5). Parodies and copies of corpus slogans are caught lexically;
-  nonsense is not. Use `--brief` with `--min-rel`, and treat the junk PASS
-  rate in `docs/results.md` as the honest floor.
+  about 0.5). Copies and parodies of corpus slogans are caught lexically
+  (copies block, parodies warn); nonsense is not. Use `--brief` with
+  `--min-rel`, and treat the junk PASS rate in `docs/results.md` as the
+  honest floor. The input-flag patterns were written with the junk control
+  in view, so "junk after flags" is partly in-sample; the junk AUC is not.
 - **One-word lines are blocked.** *"Think"*, *"Lemon."* and *"Zoom-Zoom"*
   are famous, but a single word is also the easiest way to game a
   brevity-loving axis, so `single_word` is a blocking flag; the score is

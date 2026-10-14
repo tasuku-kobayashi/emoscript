@@ -23,14 +23,18 @@ import numpy as np
 from . import __version__
 from .dataio import DATA_DIR, corpus_warnings, validate_corpus
 from .embed import DEFAULT_MODEL, make_embed_fn
-from .pipeline import AxisModel, brief_relevance, evaluate, fit_from_corpus, score_texts
+from .pipeline import AxisModel, embed_valid, evaluate, fit_from_corpus
 from .text import BLOCKING_FLAGS, CASINGS, input_flags
 
 DEFAULT_REPO = "tasuku-kobayashi/emoscript"
 
 
 def _print_json(obj) -> None:
-    print(json.dumps(obj, indent=2, ensure_ascii=False))
+    print(json.dumps(obj, indent=2, ensure_ascii=False, allow_nan=False))
+
+
+def _finite(x) -> float | None:
+    return None if x is None or not np.isfinite(x) else float(x)
 
 
 # --------------------------------------------------------------------------- commands
@@ -78,7 +82,7 @@ def _read_texts(args) -> list[str]:
     if args.file == "-":
         texts += [line.rstrip("\n") for line in sys.stdin if line.strip()]
     elif args.file:
-        with open(args.file, encoding="utf-8") as fh:
+        with open(args.file, encoding="utf-8-sig") as fh:
             texts += [line.rstrip("\n") for line in fh if line.strip()]
     if not texts:
         raise SystemExit("score: give taglines as arguments, --file PATH, or --file - for stdin")
@@ -90,60 +94,85 @@ def cmd_score(args) -> int:
         raise SystemExit("--threshold must be strictly between 0 and 1")
     if not 0 < args.prior < 1:
         raise SystemExit("--prior must be strictly between 0 and 1")
+    if args.min_rel is not None and not args.brief:
+        raise SystemExit("--min-rel needs --brief")
+    if args.brief is not None and not any(ch.isalpha() for ch in args.brief):
+        raise SystemExit("--brief must contain words")
     model = AxisModel.load(args.axis)
     texts = _read_texts(args)
     embed_fn = make_embed_fn(model.model_name, model.prefix)
-    scores, probs = score_texts(model, texts, embed_fn, prior=args.prior)
-    relevance = brief_relevance(model, texts, args.brief, embed_fn) if args.brief else None
-    near = model.near_famous(texts) if not args.no_famous_check else [None] * len(texts)
+
+    ok, E = embed_valid(model, texts, embed_fn)  # embedded once, reused for score / explain / brief
+    scores = np.full(len(texts), np.nan)
+    if ok.any():
+        scores[ok] = model.score(E)
+    probs = model.predict_proba(scores, prior=args.prior)
+    relevance = None
+    if args.brief:
+        relevance = np.full(len(texts), np.nan)
+        if ok.any():
+            relevance[ok] = E @ model.embed([args.brief], embed_fn)[0]
+    explanations = model.explain(E, n=args.neighbors) if args.explain and ok.any() else None
+    exp_index = np.cumsum(ok) - 1
+    if args.no_famous_check:
+        near = [None] * len(texts)
+    else:
+        near = model.near_famous(texts)
+        if not model.famous_texts:
+            print(
+                "note: this axis file carries no famous-line catalogue; the copy check is off",
+                file=sys.stderr,
+            )
     flags = [input_flags(t) for t in texts]
-    explanations = None
-    if args.explain:
-        safe = [t if not np.isnan(scores[i]) else "placeholder" for i, t in enumerate(texts)]
-        explanations = model.explain(model.embed(safe, embed_fn), n=args.neighbors)
+
     rows = []
     for i, t in enumerate(texts):
-        skipped = bool(np.isnan(scores[i]))
-        row = {"text": t, "score": None if skipped else float(scores[i])}
+        skipped = not ok[i]
+        row = {"text": t, "score": _finite(scores[i])}
         if skipped:
             row["skipped"] = "no letters"
         if explanations is not None and not skipped:
-            row["axis"] = explanations[i]["axis"]
-            row["nearest"] = [{"text": a, "cos": b} for a, b in explanations[i]["nearest"]]
+            ex = explanations[exp_index[i]]
+            row["axis"] = ex["axis"]
+            row["nearest"] = [{"text": a, "cos": b} for a, b in ex["nearest"]]
         if relevance is not None:
-            row["brief_relevance"] = None if skipped else float(relevance[i])
+            row["brief_relevance"] = _finite(relevance[i])
         if flags[i]:
             row["flags"] = flags[i]
         if near[i] is not None:
             row["near_famous"] = near[i]
         # A row passes only if the score says so AND nothing disqualifies it: a blocking
-        # input flag, a copy / parody of a famous line, or (with --brief) low relevance.
+        # input flag, a verbatim copy of a famous line, or (with --brief) low relevance.
         blocked = sorted(BLOCKING_FLAGS & set(flags[i]))
-        if near[i] is not None and near[i]["severity"] != "possible":
-            blocked.append(f"near_famous:{near[i]['severity']}")
+        if near[i] is not None and near[i]["severity"] == "copy":
+            blocked.append("near_famous:copy")
         if relevance is not None and args.min_rel is not None and not skipped and relevance[i] < args.min_rel:
             blocked.append("off_brief")
         if probs is not None:
-            row["prob"] = None if skipped else float(probs[i])
+            row["prob"] = _finite(probs[i])
             row["pass"] = (not skipped) and bool(probs[i] >= args.threshold) and not blocked
         if blocked:
             row["blocked_by"] = blocked
         rows.append(row)
     if args.sort:
-        # with a brief, rank by style AND relevance (z-scored within this batch); blocked rows last
+        # with a brief, rank by style AND relevance, z-scored over the unblocked rows of this batch
         if relevance is not None:
-            valid = [r for r in rows if r["score"] is not None and r["brief_relevance"] is not None]
-            s = np.array([r["score"] for r in valid])
-            rel = np.array([r["brief_relevance"] for r in valid])
-            zs = (s - s.mean()) / (s.std() + 1e-12) if len(s) > 1 else np.zeros(len(s))
-            zr = (rel - rel.mean()) / (rel.std() + 1e-12) if len(rel) > 1 else np.zeros(len(rel))
-            for r, a, b in zip(valid, zs, zr, strict=True):
-                r["rank_score"] = float(a + b)
+            clean = [r for r in rows if r["score"] is not None and "blocked_by" not in r]
+            s = np.array([r["score"] for r in clean])
+            rel = np.array([r["brief_relevance"] for r in clean])
+            mu_s, sd_s = (s.mean(), s.std()) if len(s) > 1 else (0.0, 1.0)
+            mu_r, sd_r = (rel.mean(), rel.std()) if len(rel) > 1 else (0.0, 1.0)
+            for r in rows:
+                if r["score"] is not None and r.get("brief_relevance") is not None:
+                    r["rank_score"] = float(
+                        (r["score"] - mu_s) / (sd_s + 1e-12) + (r["brief_relevance"] - mu_r) / (sd_r + 1e-12)
+                    )
         key_name = "rank_score" if relevance is not None else "score"
         rows.sort(
             key=lambda r: (
                 "blocked_by" in r or r["score"] is None,
                 -(r.get(key_name) if r.get(key_name) is not None else float("-inf")),
+                -(r["score"] if r["score"] is not None else float("-inf")),
             )
         )
     if args.json:
@@ -177,8 +206,8 @@ def cmd_score(args) -> int:
             print("          ! " + "; ".join(notes))
         if "nearest" in r:
             axis_note = f" (axis {r['axis']})" if model.k > 1 else ""
-            near = "; ".join(f"{n['text']} ({n['cos']:.2f})" for n in r["nearest"])
-            print(f"          nearest famous{axis_note}: {near}")
+            near_s = "; ".join(f"{n['text']} ({n['cos']:.2f})" for n in r["nearest"])
+            print(f"          nearest famous{axis_note}: {near_s}")
     return 0
 
 

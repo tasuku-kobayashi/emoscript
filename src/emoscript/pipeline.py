@@ -35,7 +35,7 @@ from .axis import (
 )
 from .dataio import DATA_DIR, load_corpus, texts
 from .embed import DEFAULT_MODEL, EmbedFn, prefix_for
-from .text import BLOCKING_FLAGS, canonicalize, has_letters, input_flags, normalizer
+from .text import BLOCKING_FLAGS, canonicalize, has_letters, input_flags, normalizer, word_tokens
 
 NegativeKinds = tuple[str, ...]
 
@@ -59,6 +59,7 @@ class AxisModel:
     # these should be flagged, however well it scores.
     famous_texts: list[str] = field(default_factory=list)
     famous_brands: list[str] = field(default_factory=list)
+    _famous_cache: tuple | None = field(default=None, repr=False, compare=False)
 
     @property
     def k(self) -> int:
@@ -128,30 +129,42 @@ class AxisModel:
     def near_famous(
         self, texts_: list[str], *, max_edits: int = 2, trigram: float = 0.5
     ) -> list[dict | None]:
-        """Lexical near-duplicate check against every famous line in the corpus.
+        """Lexical check against every famous line in the corpus (train and test).
 
-        Flags verbatim copies and one- or two-word parodies ("Just Chew It.",
-        "Kills Kids Dead") that the embedding scores like the originals. A
-        match is a famous line with token edit distance <= ``max_edits``, capped
-        at ``(tokens - 1) // 2`` (one- and two-word lines only match exactly,
-        three- and four-word lines allow one swapped word), or character-trigram
-        Jaccard >= ``trigram``. A two-word famous line with its first word kept
-        and the second swapped ("Got Mold?") is reported with severity
-        ``"possible"``; exact matches are ``"copy"``, the rest ``"parody"``.
+        Comparison is on word tokens with punctuation, apostrophes, case and
+        wrappers removed, so "Just. Do. It.", "I’m lovin’ it" and
+        '1. Tagline: "Just Do It."' all count as copies.
+
+        Severity:
+        - ``copy``      identical tokens. The CLI refuses to PASS these.
+        - ``parody``    token edit distance <= ``max_edits`` and at most
+                        ``(tokens - 1) // 2`` of the famous line changed
+                        ("Just Chew It.", "Kills Kids Dead"), or (both lines
+                        3+ tokens) character-trigram Jaccard >= ``trigram``.
+        - ``possible``  a two-word famous line with its first word kept and the
+                        second swapped ("Got Mold?").
+        Parodies and possibles are warnings, not blocks: short ordinary copy
+        ("Do the math.", "Like a pro.") sits one word away from some famous
+        line far too often for a lexical rule to be allowed to veto it.
         Returns, per input, ``{"text", "brand", "edits", "trigram", "severity"}`` or None.
         """
         if not self.famous_texts:
             return [None] * len(texts_)
-        canon = [canonicalize(t) for t in self.famous_texts]
-        toks = [c.split() for c in canon]
-        tris = [_trigrams(c) for c in canon]
+        if self._famous_cache is None or self._famous_cache[0] is not self.famous_texts:
+            toks = [word_tokens(canonicalize(t)) for t in self.famous_texts]
+            self._famous_cache = (self.famous_texts, toks, [_trigrams(" ".join(t)) for t in toks])
+        _, toks, tris = self._famous_cache
         out: list[dict | None] = []
         for t in texts_:
-            c = canonicalize(t)
-            ct, ctri = c.split(), _trigrams(c)
+            ct = word_tokens(canonicalize(t))
+            ctri = _trigrams(" ".join(ct))
             best = None
             for i, (ft, ftri) in enumerate(zip(toks, tris, strict=True)):
+                if not ft or not ct:
+                    continue
                 if abs(len(ft) - len(ct)) > max_edits:
+                    if len(ft) < 3 or len(ct) < 3:
+                        continue
                     jac = len(ctri & ftri) / len(ctri | ftri) if (ctri or ftri) else 0.0
                     if jac < trigram:
                         continue
@@ -159,12 +172,10 @@ class AxisModel:
                 else:
                     edits = _token_edit_distance(ct, ft)
                     jac = len(ctri & ftri) / len(ctri | ftri) if (ctri or ftri) else 0.0
-                # allowed edits grow with the famous line: 1-2 tokens exact only, 3-4 one
-                # word, 5+ two words. "Eat Fresh" must not flag every "<verb> fresh".
                 allowed = min(max_edits, (len(ft) - 1) // 2)
                 if edits == 0:
                     severity = "copy"
-                elif edits <= allowed or jac >= trigram:
+                elif edits <= allowed or (len(ft) >= 3 and len(ct) >= 3 and jac >= trigram):
                     severity = "parody"
                 elif len(ft) == 2 and len(ct) == 2 and edits == 1 and ct[0] == ft[0]:
                     severity = "possible"  # "Got Mold?" rides on "Got Milk?"; lower confidence
@@ -278,6 +289,8 @@ def _token_edit_distance(a: list[str], b: list[str]) -> int:
 def negative_family(row: dict) -> str:
     """Coarse family of a negative row from its ``note`` (see CONTRIBUTING)."""
     note = str(row.get("note", "")).lower()
+    if note == "short-factual":
+        return "prose"
     if note.startswith("generic-"):
         return "ad-speak"
     if note.startswith("short-") or note.startswith("mid-"):
@@ -511,6 +524,18 @@ def score_texts(
     return s, p
 
 
+def embed_valid(model: AxisModel, texts_: list[str], embed_fn: EmbedFn) -> tuple[np.ndarray, np.ndarray]:
+    """Embed the lines that have letters once; returns ``(ok_mask, E)`` with E aligned to ok rows."""
+    texts_ = list(texts_)
+    ok = np.array([has_letters(t) for t in texts_], dtype=bool)
+    E = (
+        model.embed([t for t, o in zip(texts_, ok, strict=True) if o], embed_fn)
+        if ok.any()
+        else np.zeros((0, 1))
+    )
+    return ok, E
+
+
 def brief_relevance(model: AxisModel, texts_: list[str], brief: str, embed_fn: EmbedFn) -> np.ndarray:
     """Cosine between each line and a short product / campaign brief.
 
@@ -605,7 +630,7 @@ def evaluate(
             flagged = np.array(
                 [
                     bool(BLOCKING_FLAGS & set(input_flags(x)))
-                    or (nf is not None and nf["severity"] != "possible")
+                    or (nf is not None and nf["severity"] == "copy")
                     for x, nf in zip(t, near, strict=True)
                 ]
             )

@@ -153,6 +153,8 @@ def kmeans(
                 members = X[new_labels == j]
                 if len(members):
                     centers[j] = members.mean(axis=0)
+                else:  # only with fewer distinct points than k: park the centre on a random point
+                    centers[j] = X[rng.integers(n)]
             if spherical:
                 centers = l2_normalize(centers)
             if np.array_equal(new_labels, labels):
@@ -192,7 +194,10 @@ def fit_multi_axis(
         return fit_diff_axis(E_pos, E_neg, neg_weights)[None, :], np.zeros(len(E_pos), dtype=int)
     _, labels, _ = kmeans(E_pos, k, seed=seed, n_init=n_init)
     neg_centroid = weighted_mean(E_neg, neg_weights)
-    means = np.vstack([E_pos[labels == c].mean(axis=0) for c in range(k)])
+    global_mean = E_pos.mean(axis=0)
+    means = np.vstack(
+        [E_pos[labels == c].mean(axis=0) if np.any(labels == c) else global_mean for c in range(k)]
+    )
     axes = l2_normalize(means - neg_centroid[None, :])
     return axes, labels
 

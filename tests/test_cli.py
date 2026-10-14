@@ -130,18 +130,22 @@ def test_score_warns_about_famous_copies_flags_prior_and_brief(patched_backend, 
     assert rc == 0
     text = capsys.readouterr().out
     assert 'parodies famous line: "Just Do It." (Nike)' in text
-    assert "not passing: near_famous:parody" in text
+    assert "near_famous:parody" not in text  # parodies warn, only verbatim copies block
     assert "flags: single_word, placeholder" in text and "not passing: placeholder, single_word" in text
     assert "rel=" in text
     cli.main(["score", "Just Chew It.", "--axis", str(out), "--json", "--no-famous-check"])
     row = json.loads(capsys.readouterr().out)[0]
     assert "near_famous" not in row and "flags" not in row and "blocked_by" not in row
-    cli.main(["score", "1. Just Chew It.", "--axis", str(out), "--json"])
+    cli.main(["score", '1. "Just. Do. It."', "--axis", str(out), "--json"])
     row = json.loads(capsys.readouterr().out)[0]
     assert row["near_famous"]["text"] == "Just Do It." and row["flags"] == ["wrapped"]
-    assert row["pass"] is False and row["blocked_by"] == ["near_famous:parody"]
+    assert row["pass"] is False and row["blocked_by"] == ["near_famous:copy"]
     with pytest.raises(SystemExit, match="prior"):
         cli.main(["score", "x", "--axis", str(out), "--prior", "0"])
+    with pytest.raises(SystemExit, match="min-rel"):
+        cli.main(["score", "x", "--axis", str(out), "--min-rel", "0.5"])
+    with pytest.raises(SystemExit, match="brief"):
+        cli.main(["score", "x", "--axis", str(out), "--brief", "2024"])
 
 
 def test_brief_gate_and_blocked_rows_sort_last(patched_backend, tmp_path, capsys):
@@ -158,6 +162,12 @@ def test_brief_gate_and_blocked_rows_sort_last(patched_backend, tmp_path, capsys
     assert all("rank_score" in r for r in rows[:2])
     assert rows[0]["rank_score"] >= rows[1]["rank_score"]
     assert "llm_chatter" in next(r for r in rows if r["text"].startswith("Sure"))["flags"]
+    # z-scores come from the unblocked rows only: adding junk must not reorder the good lines
+    good_order = [r["text"] for r in rows[:2]]
+    cli.main(
+        ["score", *lines[:1], lines[3], "--axis", str(out), "--brief", "a mattress brand", "--sort", "--json"]
+    )
+    assert [r["text"] for r in json.loads(capsys.readouterr().out)] == good_order
     cli.main(
         ["score", *lines[:1], "--axis", str(out), "--brief", "a mattress brand", "--min-rel", "2.0", "--json"]
     )

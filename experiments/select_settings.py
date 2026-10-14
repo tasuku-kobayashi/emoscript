@@ -11,6 +11,8 @@ inner out-of-fold scores of the training folds (nested, so nothing leaks).
 
 Pick the row with the best log-loss (ties: higher AUC, then smaller k), then
 freeze that choice as the library default and evaluate it once on the test split.
+Outer folds are brand-grouped; the inner folds that fit each fold's calibrator
+are random (a brand-grouped inner split changed the threshold by 0.0001).
 """
 
 from __future__ import annotations
@@ -144,7 +146,7 @@ def print_table(rows: list[dict]) -> None:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--model", default=DEFAULT_MODEL)
-    ap.add_argument("--casings", default="none,lower,lower_nopunct")
+    ap.add_argument("--casings", default="none,lower,canonical")
     ap.add_argument("--k", default="1,2,3")
     ap.add_argument("--l2", default="0.1,1,10")
     ap.add_argument("--balance", default="0,1", help="comma list of 0/1: equal weight per negative family")

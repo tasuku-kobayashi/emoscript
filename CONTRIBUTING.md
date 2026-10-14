@@ -42,13 +42,18 @@ our own. The families, with the `note` value to use:
 | plain prose | `negatives_generic_*` | transactional and factual sentences |
 
 Vary the format within every family (sentence case with a period, Title Case
-without one, lower case). Lines that could pass as real taglines belong in
-the positives or nowhere; "The difference is in the details." was flagged by
+without one, lower case). `note` values are validated against
+`emoscript.dataio.NOTE_PREFIXES` and decide the family weight, so use the
+exact ones above. Lines that could pass as real taglines belong in the
+positives or nowhere; "The difference is in the details." was flagged by
 review as too good for a negative.
 
 `junk_test.jsonl` (placeholders, UI strings, whimsical nonsense) and
 `quotes_test.jsonl` (famous non-advertising lines) are evaluation-only
 controls; add to them freely, never to the training negatives.
+`corpus-check` rejects training negatives that duplicate or nearly duplicate
+a control line, so a new nonsense negative must use different nouns and
+frames than the junk control ("Bounce the Ladder", not "Bounce the Gravy").
 
 ## Checks to run
 

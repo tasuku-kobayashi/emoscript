@@ -37,6 +37,23 @@ QUOTES_SPLIT = "quotes_test"  # famous lines that are *not* ads: the quotability
 JUNK_SPLIT = "junk_test"  # placeholder / UI strings that must never pass
 ALL_SPLITS = POSITIVE_SPLITS + NEGATIVE_SPLITS + (CONTRAST_SPLIT, QUOTES_SPLIT, JUNK_SPLIT)
 KINDS = ("tagline", "headline", "jingle", "motto", "poster", "billing")
+# Allowed ``note`` values for negatives (prefix match for the generic-* family).
+NOTE_PREFIXES = (
+    "generic-",
+    "short-titlecase",
+    "short-lower",
+    "mid-titlecase",
+    "question-number-b2b",
+    "ui-boilerplate",
+    "topic-descriptive",
+    "nonsense",
+    "transactional",
+    "factual",
+    "support",
+    "instructional",
+    "policy",
+    "short-factual",
+)
 
 NEAR_DUPLICATE_JACCARD = 0.7
 
@@ -169,6 +186,10 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
     check_rows("slogans_test", ("text", "brand", "year"))
     for name in NEGATIVE_SPLITS:
         check_rows(name, ("text",))
+        for i, r in enumerate(splits.get(name, []), 1):
+            note = str(r.get("note", ""))
+            if not any(note == p or (p.endswith("-") and note.startswith(p)) for p in NOTE_PREFIXES):
+                problems.append(f"{name}:{i}: unknown note {note!r} (see dataio.NOTE_PREFIXES)")
     check_rows(CONTRAST_SPLIT, ("famous", "bland", "brand"), text_key="bland")
     check_rows(QUOTES_SPLIT, ("text", "source"))
     check_rows(JUNK_SPLIT, ("text",))
@@ -195,6 +216,10 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
     cross_check("slogans_train", "slogans_test")
     cross_check("negatives_hard_train", "negatives_hard_test")
     cross_check("negatives_generic_train", "negatives_generic_test")
+    # evaluation-only controls must not be shadowed by training negatives
+    for control in (JUNK_SPLIT, QUOTES_SPLIT):
+        cross_check("negatives_hard_train", control)
+        cross_check("negatives_generic_train", control)
 
     tr_brands = {r.get("brand") for r in splits.get("slogans_train", [])}
     te_brands = {r.get("brand") for r in splits.get("slogans_test", [])}
