@@ -59,15 +59,18 @@ missing:
   is a warning, because ordinary short copy sits one word away from some
   famous line too often for a lexical rule to be allowed a veto. With
   `--brief`, relevance to the brief is shown, `--sort` ranks by style and
-  relevance together (z-scored over the unblocked rows), and `--min-rel`
-  turns relevance into a gate, because the style axis alone prefers *"Chase
-  the Gravy"* to on-brief copy.
+  relevance together (z-scored over the unblocked rows), and `--top-rel`
+  (relative to the batch) or `--min-rel` (absolute) turns relevance into a
+  gate, because the style axis alone prefers *"Chase the Gravy"* to
+  on-brief copy.
 - **Explanations.** `--explain` shows the nearest famous taglines to a
   candidate.
-- **A second "sense" axis.** Famous lines minus the nonsense and UI-string
-  families, read by the calibrator next to the style score. It cuts the junk
-  pass rate by a third at no cost to famous lines; whimsical nonsense that
-  sounds like a tagline still needs `--brief`.
+- **A second "sense" axis, used as a gate.** Famous lines minus the nonsense
+  and UI-string families, with its own out-of-fold calibrator: a line must
+  score P(message) ≥ 0.5 on it to PASS, whatever its style score. It takes
+  the junk pass rate from 42% to 4% while 97% of usable copy clears it
+  (`--no-sense-gate` to disable; `sense=` is printed). Famous proverbs and
+  lyrics clear the gate too; `--brief` with `--top-rel` is the tool for them.
 - **Optional multi-axis scoring (`--k`).** Spherical k-means over the
   positives, one diff-axis per cluster, best match wins. It is there for
   experiments; with the v0.2 negatives a single axis won the cross-validated
@@ -97,7 +100,7 @@ emoscript score "Sleep like you mean it." "We sell high quality furniture at low
 
 # A raw LLM candidate list: strict prior, product brief with a relevance gate, ranked, explained
 emoscript score --file candidates.txt --axis axis.npz --prior 0.05 \
-    --brief "meal-kit delivery for busy parents" --min-rel 0.82 --sort --explain
+    --brief "meal-kit delivery for busy parents" --top-rel 0.5 --sort --explain
 
 # Machine-readable
 emoscript score --file candidates.txt --axis axis.npz --json
@@ -118,18 +121,20 @@ with the default model (details and the full evaluation in
 [`docs/results.md`](docs/results.md)):
 
 ```
-+0.0823  p=0.93  PASS  rel=0.85  Sleep like you mean it.
-+0.0055  p=0.23  fail  rel=0.82  Got Mold?
-          ! possibly riffs on: "Got Milk?" (California Milk Processor Board)
-+0.0818  p=0.88  PASS  rel=0.80  Just Chew It.
++0.0823  p=0.93  PASS  rel=0.85  sense=1.00  Sleep like you mean it.
++0.0818  p=0.88  PASS  rel=0.80  sense=0.79  Just Chew It.
           ! parodies famous line: "Just Do It." (Nike)
--0.0925  p=0.03  fail  rel=0.84  Comfort, redefined for modern living.
-+0.0434  p=0.60  fail  rel=0.79  1. "Just. Do. It."
-          ! copies famous line: "Just Do It." (Nike); flags: wrapped; not passing: near_famous:copy
-+0.0152  p=0.46  fail  rel=0.79  Sure, here is a tagline:
+-0.0925  p=0.03  fail  rel=0.84  sense=0.99  Comfort, redefined for modern living.
++0.0868  p=0.85  fail  rel=0.81  sense=0.16  Ride the Spoon.
+          ! not passing: sense_gate
++0.0923  p=0.89  fail  rel=0.80  sense=0.47  Chase the Gravy
+          ! not passing: sense_gate
++0.0434  p=0.60  fail  rel=0.79  sense=0.39  1. "Just. Do. It."
+          ! copies famous line: "Just Do It." (Nike); flags: wrapped; not passing: near_famous:copy, sense_gate
++0.0152  p=0.46  fail  rel=0.79  sense=0.93  Sure, here is a tagline:
           ! flags: llm_chatter; not passing: llm_chatter
--0.0483  p=0.03  fail  rel=0.79  Lorem Ipsum
-          ! flags: placeholder; not passing: placeholder
+-0.0483  p=0.03  fail  rel=0.79  sense=0.00  Lorem Ipsum
+          ! flags: placeholder; not passing: placeholder, sense_gate
    n/a   skipped (no letters)  ?!
           ! flags: no_letters; not passing: no_letters
 ```
@@ -218,15 +223,17 @@ request and attached to each GitHub Release.
 The short version (canonical text, the shipped default; intervals and the
 full tables in `docs/results.md`): 173 held-out famous taglines vs bland
 ad-speak **AUC 0.95**, vs plain prose 0.97, vs same-topic product
-descriptions 0.94 with a paired win rate of 0.97, vs junk 0.79, and vs
-famous non-advertising quotes 0.47. With raw text a six-feature typography
-model matches the axis, which is why raw text is not the default.
+descriptions 0.94 with a paired win rate of 0.97, vs junk 0.79 by style
+score, and vs famous non-advertising quotes 0.47. With raw text a
+six-feature typography model matches the axis, which is why raw text is
+not the default. The sense gate takes the junk PASS rate from 42% to 4% at
+no cost to usable copy and a six-point cost on famous lines.
 
 The honest ceiling comes from the good-copy control, 88 original usable
 lines that are not famous: 43% of those at tagline length pass, 12% of the
 longer benefit-led and B2B lines do. The axis learned the shape of a famous
-tagline. Use it for tagline-length candidates and read the near-famous and
-brief signals next to the score; it is not a scorer for body copy.
+tagline. Use it for tagline-length candidates and read the near-famous,
+sense and brief signals next to the score; it is not a scorer for body copy.
 
 ## Repository layout
 

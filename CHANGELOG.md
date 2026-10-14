@@ -11,8 +11,12 @@
   reported as PASS rate overall and by length. It shows that the axis scores
   tagline-shaped writing: 43% of tagline-length lines pass, 12% of longer
   benefit-led lines.
-- Sense axis (famous minus nonsense + UI families) feeding a two-feature
-  calibrator; junk PASS 0.42 → 0.29 at no cost to famous lines.
+- Sense axis (famous minus nonsense + UI families) with its own
+  out-of-fold calibrator used as a PASS gate: junk PASS 0.42 → 0.04, good
+  copy unchanged (97% clear the gate), famous lines 0.81 → 0.75.
+  `--no-sense-gate`, `sense=` in output, `--top-rel` for a batch-relative
+  brief gate; chatter and placeholder patterns relaxed after seven false
+  blocks on real copy.
 
 Renamed from `copyaxis` to `emoscript` (import path, CLI, docs).
 

@@ -3,9 +3,10 @@
 Generated from `experiments/validate_axis.py --k 1 --json ...` (raw text and
 `--casing canonical`) with `experiments/report.py`, on the held-out splits
 only. Settings (k=1, canonical text, calibrator L2=1, negative families
-weighted equally, sense axis on) were chosen beforehand by brand-grouped
-nested cross-validation on the training split (`experiments/select_settings.py`);
-the test split was evaluated once for this corpus version.
+weighted equally, sense axis and gate on) were chosen beforehand by
+brand-grouped nested cross-validation on the training split
+(`experiments/select_settings.py`); the test split was evaluated once for
+this corpus version.
 
 Held-out set: 173 famous taglines across brands absent from training (53 of
 them from a *sister brand* of a training brand, flagged `sister_brand` and
@@ -16,10 +17,11 @@ lines (`good_copy_test`) that a scorer should pass.
 Columns: AUC of famous taglines against each negative group with a 95%
 bootstrap interval (brands resampled as clusters; pairs as units for the
 rewrites), the paired win rate with its Wilson interval, the quotability
-control, junk, good copy vs junk by score (and by calibrated probability),
-AUC for the 23 famous lines of 8+ words, PASS rates at p ≥ 0.5 for famous /
-good / bland / junk, and the calibration log-loss over every bland group.
-Rows marked "not an axis" are references.
+control, junk, good copy vs junk by style score (and by calibrated
+probability with the gate), AUC for the 23 famous lines of 8+ words, PASS
+rates at p ≥ 0.5 for famous / good / bland / junk, and the calibration
+log-loss over every bland group (for the gated row the gate sets p = 0, so
+its log-loss is not comparable). Rows marked "not an axis" are references.
 
 ## How to read it
 
@@ -30,21 +32,27 @@ Rows marked "not an axis" are references.
 - **Famous vs bland:** 0.95 vs hard ad-speak (0.945 without sister brands),
   0.97 vs prose, 0.94 vs same-topic product descriptions (0.95 without sister
   brands, paired win rate 0.97). Famous 8+-word lines: 0.89.
-- **Junk:** 0.79 by score. The sense axis changes no AUC by style score (it
-  only enters the calibrator) but cuts the junk PASS rate from 0.42 to 0.29
-  and raises good-copy-vs-junk by probability from 0.42 to 0.54. Whimsical
-  nonsense ("Chase the Gravy") still tops the junk list; `--brief` with
-  `--min-rel` remains the tool for it.
-- **Quotes:** 0.47. The axis cannot tell a famous tagline from a famous
-  proverb; it measures memorable tagline-shaped writing, not advertising.
-- **The good-copy control is the honest ceiling.** Only 31% of the 88 original
+- **Junk and the sense gate.** By style score alone junk sits at AUC 0.79 and
+  42% of it passes. The sense gate (P(message) ≥ 0.5 on the famous-minus-
+  nonsense axis, calibrated out-of-fold on the training split) takes the
+  junk PASS rate to **4%**, leaves good copy untouched (97% of the good-copy
+  control clears the gate) and lifts good-copy-vs-junk by probability from
+  0.54 to **0.95**. The cost is on famous lines: 75% pass instead of 81%, the
+  losses being short imperatives the gate cannot tell from invented ones.
+- **Quotes:** 0.47, and 82% of famous proverbs pass the gate. The axis cannot
+  tell a famous tagline from a famous proverb; it measures memorable
+  tagline-shaped writing, not advertising. Lyrics and proverbs are the one
+  junk family the gate does not touch; `--brief` with `--top-rel` is the
+  tool for them.
+- **The good-copy control is the honest ceiling.** 31% of the 88 original
   usable lines pass: 43% of those at tagline length (≤ 6 words), 12% of the
   longer benefit-led and B2B lines. Famous vs good copy is 0.83: the axis
   learned the shape of a famous tagline, and benefit-led copy sits in the
-  register of the "topic-descriptive" training negatives. **Use emoscript for
-  tagline-length candidates; it is not a scorer for body copy.**
+  register of the "topic-descriptive" training negatives. **Use emoscript
+  for tagline-length candidates; it is not a scorer for body copy.**
 - The input-flag patterns were written with the junk control in view, so the
-  "after flags" figure is partly in-sample; the junk AUC is not.
+  "after flags" figure is partly in-sample; the junk AUC and the gate
+  (fitted on training nonsense only) are not.
 
 ### intfloat/multilingual-e5-large · casing=none · negatives weighted per family
 
@@ -57,7 +65,7 @@ train 211 taglines / 329 hard / 30 generic · test 173 taglines / 85 hard / 22 g
 | kNN-5 reference (not an axis) | 0.965 [0.94, 0.98] | 0.965 [0.93, 0.99] | 0.988 [0.98, 1.00] | 0.983 [0.95, 0.99] | 0.560 [0.48, 0.64] | 0.928 [0.89, 0.96] | 0.734 | 0.984 | – | – |
 | M3 diff (hard only) | 0.883 [0.84, 0.92] | 0.919 [0.84, 0.98] | 0.999 [1.00, 1.00] | 1.000 [0.98, 1.00] | 0.780 [0.71, 0.84] | 0.645 [0.57, 0.71] | 0.082 | 0.697 | – | – |
 | M2 diff (hard+generic, balanced families) | 0.929 [0.90, 0.96] | 0.956 [0.91, 0.99] | 0.994 [0.99, 1.00] | 1.000 [0.98, 1.00] | 0.794 [0.72, 0.85] | 0.734 [0.66, 0.79] | 0.183 (0.183) | 0.798 | 0.85 / 0.18 / 0.10 / 0.55 (0.55 after flags) | 0.242 |
-| M2 diff + sense axis, balanced families | 0.929 [0.90, 0.96] | 0.956 [0.91, 0.99] | 0.994 [0.99, 1.00] | 1.000 [0.98, 1.00] | 0.794 [0.72, 0.85] | 0.734 [0.66, 0.79] | 0.183 (0.370) | 0.798 | 0.86 / 0.22 / 0.07 / 0.38 (0.38 after flags) | 0.243 |
+| M2 diff + sense axis, balanced families | 0.929 [0.90, 0.96] | 0.956 [0.91, 0.99] | 0.994 [0.99, 1.00] | 1.000 [0.98, 1.00] | 0.794 [0.72, 0.85] | 0.734 [0.66, 0.79] | 0.183 (0.914) | 0.798 | 0.79 / 0.22 / 0.05 / 0.06 (0.06 after flags) | 0.935 |
 
 ### intfloat/multilingual-e5-large · casing=canonical · negatives weighted per family
 
@@ -70,7 +78,7 @@ train 211 taglines / 329 hard / 30 generic · test 173 taglines / 85 hard / 22 g
 | kNN-5 reference (not an axis) | 0.961 [0.94, 0.98] | 0.920 [0.87, 0.96] | 0.929 [0.90, 0.95] | 0.948 [0.90, 0.97] | 0.425 [0.34, 0.51] | 0.881 [0.84, 0.92] | 0.780 | 0.945 | – | – |
 | M3 diff (hard only) | 0.895 [0.85, 0.93] | 0.922 [0.85, 0.98] | 0.986 [0.98, 0.99] | 0.988 [0.96, 1.00] | 0.378 [0.30, 0.46] | 0.659 [0.59, 0.72] | 0.231 | 0.761 | – | – |
 | M2 diff (hard+generic, balanced families) | 0.952 [0.93, 0.97] | 0.971 [0.94, 1.00] | 0.942 [0.92, 0.96] | 0.965 [0.93, 0.98] | 0.469 [0.38, 0.56] | 0.786 [0.72, 0.84] | 0.418 (0.418) | 0.891 | 0.80 / 0.31 / 0.10 / 0.42 (0.41 after flags) | 0.292 |
-| M2 diff + sense axis, balanced families | 0.952 [0.93, 0.97] | 0.971 [0.94, 1.00] | 0.942 [0.92, 0.96] | 0.965 [0.93, 0.98] | 0.469 [0.38, 0.56] | 0.786 [0.72, 0.84] | 0.418 (0.543) | 0.891 | 0.81 / 0.31 / 0.09 / 0.29 (0.29 after flags) | 0.311 |
+| M2 diff + sense axis, balanced families | 0.952 [0.93, 0.97] | 0.971 [0.94, 1.00] | 0.942 [0.92, 0.96] | 0.965 [0.93, 0.98] | 0.469 [0.38, 0.56] | 0.786 [0.72, 0.84] | 0.418 (0.952) | 0.891 | 0.75 / 0.31 / 0.09 / 0.04 (0.04 after flags) | 0.756 |
 
 
 ## Example output
@@ -79,18 +87,20 @@ train 211 taglines / 329 hard / 30 generic · test 173 taglines / 85 hard / 22 g
 with the default model fitted by `emoscript fit` on this corpus:
 
 ```
-+0.0823  p=0.93  PASS  rel=0.85  Sleep like you mean it.
-+0.0055  p=0.23  fail  rel=0.82  Got Mold?
-          ! possibly riffs on: "Got Milk?" (California Milk Processor Board)
-+0.0818  p=0.88  PASS  rel=0.80  Just Chew It.
++0.0823  p=0.93  PASS  rel=0.85  sense=1.00  Sleep like you mean it.
++0.0818  p=0.88  PASS  rel=0.80  sense=0.79  Just Chew It.
           ! parodies famous line: "Just Do It." (Nike)
--0.0925  p=0.03  fail  rel=0.84  Comfort, redefined for modern living.
-+0.0434  p=0.60  fail  rel=0.79  1. "Just. Do. It."
-          ! copies famous line: "Just Do It." (Nike); flags: wrapped; not passing: near_famous:copy
-+0.0152  p=0.46  fail  rel=0.79  Sure, here is a tagline:
+-0.0925  p=0.03  fail  rel=0.84  sense=0.99  Comfort, redefined for modern living.
++0.0868  p=0.85  fail  rel=0.81  sense=0.16  Ride the Spoon.
+          ! not passing: sense_gate
++0.0923  p=0.89  fail  rel=0.80  sense=0.47  Chase the Gravy
+          ! not passing: sense_gate
++0.0434  p=0.60  fail  rel=0.79  sense=0.39  1. "Just. Do. It."
+          ! copies famous line: "Just Do It." (Nike); flags: wrapped; not passing: near_famous:copy, sense_gate
++0.0152  p=0.46  fail  rel=0.79  sense=0.93  Sure, here is a tagline:
           ! flags: llm_chatter; not passing: llm_chatter
--0.0483  p=0.03  fail  rel=0.79  Lorem Ipsum
-          ! flags: placeholder; not passing: placeholder
+-0.0483  p=0.03  fail  rel=0.79  sense=0.00  Lorem Ipsum
+          ! flags: placeholder; not passing: placeholder, sense_gate
    n/a   skipped (no letters)  ?!
           ! flags: no_letters; not passing: no_letters
 ```
@@ -98,7 +108,7 @@ with the default model fitted by `emoscript fit` on this corpus:
 `emoscript eval --axis axis.npz` on the same model:
 
 ```
-[final8.npz] k=1 model=intfloat/multilingual-e5-large
+[final10.npz] k=1 model=intfloat/multilingual-e5-large
   AUC held-out taglines vs hard         0.952  [0.926, 0.973]  (n=85)
   AUC held-out taglines vs generic      0.971  [0.936, 0.996]  (n=22)
   AUC held-out taglines vs topic_bland  0.942  [0.923, 0.961]  (n=173)
@@ -108,8 +118,9 @@ with the default model fitted by `emoscript fit` on this corpus:
   good (unknown) copy vs junk      0.418  by probability 0.543   vs hard 0.750   famous vs good 0.833
   good copy PASS by register:      tagline_length<=6w 0.43 (n=54)  longer>6w 0.12 (n=34)
   topic-matched pair win rate      0.965  [0.926, 0.984]
-  PASS rate at p>=0.5:             pos 0.81  hard 0.09  generic 0.00  topic_bland 0.17  quotes 0.90  junk 0.29  good_copy 0.31
-  ... after input flags / famous:  pos 0.81  hard 0.09  generic 0.00  topic_bland 0.17  quotes 0.88  junk 0.29  good_copy 0.31
+  PASS rate at p>=0.5:             pos 0.75  hard 0.09  generic 0.00  topic_bland 0.17  quotes 0.82  junk 0.04  good_copy 0.31
+  sense gate alone passes:         pos 0.92  hard 0.82  generic 0.50  topic_bland 0.99  quotes 0.90  junk 0.04  good_copy 0.97
+  ... after input flags / famous:  pos 0.75  hard 0.09  generic 0.00  topic_bland 0.17  quotes 0.80  junk 0.04  good_copy 0.31
   AUC vs hard, taglines short<=4w  0.958  (n=89)
   AUC vs hard, taglines mid5-7w    0.966  (n=61)
   AUC vs hard, taglines long>=8w   0.891  (n=23)
@@ -119,6 +130,7 @@ with the default model fitted by `emoscript fit` on this corpus:
 `emoscript fit` reported, before any test data was touched:
 
 ```
-axis saved to final8.npz (k=1, dim=1024, model=intfloat/multilingual-e5-large, casing=canonical)
-  out-of-fold: AUC 0.909  log-loss 0.371  acc@0.5 0.816  threshold(p=0.5) n/a
+axis saved to final10.npz (k=1, dim=1024, model=intfloat/multilingual-e5-large, casing=canonical)
+  out-of-fold: AUC 0.909  log-loss 0.371  acc@0.5 0.816  threshold(p=0.5) n/a (two-feature calibrator)
+  sense gate (out-of-fold): famous pass 0.90  nonsense pass 0.08  other negatives pass 0.91
 ```
