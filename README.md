@@ -105,11 +105,29 @@ emoscript corpus-check
 emoscript info --axis axis.npz
 ```
 
-Each scored row shows the raw cosine, the calibrated probability, `PASS` or
-`fail`, `rel=` when a brief is given, then the line; an indented line below
-carries the famous-line match, the input flags and the reasons a row does
-not pass (`not passing: near_famous:parody`). Inputs without letters are
-reported as `n/a skipped`. Real output is in `docs/results.md`.
+Real output of `emoscript score --file lines.txt --prior 0.3 --brief "a mattress brand" --sort`
+with the default model (details and the full evaluation in
+[`docs/results.md`](docs/results.md)):
+
+```
++0.0892  p=0.91  PASS  rel=0.85  Sleep like you mean it.
++0.0202  p=0.45  fail  rel=0.82  Got Mold?
+          ! possibly riffs on: "Got Milk?" (California Milk Processor Board)
+-0.0790  p=0.02  fail  rel=0.84  Comfort, redefined for modern living.
++0.0882  p=0.91  fail  rel=0.80  Just Chew It.
+          ! parodies famous line: "Just Do It." (Nike); not passing: near_famous:parody
++0.0192  p=0.44  fail  rel=0.79  Sure, here is a tagline:
+          ! flags: llm_chatter; not passing: llm_chatter
+-0.0332  p=0.10  fail  rel=0.79  Lorem Ipsum
+          ! flags: placeholder; not passing: placeholder
+   n/a   skipped (no letters)  ?!
+          ! flags: no_letters; not passing: no_letters
+```
+
+Each row shows the raw cosine, the calibrated probability, `PASS` or `fail`,
+`rel=` when a brief is given, then the line; the indented line below carries
+the famous-line match, the input flags and the reasons a row does not pass.
+Inputs without letters are reported as `n/a skipped`.
 
 Python:
 
@@ -186,12 +204,13 @@ by `experiments/report.py` from the validation JSON. The same report is
 produced by the `evaluate` job in `.github/workflows/ci.yml` on every pull
 request and attached to each GitHub Release.
 
-The short version: with raw text the axis looks almost perfect, and a
-six-feature typography model is almost as good. With canonical text the axis
-still separates famous taglines from bland ad-speak well, separates them from
-same-topic product descriptions and from junk less well, and cannot tell a
-famous tagline from a famous proverb at all. That last point is by design:
-the axis measures memorable writing, and the brief relevance and the
+The short version (canonical text, the shipped default; 95% intervals in
+`docs/results.md`): held-out famous taglines vs bland ad-speak **AUC 0.94**,
+vs plain prose 0.99, vs same-topic product descriptions 0.93 with a paired
+win rate of 0.97, vs junk 0.76, and vs famous non-advertising quotes 0.53.
+With raw text the same axis reaches 0.99 against the rewrites, and so does a
+six-feature typography model, which is why raw text is not the default. The
+axis measures memorable writing, not advertising; the brief relevance and the
 famous-line check exist because memorable is not the same as usable.
 
 ## Repository layout
