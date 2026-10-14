@@ -279,17 +279,22 @@ def fit_from_corpus(
     embed_fn: EmbedFn,
     data_dir: str | Path = DATA_DIR,
     *,
-    k: int = 1,
+    k: int = 2,
     negatives: NegativeKinds = ("hard", "generic"),
     calibrate: bool = True,
     n_folds: int = 5,
     seed: int = 0,
     model_name: str = DEFAULT_MODEL,
     prefix: str | None = None,
-    casing: str = "none",
+    casing: str = "lower",
     keep_exemplars: bool = True,
 ) -> AxisModel:
-    """Fit from the bundled (or a custom) corpus: train splits only."""
+    """Fit from the bundled (or a custom) corpus: train splits only.
+
+    Defaults (k=2, casing="lower") are the configuration that was most stable
+    across k-means seeds and most robust to how candidates are capitalised;
+    see README "Evaluation" for the numbers behind that choice.
+    """
     corpus = load_corpus(data_dir)
     norm = normalizer(casing)
     pos_raw = texts(corpus.pos_train)

@@ -19,8 +19,10 @@ def test_embed_texts_accepts_any_embedder(fake_embedder):
 
 
 def test_fit_from_corpus_end_to_end_with_fake_embedder(fake_embed_fn, tmp_path):
+    # casing="none": the fake embedder's strongest cue is Title Case, and this
+    # test is about the pipeline mechanics, not the casing policy.
     for k in (1, 3):
-        model = fit_from_corpus(fake_embed_fn, k=k, model_name="fake", prefix="")
+        model = fit_from_corpus(fake_embed_fn, k=k, model_name="fake", prefix="", casing="none")
         assert model.k == k
         assert np.allclose(np.linalg.norm(model.axes, axis=1), 1.0)
         assert model.calibrator is not None
@@ -53,7 +55,7 @@ def test_casing_is_persisted_and_removes_title_case_signal(fake_embed_fn, tmp_pa
     corpus = load_corpus()
     aucs = {}
     for casing in ("none", "lower"):
-        model = fit_from_corpus(fake_embed_fn, model_name="fake", casing=casing)
+        model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", casing=casing)
         assert model.casing == casing
         model.save(tmp_path / f"{casing}.npz")
         loaded = AxisModel.load(tmp_path / f"{casing}.npz")
@@ -89,7 +91,7 @@ def test_exemplars_explain_and_cluster_summary(fake_embed_fn, tmp_path):
     assert np.allclose(loaded.exemplars, model.exemplars, atol=1e-6)
     assert loaded.explain(loaded.embed([t], fake_embed_fn))[0]["nearest"][0][0] == t
 
-    slim = fit_from_corpus(fake_embed_fn, model_name="fake", keep_exemplars=False)
+    slim = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", keep_exemplars=False)
     assert slim.exemplars is None and slim.explain(slim.embed([t], fake_embed_fn))[0]["nearest"] == []
     assert "clusters" in slim.meta
 
@@ -100,6 +102,11 @@ def test_evaluate_reports_quotes_control_and_ci(fake_embed_fn):
     assert "quotes" in report["auc"] and report["n"]["quotes"] >= 20
     for g, (lo, hi) in report["auc_ci95"].items():
         assert lo <= report["auc"][g] <= hi
+
+
+def test_defaults_are_k2_lower(fake_embed_fn):
+    model = fit_from_corpus(fake_embed_fn, model_name="fake")
+    assert model.k == 2 and model.casing == "lower"
 
 
 def test_uncalibrated_model(fake_embed_fn, tmp_path):

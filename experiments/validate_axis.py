@@ -7,6 +7,9 @@ Everything is fitted on the *_train splits and evaluated on the *_test splits
   M2  diff axis: positives - (hard + generic negatives)        [default, k=1]
   M3  diff axis: positives - hard negatives only
   Mk  multi-axis: k-means over positives, one diff axis each, max over axes
+  kNN reference: mean cosine to the 5 nearest training positives minus the
+      5 nearest training negatives (not an axis; a sanity ceiling for the
+      corpus, used to judge how much the single direction gives up)
 
 Reports, per variant: AUC of held-out taglines vs hard negatives, vs generic
 prose, vs *topic-matched* bland rewrites of the same taglines (the style-vs-
@@ -96,11 +99,10 @@ def run(
     N_all = np.vstack([E["hard_tr"], E["gen_tr"]])
     variants: dict[str, dict] = {}
 
-    def add_variant(name: str, axes: np.ndarray, calibrator=None, oof=None):
+    def add_variant(name: str, axes: np.ndarray, calibrator=None, oof=None, scorer=None):
+        scorer = scorer or (lambda X: score(X, axes))
         s = {
-            g: score(E[g], axes)
-            for g in ("pos_te", "hard_te", "gen_te", "topic_te", "quotes", "probe")
-            if g in E
+            g: scorer(E[g]) for g in ("pos_te", "hard_te", "gen_te", "topic_te", "quotes", "probe") if g in E
         }
         famous_score = dict(zip(groups["pos_te"], s["pos_te"], strict=True))
         wins = [famous_score[r["famous"]] > sc for r, sc in zip(corpus.contrast, s["topic_te"], strict=True)]
@@ -110,7 +112,7 @@ def run(
             if m.any():
                 buckets[b] = {"n": int(m.sum()), "auc_vs_hard": auc(s["pos_te"][m], s["hard_te"])}
         v = {
-            "k": int(np.atleast_2d(axes).shape[0]),
+            "k": int(np.atleast_2d(axes).shape[0]) if axes is not None else 0,
             "auc_vs_hard": auc(s["pos_te"], s["hard_te"]),
             "auc_vs_generic": auc(s["pos_te"], s["gen_te"]),
             "auc_vs_topic_bland": auc(s["pos_te"], s["topic_te"]),
@@ -150,6 +152,13 @@ def run(
         return s
 
     add_variant("M1 centroid", fit_mean_axis(E["pos_tr"]))
+
+    def knn_scorer(X: np.ndarray, kk: int = 5) -> np.ndarray:
+        sp = np.sort(X @ E["pos_tr"].T, axis=1)[:, -kk:].mean(axis=1)
+        sn = np.sort(X @ N_all.T, axis=1)[:, -kk:].mean(axis=1)
+        return sp - sn
+
+    add_variant("kNN-5 reference (not an axis)", None, scorer=knn_scorer)
     add_variant("M3 diff (hard only)", fit_diff_axis(E["pos_tr"], E["hard_tr"]))
     ranking_scores = None
     for k in ks:

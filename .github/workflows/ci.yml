@@ -50,29 +50,29 @@ jobs:
           path: ${{ env.FASTEMBED_CACHE_PATH }}
           key: fastembed-multilingual-e5-large-${{ runner.os }}
       - run: python -m pip install -e ".[dev,embed]"
-      - name: Held-out validation (M1 / M2 / M3 / multi-axis k=2..4)
-        run: python experiments/validate_axis.py --k 1,2,3,4 --json validation.json | tee validation.txt
+      - name: Held-out validation, original casing (M1 / M2 / M3 / kNN / multi-axis k=2,3)
+        run: python experiments/validate_axis.py --k 1,2,3 --json validation-none.json | tee validation-none.txt
+      - name: Held-out validation, lower-cased (the shipped default)
+        run: python experiments/validate_axis.py --k 1,2,3 --casing lower --json validation-lower.json | tee validation-lower.txt
       - name: Fit shippable axes
         run: |
           emoscript fit --k 1 --out axis-k1.npz
-          emoscript fit --k 3 --out axis-k3.npz
+          emoscript fit --k 2 --out axis-k2.npz
           emoscript eval --axis axis-k1.npz | tee -a eval.txt
-          emoscript eval --axis axis-k3.npz | tee -a eval.txt
+          emoscript eval --axis axis-k2.npz | tee -a eval.txt
       - name: Summary
         run: |
           {
             echo '## emoscript held-out evaluation'
-            echo '```'
-            sed -n '1,/^Held-out ranking/p' validation.txt | sed '$d'
-            echo '```'
+            python experiments/report.py validation-none.json validation-lower.json
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: evaluation-${{ github.sha }}
           path: |
-            validation.json
-            validation.txt
+            validation-*.json
+            validation-*.txt
             eval.txt
             axis-k1.npz
-            axis-k3.npz
+            axis-k2.npz
           retention-days: 30

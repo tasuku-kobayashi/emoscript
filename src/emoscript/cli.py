@@ -1,13 +1,13 @@
 """Command-line interface.
 
-emoscript fit --k 3 --out axis.npz        # fit axes (+ calibrator) from the bundled corpus
+emoscript fit --out axis.npz              # fit axes (+ calibrator) from the bundled corpus (k=2, lower-cased)
 emoscript score "Just ship it." --axis axis.npz
 emoscript score "Just ship it." --explain      # + nearest famous taglines, matched axis
 emoscript score --file candidates.txt --sort --json
 emoscript eval --axis axis.npz            # held-out AUC / calibration report
 emoscript corpus-check                    # corpus integrity (no model needed)
 emoscript info --axis axis.npz            # what is in an axis file
-emoscript fetch-axis --k 3                # download a prebuilt axis from GitHub Releases
+emoscript fetch-axis                      # download a prebuilt axis from GitHub Releases
 """
 
 from __future__ import annotations
@@ -181,7 +181,7 @@ def cmd_fetch_axis(args) -> int:
     ref = "latest" if args.tag == "latest" else f"tags/{args.tag}"
     release = _http_get_json(f"https://api.github.com/repos/{args.repo}/releases/{ref}")
     assets = {a["name"]: a["browser_download_url"] for a in release.get("assets", [])}
-    name = args.name or f"emoscript-axis-k{args.k}-multilingual-e5-large.npz"
+    name = args.name or f"emoscript-axis-k{args.k}-lower-multilingual-e5-large.npz"
     if name not in assets:
         print(f"no asset named {name!r} in release {release.get('tag_name', args.tag)}; available:")
         for a in sorted(assets):
@@ -203,7 +203,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("fit", help="fit the axis (and calibrator) from the corpus")
-    p.add_argument("--k", type=int, default=1, help="number of axes (k-means clusters of positives)")
+    p.add_argument("--k", type=int, default=2, help="number of axes (k-means clusters of positives)")
     p.add_argument("--model", default=DEFAULT_MODEL, help="fastembed model name")
     p.add_argument("--data-dir", default=str(DATA_DIR))
     p.add_argument("--out", default="axis.npz")
@@ -214,8 +214,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--casing",
         choices=CASINGS,
-        default="none",
-        help="normalize letter case before embedding (removes the Title-Case confound)",
+        default="lower",
+        help="normalize letter case before embedding; 'lower' (default) removes the Title-Case confound",
     )
     p.set_defaults(fn=cmd_fit)
 
@@ -247,7 +247,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("fetch-axis", help="download a prebuilt axis from GitHub Releases")
     p.add_argument("--repo", default=DEFAULT_REPO, help="owner/name")
     p.add_argument("--tag", default="latest", help="release tag (default: latest)")
-    p.add_argument("--k", type=int, default=1, help="which prebuilt variant (k=1 or k=3)")
+    p.add_argument("--k", type=int, default=2, help="which prebuilt variant (k=1 or k=2)")
     p.add_argument("--name", help="exact asset file name (overrides --k)")
     p.add_argument("--out", default="axis.npz")
     p.set_defaults(fn=cmd_fetch_axis)
