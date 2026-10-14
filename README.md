@@ -64,6 +64,10 @@ missing:
   the Gravy"* to on-brief copy.
 - **Explanations.** `--explain` shows the nearest famous taglines to a
   candidate.
+- **A second "sense" axis.** Famous lines minus the nonsense and UI-string
+  families, read by the calibrator next to the style score. It cuts the junk
+  pass rate by a third at no cost to famous lines; whimsical nonsense that
+  sounds like a tagline still needs `--brief`.
 - **Optional multi-axis scoring (`--k`).** Spherical k-means over the
   positives, one diff-axis per cluster, best match wins. It is there for
   experiments; with the v0.2 negatives a single axis won the cross-validated
@@ -114,17 +118,17 @@ with the default model (details and the full evaluation in
 [`docs/results.md`](docs/results.md)):
 
 ```
-+0.0783  p=0.92  PASS  rel=0.85  Sleep like you mean it.
-+0.0024  p=0.40  fail  rel=0.82  Got Mold?
++0.0823  p=0.93  PASS  rel=0.85  Sleep like you mean it.
++0.0055  p=0.23  fail  rel=0.82  Got Mold?
           ! possibly riffs on: "Got Milk?" (California Milk Processor Board)
-+0.0765  p=0.92  PASS  rel=0.80  Just Chew It.
++0.0818  p=0.88  PASS  rel=0.80  Just Chew It.
           ! parodies famous line: "Just Do It." (Nike)
--0.0904  p=0.02  fail  rel=0.84  Comfort, redefined for modern living.
-+0.0339  p=0.69  fail  rel=0.79  1. "Just. Do. It."
+-0.0925  p=0.03  fail  rel=0.84  Comfort, redefined for modern living.
++0.0434  p=0.60  fail  rel=0.79  1. "Just. Do. It."
           ! copies famous line: "Just Do It." (Nike); flags: wrapped; not passing: near_famous:copy
-+0.0120  p=0.49  fail  rel=0.79  Sure, here is a tagline:
++0.0152  p=0.46  fail  rel=0.79  Sure, here is a tagline:
           ! flags: llm_chatter; not passing: llm_chatter
--0.0500  p=0.08  fail  rel=0.79  Lorem Ipsum
+-0.0483  p=0.03  fail  rel=0.79  Lorem Ipsum
           ! flags: placeholder; not passing: placeholder
    n/a   skipped (no letters)  ?!
           ! flags: no_letters; not passing: no_letters
@@ -161,12 +165,13 @@ takes precomputed matrices directly.
 | split | v0.1 | v0.2 | contents |
 |---|---:|---:|---|
 | `slogans_train` | 40 | 211 | famous taglines, brand and year attributed, `kind` tag for headlines / jingles / mottos |
-| `slogans_test` | 10 | 67 | held-out taglines, **brand-disjoint** from train |
-| `negatives_hard_train` / `_test` | 20 / 10 | 278 / 55 | original bland ad-speak, short Title-Case fragments, questions / numbers / B2B, UI boilerplate, topic-descriptive product lines |
-| `negatives_generic_train` / `_test` | 10 / 5 | 30 / 15 | original transactional / factual prose |
-| `contrast_pairs_test` | – | 67 | an original same-topic bland rewrite of every held-out tagline (naming the brand when the famous line does) |
-| `quotes_test` | – | 30 | famous proverbs and literary / historical lines that are not advertising |
-| `junk_test` | – | 45 | placeholders, UI strings and whimsical non-sequiturs that must fail |
+| `slogans_test` | 10 | 173 | held-out taglines, **brand-disjoint** from train (sister brands of training brands flagged and reported separately) |
+| `negatives_hard_train` / `_test` | 20 / 10 | 329 / 85 | original bland ad-speak, short Title-Case fragments, questions / numbers / B2B, UI boilerplate, topic-descriptive product lines |
+| `negatives_generic_train` / `_test` | 10 / 5 | 30 / 22 | original transactional / factual prose |
+| `contrast_pairs_test` | – | 173 | an original same-topic bland rewrite of every held-out tagline (naming the brand when the famous line does) |
+| `quotes_test` | – | 50 | famous proverbs and literary / historical lines that are not advertising |
+| `junk_test` | – | 80 | placeholders, UI strings and whimsical non-sequiturs that must fail |
+| `good_copy_test` | – | 88 | original, usable, unknown lines that should pass: the cost side of every junk measure |
 
 Rules enforced by `emoscript corpus-check` and the test suite: no text in
 both train and test, no near-duplicates across splits, no brand in both
@@ -210,14 +215,18 @@ by `experiments/report.py` from the validation JSON. The same report is
 produced by the `evaluate` job in `.github/workflows/ci.yml` on every pull
 request and attached to each GitHub Release.
 
-The short version (canonical text, the shipped default; 95% intervals in
-`docs/results.md`): held-out famous taglines vs bland ad-speak **AUC 0.95**,
-vs plain prose 0.99, vs same-topic product descriptions 0.92 with a paired
-win rate of 0.94, vs junk 0.78, and vs famous non-advertising quotes 0.54.
-With raw text the same axis reaches 0.99 against the rewrites, and so does a
-six-feature typography model, which is why raw text is not the default. The
-axis measures memorable writing, not advertising; the brief relevance and the
-famous-line check exist because memorable is not the same as usable.
+The short version (canonical text, the shipped default; intervals and the
+full tables in `docs/results.md`): 173 held-out famous taglines vs bland
+ad-speak **AUC 0.95**, vs plain prose 0.97, vs same-topic product
+descriptions 0.94 with a paired win rate of 0.97, vs junk 0.79, and vs
+famous non-advertising quotes 0.47. With raw text a six-feature typography
+model matches the axis, which is why raw text is not the default.
+
+The honest ceiling comes from the good-copy control, 88 original usable
+lines that are not famous: 43% of those at tagline length pass, 12% of the
+longer benefit-led and B2B lines do. The axis learned the shape of a famous
+tagline. Use it for tagline-length candidates and read the near-famous and
+brief signals next to the score; it is not a scorer for body copy.
 
 ## Repository layout
 
