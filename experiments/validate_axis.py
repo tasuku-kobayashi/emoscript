@@ -48,6 +48,7 @@ from emoscript.axis import (  # noqa: E402
     auc,
     auc_bootstrap_ci,
     brier,
+    family_weights,  # noqa: E402
     fit_diff_axis,
     fit_mean_axis,
     l2_normalize,
@@ -58,7 +59,7 @@ from emoscript.axis import (  # noqa: E402
 )
 from emoscript.dataio import DATA_DIR, load_corpus, texts  # noqa: E402
 from emoscript.embed import DEFAULT_MODEL, make_embed_fn  # noqa: E402
-from emoscript.pipeline import fit_from_embeddings  # noqa: E402
+from emoscript.pipeline import fit_from_embeddings, negative_family  # noqa: E402
 from emoscript.text import BLOCKING_FLAGS, CASINGS, input_flags, normalizer  # noqa: E402
 
 # Probes are illustrative only (not metrics). They are new lines, not paraphrases of corpus entries.
@@ -83,6 +84,7 @@ def run(
     embed_fn=None,
     casing: str = "none",
     n_boot: int = 1000,
+    balance: bool = True,
 ) -> dict:
     corpus = load_corpus(data_dir)
     embed_fn = embed_fn or make_embed_fn(model_name)
@@ -111,6 +113,11 @@ def run(
         i += len(ts)
 
     N_all = np.vstack([E["hard_tr"], E["gen_tr"]])
+    neg_w = (
+        family_weights([negative_family(r) for r in corpus.hard_train + corpus.generic_train])
+        if balance
+        else None
+    )
     variants: dict[str, dict] = {}
 
     def add_variant(name: str, axes: np.ndarray, calibrator=None, oof=None, scorer=None):
@@ -221,8 +228,11 @@ def run(
     add_variant("M3 diff (hard only)", fit_diff_axis(E["pos_tr"], E["hard_tr"]))
     ranking_scores = None
     for k in ks:
-        m = fit_from_embeddings(E["pos_tr"], N_all, k=k, calibrate=True, model_name=model_name)
-        name = "M2 diff (hard+generic)" if k == 1 else f"M2 multi-axis k={k}"
+        m = fit_from_embeddings(
+            E["pos_tr"], N_all, k=k, calibrate=True, model_name=model_name, neg_weights=neg_w
+        )
+        tag = ", balanced families" if balance else ""
+        name = f"M2 diff (hard+generic{tag})" if k == 1 else f"M2 multi-axis k={k}{tag}"
         s = add_variant(name, m.axes, m.calibrator, m.meta.get("oof"))
         variants[name]["cluster_sizes"] = m.meta["cluster_sizes"]
         if ranking_scores is None:
@@ -231,6 +241,7 @@ def run(
     return {
         "model": model_name,
         "casing": casing,
+        "balanced_negatives": balance,
         "n": {g: len(ts) for g, ts in groups.items()},
         "variants": variants,
         "_ranking": {
@@ -251,7 +262,10 @@ def run(
 
 def print_report(res: dict, show_ranking: bool = True) -> None:
     n = res["n"]
-    print(f"model: {res['model']}   casing: {res.get('casing', 'none')}")
+    print(
+        f"model: {res['model']}   casing: {res.get('casing', 'none')}   "
+        f"negatives weighted per {'family' if res.get('balanced_negatives', False) else 'line'}"
+    )
     print(
         f"train: {n['pos_tr']} taglines / {n['hard_tr']} hard / {n['gen_tr']} generic   "
         f"test: {n['pos_te']} taglines / {n['hard_te']} hard / {n['gen_te']} generic / "
@@ -329,9 +343,10 @@ def main(argv=None) -> int:
     ap.add_argument("--json", help="write the full report to this path")
     ap.add_argument("--no-ranking", action="store_true")
     ap.add_argument("--casing", choices=CASINGS, default="none", help="normalize case before embedding")
+    ap.add_argument("--no-balance", action="store_true", help="weight negatives per line, not per family")
     args = ap.parse_args(argv)
     ks = [int(x) for x in args.k.split(",") if x.strip()]
-    res = run(args.model, ks, Path(args.data_dir), casing=args.casing)
+    res = run(args.model, ks, Path(args.data_dir), casing=args.casing, balance=not args.no_balance)
     print_report(res, show_ranking=not args.no_ranking)
     if args.json:
         Path(args.json).write_text(json.dumps(res, indent=2, ensure_ascii=False), encoding="utf-8")

@@ -89,6 +89,11 @@ def test_cli_guards(patched_backend, tmp_path, capsys):
         cli.main(["fit", "--model", "fake", "--out", str(out), "--negatives", "hard,generics"])
     assert cli.main(["fit", "--model", "fake", "--out", str(tmp_path / "noext"), "--k", "1"]) == 0
     assert "noext.npz" in capsys.readouterr().out and (tmp_path / "noext.npz").exists()
+    plain = str(tmp_path / "plain")
+    assert cli.main(["fit", "--model", "fake", "--out", plain, "--no-balance-negatives"]) == 0
+    capsys.readouterr()
+    assert cli.main(["info", "--axis", str(tmp_path / "plain.npz")]) == 0
+    assert json.loads(capsys.readouterr().out)["meta"]["neg_weighted"] is False
     with pytest.raises(SystemExit, match="threshold"):
         cli.main(["score", "x", "--axis", str(tmp_path / "noext.npz"), "--threshold", "1.5"])
     assert (

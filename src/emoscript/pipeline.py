@@ -440,15 +440,18 @@ def fit_from_corpus(
     prefix: str | None = None,
     casing: str = "canonical",
     keep_exemplars: bool = True,
-    balance_negatives: bool = False,
+    balance_negatives: bool = True,
 ) -> AxisModel:
     """Fit from the bundled (or a custom) corpus: train splits only.
 
-    ``balance_negatives`` gives every negative family (by the ``note`` prefix:
-    generic ad-speak, short, UI, topic-descriptive, prose, ...) equal total
-    weight in the negative centroid instead of one vote per line.
+    ``balance_negatives`` (default) gives every negative family (by the
+    ``note`` prefix: generic ad-speak, short, UI, topic-descriptive, nonsense,
+    prose, ...) equal total weight in the negative centroid instead of one
+    vote per line, so the largest family cannot decide the direction. Chosen
+    by train-only cross-validation (``experiments/select_settings.py``).
 
-    Defaults (k=1, casing="canonical", calibrator L2=1) were chosen by
+    Defaults (k=1, casing="canonical", calibrator L2=1, balanced negative
+    families) were chosen by
     brand-grouped nested cross-validation on the training split only
     (``experiments/select_settings.py``); the held-out test split was not
     consulted. With the short and Title-Case negatives of v0.2 a single diff

@@ -28,6 +28,10 @@ the **Limitations** section before trusting a number.
    score(line) = cos(embed(line), axis)
    ```
 
+   The bland mean weights each negative *family* equally (ad-speak, short
+   fragments, UI strings, product descriptions, nonsense, prose), so the
+   largest family cannot decide the direction on its own.
+
 The subtraction is the whole trick. A centroid built from great copy alone
 mostly learns "well-formed marketing English"; subtracting the bland centroid
 isolates what is *distinctive* about great copy.
@@ -78,7 +82,7 @@ default model here, `intfloat/multilingual-e5-large` (ONNX), downloads once
 
 ```bash
 # Fit the axis (+ calibrator) from the bundled corpus; prints honest out-of-fold metrics
-emoscript fit --out axis.npz            # add --balance-negatives for equal weight per negative family
+emoscript fit --out axis.npz            # negative families weighted equally; --no-balance-negatives for per-line
 
 # Score candidates (higher = more great-copy-like); p = calibrated probability
 emoscript score "Sleep like you mean it." "We sell high quality furniture at low prices." --axis axis.npz

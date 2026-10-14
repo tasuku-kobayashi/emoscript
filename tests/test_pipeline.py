@@ -183,8 +183,8 @@ def test_negative_family_weighting(fake_embed_fn):
     assert negative_family({"note": "ui-boilerplate"}) == "ui"
     assert negative_family({"note": "nonsense"}) == "nonsense"
     assert negative_family({"note": "factual"}) == "prose" and negative_family({}) == "prose"
-    plain = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False)
-    balanced = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False, balance_negatives=True)
+    plain = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False, balance_negatives=False)
+    balanced = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False)
     assert balanced.meta["neg_weighted"] and not plain.meta["neg_weighted"]
     assert not np.allclose(plain.axes, balanced.axes)
     assert np.isclose(np.linalg.norm(balanced.axes[0]), 1.0)
@@ -239,9 +239,9 @@ def test_evaluate_reports_controls_pass_rates_and_cis(fake_embed_fn):
     assert report["calibration"]["negatives"] == ["hard", "generic", "topic_bland"]
 
 
-def test_defaults_are_k1_canonical(fake_embed_fn):
+def test_defaults_are_k1_canonical_balanced(fake_embed_fn):
     model = fit_from_corpus(fake_embed_fn, model_name="fake")
-    assert model.k == 1 and model.casing == "canonical"
+    assert model.k == 1 and model.casing == "canonical" and model.meta["neg_weighted"]
     a, _ = score_texts(model, ['1. Tagline: "Just Do It."'], fake_embed_fn)
     b, _ = score_texts(model, ["just do it"], fake_embed_fn)
     assert np.allclose(a, b)

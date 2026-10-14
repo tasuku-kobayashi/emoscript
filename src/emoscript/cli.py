@@ -53,7 +53,7 @@ def cmd_fit(args) -> int:
         seed=args.seed,
         model_name=args.model,
         casing=args.casing,
-        balance_negatives=args.balance_negatives,
+        balance_negatives=not args.no_balance_negatives,
     )
     saved = model.save(args.out)
     oof = model.meta.get("oof", {})
@@ -305,9 +305,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--folds", type=int, default=5, help="folds for out-of-fold calibration")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument(
-        "--balance-negatives",
+        "--no-balance-negatives",
         action="store_true",
-        help="equal weight per negative family in the negative centroid (instead of per line)",
+        help="weight the negative centroid per line instead of equally per negative family",
     )
     p.add_argument(
         "--casing",

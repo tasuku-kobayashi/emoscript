@@ -24,7 +24,10 @@ def render(reports: list[dict]) -> str:
     out: list[str] = []
     for res in reports:
         n = res["n"]
-        out.append(f"### {res['model']} · casing={res.get('casing', 'none')}")
+        weighting = "family" if res.get("balanced_negatives", False) else "line"
+        out.append(
+            f"### {res['model']} · casing={res.get('casing', 'none')} · negatives weighted per {weighting}"
+        )
         out.append("")
         out.append(
             f"train {n['pos_tr']} taglines / {n['hard_tr']} hard / {n['gen_tr']} generic · "

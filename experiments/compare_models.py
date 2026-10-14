@@ -55,10 +55,12 @@ def main(argv=None) -> int:
         reports[m] = res
         res_lower = run(m, [1], Path(args.data_dir), casing="lower")
         reports[m + " (lower)"] = res_lower
-        rows = [(name, res["variants"][name]) for name in ("M2 diff (hard+generic)", "M2 multi-axis k=3")] + [
-            ("M2 k=1, lower-cased", res_lower["variants"]["M2 diff (hard+generic)"])
+        m2 = "M2 diff (hard+generic, balanced families)"
+        rows = [(name, res["variants"][name]) for name in (m2, "M2 multi-axis k=3, balanced families")] + [
+            ("M2 k=1, lower-cased", res_lower["variants"][m2])
         ]
         for name, v in rows:
+            name = name.replace(", balanced families", "")
             long_auc = v["by_length"].get("long>=8w", {}).get("auc_vs_hard", float("nan"))
             print(
                 f"{m:42s} {name:24s} {v['auc_vs_hard']:6.3f} {v['auc_vs_generic']:8.3f} "
