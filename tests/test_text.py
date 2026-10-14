@@ -76,9 +76,28 @@ def test_llm_chatter_and_placeholder_flags_do_not_hit_real_copy():
         "undefined",
         "N/A",
         "<BRAND> — eat better",
-        "TODO: x",
+        "TODO: write tagline",
+        "TBD",
     ]:
         assert "placeholder" in input_flags(t), t
+    for t in [
+        "Sure thing! Here comes summer.",
+        "Of course, I saved you a seat.",
+        "Absolutely. These boots go anywhere.",
+        "Okay, I'm ready for Monday.",
+        "Sorry, I can't hear you over the blender.",
+        "As an assistant manager, I trust our scheduling app.",
+        "I can't help you with taxes, but I can make dinner.",
+    ]:
+        assert "llm_chatter" not in input_flags(t), t
+    for t in ["Todo: nothing. Just relax.", "TBD: your next adventure."]:
+        assert "placeholder" not in input_flags(t), t
+    for t in [
+        "Sure thing! Here are five taglines:",
+        "Of course! Here you go:",
+        "Okay, here are some options:",
+    ]:
+        assert "llm_chatter" in input_flags(t), t
     for t in [
         "Certainly the best.",
         "Sure Thing.",

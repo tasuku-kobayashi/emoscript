@@ -203,6 +203,13 @@ def test_sense_axis_two_feature_calibration(fake_embed_fn, tmp_path):
     assert any(negative_family(r) in SENSE_FAMILIES for r in corpus.hard_train)
     model = fit_from_corpus(fake_embed_fn, model_name="fake")  # sense=True by default
     assert model.sense_axis is not None and model.n_features == 2
+    assert model.sense_gate is not None and "sense_gate_oof" in model.meta
+    gate = model.passes_sense_gate(
+        model.embed(["Sleep like you mean it.", "Blorp the Zinger"], fake_embed_fn)
+    )
+    assert gate.shape == (2,) and gate.dtype == bool
+    sp = model.sense_proba(model.embed(["x y"], fake_embed_fn))
+    assert sp.shape == (1,) and 0 <= sp[0] <= 1
     assert np.isclose(np.linalg.norm(model.sense_axis), 1.0)
     assert model.meta["sense_axis"] and len(model.meta["oof"]["calibrator_weights"]) == 2
     assert "auc_proba" in model.meta["oof"] and model.meta["oof"]["threshold@0.5"] is None
@@ -220,6 +227,7 @@ def test_sense_axis_two_feature_calibration(fake_embed_fn, tmp_path):
     model.save(tmp_path / "s.npz")
     loaded = AxisModel.load(tmp_path / "s.npz")
     assert np.allclose(loaded.sense_axis, model.sense_axis)
+    assert loaded.sense_gate is not None and np.allclose(loaded.sense_proba(E), model.sense_proba(E))
     assert np.allclose(loaded.proba_from_embeddings(E), p)
     plain = fit_from_corpus(fake_embed_fn, model_name="fake", sense=False)
     assert plain.sense_axis is None and plain.n_features == 1

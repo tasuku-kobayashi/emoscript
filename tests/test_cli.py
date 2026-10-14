@@ -177,7 +177,17 @@ def test_brief_gate_and_blocked_rows_sort_last(patched_backend, tmp_path, capsys
         ["score", *lines[:1], "--axis", str(out), "--brief", "a mattress brand", "--min-rel", "2.0", "--json"]
     )
     row = json.loads(capsys.readouterr().out)[0]
-    assert row["pass"] is False and row["blocked_by"] == ["off_brief"]
+    assert row["pass"] is False and "off_brief" in row["blocked_by"]
+    assert "sense" in row and (row["sense"] is None or 0 <= row["sense"] <= 1)
+    cli.main(
+        ["score", *lines, "--axis", str(out), "--brief", "a mattress brand", "--top-rel", "0.5", "--json"]
+    )
+    rows = json.loads(capsys.readouterr().out)
+    assert sum("off_brief" in r.get("blocked_by", []) for r in rows) >= 1
+    with pytest.raises(SystemExit, match="top-rel"):
+        cli.main(["score", "x", "--axis", str(out), "--top-rel", "0.5"])
+    cli.main(["score", *lines[:1], "--axis", str(out), "--no-sense-gate", "--json"])
+    assert "sense_gate" not in json.loads(capsys.readouterr().out)[0].get("blocked_by", [])
 
 
 def test_corpus_check(capsys):

@@ -273,7 +273,7 @@ def run(
                 ms.axes,
                 ms.calibrator,
                 ms.meta.get("oof"),
-                proba=lambda X, ms=ms: ms.proba_from_embeddings(X),
+                proba=lambda X, ms=ms: np.where(ms.passes_sense_gate(X), ms.proba_from_embeddings(X), 0.0),
             )
             variants[sname]["calibrator_weights"] = ms.meta["oof"]["calibrator_weights"]
         variants[name]["cluster_sizes"] = m.meta["cluster_sizes"]

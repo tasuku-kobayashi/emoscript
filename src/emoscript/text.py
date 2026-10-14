@@ -54,7 +54,7 @@ _PLACEHOLDER = re.compile(
     re.I,
 )
 # Text a chat model emits around (or instead of) the lines it was asked for.
-_COPY_WORDS = r"(?:tagline|slogan|headline|option|idea|cop(?:y|ies)|suggestion|version|line)s?"
+_COPY_WORDS = r"(?:tagline|slogan|headline|option|idea|cop(?:y|ies)|suggestion|version)s?"
 _LLM_CHATTER = re.compile(
     # an assistant-style opener that goes on to talk about the lines it is producing, or ends in a colon
     r"^(?:sure|certainly|okay|of course|absolutely|got it)(?: thing)?[!,.:]\s+(?:here|i|below|these)\b"
