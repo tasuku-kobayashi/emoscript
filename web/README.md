@@ -11,4 +11,5 @@ Static page that scores tagline candidates entirely in the browser.
 - `test/`: `npm test` (model-free parity with the Python fixture) and
   `npm run parity` (end to end through transformers.js).
 
-Deployed by `.github/workflows/pages.yml` on pushes to `main` that touch this folder.
+Live at https://tasuku-kobayashi.github.io/emoscript/ — deployed by
+`.github/workflows/pages.yml` on pushes to `main` that touch this folder.

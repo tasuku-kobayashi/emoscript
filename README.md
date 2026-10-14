@@ -167,6 +167,8 @@ takes precomputed matrices directly.
 
 ## Browser edition
 
+**Live: <https://tasuku-kobayashi.github.io/emoscript/>**
+
 The same scorer runs as a static page on GitHub Pages, with the embedding
 model executed in the browser by [transformers.js](https://github.com/huggingface/transformers.js):
 paste lines, optionally a brief, and get the same table as `emoscript score
