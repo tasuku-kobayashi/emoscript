@@ -17,8 +17,10 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
+
 from . import __version__
-from .dataio import DATA_DIR, validate_corpus
+from .dataio import DATA_DIR, corpus_warnings, validate_corpus
 from .embed import DEFAULT_MODEL, make_embed_fn
 from .pipeline import AxisModel, evaluate, fit_from_corpus, score_texts
 from .text import CASINGS
@@ -31,8 +33,14 @@ def _print_json(obj) -> None:
 
 
 # --------------------------------------------------------------------------- commands
+NEGATIVE_KINDS = ("hard", "generic")
+
+
 def cmd_fit(args) -> int:
     negatives = tuple(x.strip() for x in args.negatives.split(",") if x.strip())
+    unknown = [x for x in negatives if x not in NEGATIVE_KINDS]
+    if unknown or not negatives:
+        raise SystemExit(f"--negatives: unknown kind(s) {unknown}; choose from {', '.join(NEGATIVE_KINDS)}")
     embed_fn = make_embed_fn(args.model)
     model = fit_from_corpus(
         embed_fn,
@@ -45,17 +53,21 @@ def cmd_fit(args) -> int:
         model_name=args.model,
         casing=args.casing,
     )
-    model.save(args.out)
+    saved = model.save(args.out)
     oof = model.meta.get("oof", {})
     print(
-        f"axis saved to {args.out} (k={model.k}, dim={model.axes.shape[1]}, "
+        f"axis saved to {saved} (k={model.k}, dim={model.axes.shape[1]}, "
         f"model={args.model}, casing={model.casing})"
     )
     if oof:
+        thr = oof.get("threshold@0.5")
+        thr_s = f"{thr:+.4f}" if thr is not None else "n/a"
         print(
             f"  out-of-fold: AUC {oof['auc']:.3f}  log-loss {oof['log_loss']:.3f}  "
-            f"acc@0.5 {oof['accuracy@0.5']:.3f}  threshold(p=0.5) {oof['threshold@0.5']:+.4f}"
+            f"acc@0.5 {oof['accuracy@0.5']:.3f}  threshold(p=0.5) {thr_s}"
         )
+    for w in model.meta.get("warnings", []):
+        print(f"  WARNING: {w}")
     return 0
 
 
@@ -72,28 +84,38 @@ def _read_texts(args) -> list[str]:
 
 
 def cmd_score(args) -> int:
+    if not 0 < args.threshold < 1:
+        raise SystemExit("--threshold must be strictly between 0 and 1")
     model = AxisModel.load(args.axis)
     texts = _read_texts(args)
     embed_fn = make_embed_fn(model.model_name, model.prefix)
     scores, probs = score_texts(model, texts, embed_fn)
-    explanations = model.explain(model.embed(texts, embed_fn), n=args.neighbors) if args.explain else None
+    explanations = None
+    if args.explain:
+        safe = [t if not np.isnan(scores[i]) else "placeholder" for i, t in enumerate(texts)]
+        explanations = model.explain(model.embed(safe, embed_fn), n=args.neighbors)
     rows = []
     for i, t in enumerate(texts):
-        row = {"text": t, "score": float(scores[i])}
+        skipped = bool(np.isnan(scores[i]))
+        row = {"text": t, "score": None if skipped else float(scores[i])}
+        if skipped:
+            row["skipped"] = "no letters"
         if probs is not None:
-            row["prob"] = float(probs[i])
-            row["pass"] = bool(probs[i] >= args.threshold)
-        if explanations is not None:
+            row["prob"] = None if skipped else float(probs[i])
+            row["pass"] = False if skipped else bool(probs[i] >= args.threshold)
+        if explanations is not None and not skipped:
             row["axis"] = explanations[i]["axis"]
             row["nearest"] = [{"text": a, "cos": b} for a, b in explanations[i]["nearest"]]
         rows.append(row)
     if args.sort:
-        rows.sort(key=lambda r: -r["score"])
+        rows.sort(key=lambda r: -(r["score"] if r["score"] is not None else float("-inf")))
     if args.json:
         _print_json(rows)
         return 0
     for r in rows:
-        if "prob" in r:
+        if r["score"] is None:
+            print(f"   n/a   skipped ({r['skipped']})  {r['text']}")
+        elif "prob" in r:
             print(f"{r['score']:+.4f}  p={r['prob']:.2f}  {'PASS' if r['pass'] else 'fail'}  {r['text']}")
         else:
             print(f"{r['score']:+.4f}  {r['text']}")
@@ -119,14 +141,22 @@ def cmd_eval(args) -> int:
         lo, hi = report["auc_ci95"][g]
         print(f"  AUC held-out taglines vs {g:<12s} {v:.3f}  [{lo:.3f}, {hi:.3f}]  (n={report['n'][g]})")
     if "contrast_pair_win_rate" in report:
-        print(f"  topic-matched pair win rate      {report['contrast_pair_win_rate']:.3f}")
+        lo, hi = report["contrast_pair_win_ci95"]
+        print(
+            f"  topic-matched pair win rate      {report['contrast_pair_win_rate']:.3f}  [{lo:.3f}, {hi:.3f}]"
+        )
+    if "pass_rate" in report:
+        rates = "  ".join(f"{g} {v:.2f}" for g, v in report["pass_rate"].items())
+        print(f"  PASS rate at p>=0.5:             {rates}")
     for name, v in report.get("auc_vs_hard_by_length", {}).items():
         print(f"  AUC vs hard, taglines {name:<10s} {v['auc']:.3f}  (n={v['n']})")
     if "calibration" in report:
         c = report["calibration"]
+        thr = c["threshold@0.5"]
+        thr_s = f"{thr:+.4f}" if thr is not None else "n/a"
         print(
-            f"  calibration: log-loss {c['log_loss']:.3f}  brier {c['brier']:.3f}  "
-            f"acc@0.5 {c['accuracy@0.5']:.3f}  threshold {c['threshold@0.5']:+.4f}"
+            f"  calibration (vs {'+'.join(c['negatives'])}): log-loss {c['log_loss']:.3f}  "
+            f"brier {c['brier']:.3f}  acc@0.5 {c['accuracy@0.5']:.3f}  threshold {thr_s}"
         )
     return 0
 
@@ -139,6 +169,11 @@ def cmd_corpus_check(args) -> int:
             print(f"  - {p}")
         return 1
     print(f"corpus OK: {args.data_dir}")
+    warnings = corpus_warnings(args.data_dir)
+    if warnings:
+        print(f"{len(warnings)} warning(s) (not failures):")
+        for w in warnings:
+            print(f"  ~ {w}")
     return 0
 
 

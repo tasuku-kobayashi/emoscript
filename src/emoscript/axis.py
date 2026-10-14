@@ -120,12 +120,17 @@ def kmeans(
         for _ in range(max_iter):
             d2 = ((X[:, None, :] - centers[None, :, :]) ** 2).sum(-1)
             new_labels = d2.argmin(axis=1)
+            # re-seed each empty cluster with a distinct point that is far from its centre
+            dmin = d2.min(axis=1).copy()
+            for j in range(k):
+                if not np.any(new_labels == j):
+                    idx = int(dmin.argmax())
+                    new_labels[idx] = j
+                    dmin[idx] = -np.inf
             for j in range(k):
                 members = X[new_labels == j]
-                if len(members) == 0:  # re-seed an empty cluster at the farthest point
-                    members = X[[d2.min(axis=1).argmax()]]
-                    new_labels[d2.min(axis=1).argmax()] = j
-                centers[j] = members.mean(axis=0)
+                if len(members):
+                    centers[j] = members.mean(axis=0)
             if spherical:
                 centers = l2_normalize(centers)
             if np.array_equal(new_labels, labels):
@@ -149,15 +154,23 @@ def fit_multi_axis(
 ) -> tuple[np.ndarray, np.ndarray]:
     """k diff-axes, one per k-means cluster of the positives.
 
-    Returns ``(axes (k, d), labels (n_pos,))``. ``k=1`` reduces exactly to
-    :func:`fit_diff_axis`.
+    Each axis is ``normalize(mean(cluster) - mean(negatives))`` using the *raw*
+    cluster mean, not the unit-length spherical centre: unit-norm embeddings
+    share a large common direction (mean pairwise cosine ~0.8 for e5), so a
+    unit centre minus a raw mean of length ~0.9 would leave every axis leaning
+    along that common direction and inflate all scores. ``k=1`` reduces
+    exactly to :func:`fit_diff_axis`.
+
+    Returns ``(axes (k, d), labels (n_pos,))``.
     """
     E_pos = np.asarray(E_pos, dtype=np.float64)
+    E_neg = np.asarray(E_neg, dtype=np.float64)
     if k == 1:
         return fit_diff_axis(E_pos, E_neg)[None, :], np.zeros(len(E_pos), dtype=int)
-    centers, labels, _ = kmeans(E_pos, k, seed=seed, n_init=n_init)
-    neg_centroid = np.asarray(E_neg, dtype=np.float64).mean(axis=0)
-    axes = l2_normalize(centers - neg_centroid[None, :])
+    _, labels, _ = kmeans(E_pos, k, seed=seed, n_init=n_init)
+    neg_centroid = E_neg.mean(axis=0)
+    means = np.vstack([E_pos[labels == c].mean(axis=0) for c in range(k)])
+    axes = l2_normalize(means - neg_centroid[None, :])
     return axes, labels
 
 
@@ -168,10 +181,54 @@ def auc(pos_scores: np.ndarray, neg_scores: np.ndarray) -> float:
     n = np.asarray(neg_scores, dtype=np.float64)[None, :]
     if p.size == 0 or n.size == 0:
         raise ValueError("auc needs at least one positive and one negative score")
+    if np.isnan(p).any() or np.isnan(n).any():
+        raise ValueError("auc: scores contain NaN")
     return float((p > n).mean() + 0.5 * (p == n).mean())
 
 
+def _resample(idx_groups: list[np.ndarray], rng: np.random.Generator) -> np.ndarray:
+    """Cluster bootstrap: resample whole groups with replacement, return row indices."""
+    pick = rng.integers(len(idx_groups), size=len(idx_groups))
+    return np.concatenate([idx_groups[g] for g in pick])
+
+
+def _groups_of(labels, n: int) -> list[np.ndarray]:
+    if labels is None:
+        return [np.array([i]) for i in range(n)]
+    labels = np.asarray(labels)
+    return [np.flatnonzero(labels == g) for g in np.unique(labels)]
+
+
 def auc_bootstrap_ci(
+    pos_scores: np.ndarray,
+    neg_scores: np.ndarray,
+    *,
+    pos_groups=None,
+    neg_groups=None,
+    n_boot: int = 1000,
+    alpha: float = 0.05,
+    seed: int = 0,
+) -> tuple[float, float]:
+    """Percentile bootstrap confidence interval for :func:`auc`.
+
+    ``pos_groups`` / ``neg_groups`` (e.g. brand per tagline) switch to a cluster
+    bootstrap that resamples whole groups, so several lines from one brand do
+    not count as independent evidence. With a saturated AUC of 1.0 the
+    percentile interval collapses to [1, 1]; read that as "no error seen in
+    this sample", not as certainty.
+    """
+    p = np.asarray(pos_scores, dtype=np.float64)
+    n = np.asarray(neg_scores, dtype=np.float64)
+    pg, ng = _groups_of(pos_groups, len(p)), _groups_of(neg_groups, len(n))
+    rng = np.random.default_rng(seed)
+    vals = np.empty(n_boot)
+    for i in range(n_boot):
+        vals[i] = auc(p[_resample(pg, rng)], n[_resample(ng, rng)])
+    lo, hi = np.quantile(vals, [alpha / 2, 1 - alpha / 2])
+    return float(lo), float(hi)
+
+
+def paired_auc_bootstrap_ci(
     pos_scores: np.ndarray,
     neg_scores: np.ndarray,
     *,
@@ -179,17 +236,30 @@ def auc_bootstrap_ci(
     alpha: float = 0.05,
     seed: int = 0,
 ) -> tuple[float, float]:
-    """Percentile bootstrap confidence interval for :func:`auc` (resampling both groups)."""
+    """Bootstrap CI for AUC when positives and negatives come in matched pairs
+    (row i of each array belongs together): pairs are resampled as units."""
     p = np.asarray(pos_scores, dtype=np.float64)
     n = np.asarray(neg_scores, dtype=np.float64)
+    if len(p) != len(n):
+        raise ValueError("paired bootstrap needs equally long, aligned score arrays")
     rng = np.random.default_rng(seed)
     vals = np.empty(n_boot)
     for i in range(n_boot):
-        pb = p[rng.integers(len(p), size=len(p))]
-        nb = n[rng.integers(len(n), size=len(n))]
-        vals[i] = auc(pb, nb)
+        idx = rng.integers(len(p), size=len(p))
+        vals[i] = auc(p[idx], n[idx])
     lo, hi = np.quantile(vals, [alpha / 2, 1 - alpha / 2])
     return float(lo), float(hi)
+
+
+def wilson_interval(successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """Wilson score interval for a binomial proportion (e.g. a paired win rate)."""
+    if n <= 0:
+        raise ValueError("wilson_interval needs n > 0")
+    phat = successes / n
+    denom = 1 + z**2 / n
+    centre = (phat + z**2 / (2 * n)) / denom
+    half = z * np.sqrt(phat * (1 - phat) / n + z**2 / (4 * n**2)) / denom
+    return float(max(0.0, centre - half)), float(min(1.0, centre + half))
 
 
 def _sigmoid(z: np.ndarray) -> np.ndarray:
@@ -218,6 +288,10 @@ def expected_calibration_error(p: np.ndarray, y: np.ndarray, n_bins: int = 5) ->
     """ECE with equal-width probability bins (lower is better)."""
     p = np.asarray(p, dtype=np.float64)
     y = np.asarray(y, dtype=np.float64)
+    keep = ~np.isnan(p)
+    p, y = p[keep], y[keep]
+    if p.size == 0:
+        return float("nan")
     edges = np.linspace(0, 1, n_bins + 1)
     ece = 0.0
     for lo, hi in zip(edges[:-1], edges[1:], strict=True):
@@ -234,9 +308,12 @@ class Calibrator:
 
     Features are standardized with the training mean/std before the logistic
     fit (Newton's method with an L2 penalty on the slope, so perfectly
-    separable data does not blow up). The default penalty (1.0 on standardized
-    features) was chosen on held-out data: it halves the share of probabilities
-    pinned at 0/1 compared with a near-zero penalty at the same log-loss.
+    separable data does not blow up). With ``balanced=True`` (default) the two
+    classes get equal total weight, so ``p = 0.5`` means "as likely great as
+    bland under a 50/50 prior" regardless of how many positives and negatives
+    the corpus happens to contain; move the decision threshold to encode a
+    different prior. The default penalty was chosen by cross-validation on the
+    training split (``experiments/select_settings.py``).
     """
 
     w: np.ndarray = field(default_factory=lambda: np.zeros(1))
@@ -244,6 +321,7 @@ class Calibrator:
     mu: np.ndarray = field(default_factory=lambda: np.zeros(1))
     sd: np.ndarray = field(default_factory=lambda: np.ones(1))
     l2: float = 1.0
+    balanced: bool = True
 
     @staticmethod
     def _as_2d(S: np.ndarray) -> np.ndarray:
@@ -252,8 +330,16 @@ class Calibrator:
 
     def fit(self, S_pos: np.ndarray, S_neg: np.ndarray, *, max_iter: int = 100) -> Calibrator:
         Xp, Xn = self._as_2d(S_pos), self._as_2d(S_neg)
+        if len(Xp) < 2 or len(Xn) < 2:
+            raise ValueError("Calibrator.fit needs at least two positive and two negative scores")
+        if np.isnan(Xp).any() or np.isnan(Xn).any():
+            raise ValueError("Calibrator.fit: scores contain NaN")
         X = np.vstack([Xp, Xn])
         y = np.concatenate([np.ones(len(Xp)), np.zeros(len(Xn))])
+        if self.balanced:
+            wts = np.where(y == 1, len(X) / (2 * len(Xp)), len(X) / (2 * len(Xn)))
+        else:
+            wts = np.ones(len(X))
         self.mu = X.mean(axis=0)
         self.sd = X.std(axis=0) + _EPS
         Z = np.hstack([(X - self.mu) / self.sd, np.ones((len(X), 1))])
@@ -263,8 +349,8 @@ class Calibrator:
         reg[-1] = 0.0  # no penalty on the intercept
         for _ in range(max_iter):
             p = _sigmoid(Z @ theta)
-            g = Z.T @ (p - y) + reg * theta
-            H = (Z * (p * (1 - p))[:, None]).T @ Z + np.diag(reg) + 1e-9 * np.eye(d)
+            g = Z.T @ (wts * (p - y)) + reg * theta
+            H = (Z * (wts * p * (1 - p))[:, None]).T @ Z + np.diag(reg) + 1e-9 * np.eye(d)
             step = np.linalg.solve(H, g)
             theta -= step
             if np.abs(step).max() < 1e-9:
@@ -276,10 +362,21 @@ class Calibrator:
         Z = (self._as_2d(S) - self.mu) / self.sd
         return _sigmoid(Z @ self.w + self.b)
 
+    @property
+    def slope(self) -> float:
+        """Slope on the standardized score; must be > 0 for 'higher score = more great'."""
+        return float(self.w[0]) if self.w.shape[0] == 1 else float("nan")
+
     def score_at(self, prob: float) -> float:
-        """Raw (one-feature) score at which the calibrated probability equals ``prob``."""
-        if self.w.shape[0] != 1 or self.w[0] == 0:
-            raise ValueError("score_at is only defined for a one-feature calibrator with non-zero slope")
+        """Raw (one-feature) score at which the calibrated probability equals ``prob``.
+
+        Returns NaN when the calibrator is degenerate (zero or negative slope,
+        e.g. identical scores for every line) instead of raising.
+        """
+        if not 0 < prob < 1:
+            raise ValueError("prob must be strictly between 0 and 1")
+        if self.w.shape[0] != 1 or not self.w[0] > 1e-9:
+            return float("nan")
         logit = np.log(prob / (1 - prob))
         return float((logit - self.b) / self.w[0] * self.sd[0] + self.mu[0])
 

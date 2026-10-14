@@ -84,6 +84,27 @@ def test_fetch_axis_downloads_named_asset(monkeypatch, tmp_path, capsys, patched
     assert seen["api"].endswith("/releases/tags/v1")
 
 
+def test_cli_guards(patched_backend, tmp_path, capsys):
+    out = tmp_path / "axis.npz"
+    with pytest.raises(SystemExit, match="negatives"):
+        cli.main(["fit", "--model", "fake", "--out", str(out), "--negatives", "hard,generics"])
+    assert cli.main(["fit", "--model", "fake", "--out", str(tmp_path / "noext"), "--k", "1"]) == 0
+    assert "noext.npz" in capsys.readouterr().out and (tmp_path / "noext.npz").exists()
+    with pytest.raises(SystemExit, match="threshold"):
+        cli.main(["score", "x", "--axis", str(tmp_path / "noext.npz"), "--threshold", "1.5"])
+    assert (
+        cli.main(["score", "Think", "?!", "", "--axis", str(tmp_path / "noext.npz"), "--json", "--sort"]) == 0
+    )
+    rows = json.loads(capsys.readouterr().out)
+    assert rows[0]["text"] == "Think" and rows[0]["score"] is not None
+    assert all(r["score"] is None and r["skipped"] == "no letters" for r in rows[1:])
+    assert cli.main(["score", "?!", "--axis", str(tmp_path / "noext.npz"), "--explain"]) == 0
+    assert "skipped" in capsys.readouterr().out
+    assert cli.main(["eval", "--axis", str(tmp_path / "noext.npz")]) == 0
+    text = capsys.readouterr().out
+    assert "PASS rate" in text and "junk" in text and "Wilson" not in text
+
+
 def test_corpus_check(capsys):
     assert cli.main(["corpus-check"]) == 0
     assert "corpus OK" in capsys.readouterr().out

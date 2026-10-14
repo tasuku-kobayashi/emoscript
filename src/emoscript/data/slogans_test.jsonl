@@ -7,7 +7,7 @@
 {"text": "America Runs on Dunkin'", "brand": "Dunkin' Donuts", "year": 2006}
 {"text": "The Few. The Proud. The Marines.", "brand": "US Marines", "year": 1977}
 {"text": "15 Minutes Could Save You 15% or More on Car Insurance", "brand": "GEICO", "year": 1999}
-{"text": "When the World Zigs, Zag.", "brand": "Levi's", "year": 1982}
+{"text": "When the World Zigs, Zag.", "brand": "Levi's", "year": 1982, "kind": "headline"}
 {"text": "Buy It. Sell It. Love It.", "brand": "eBay", "year": "2000s"}
 {"text": "The Pause That Refreshes", "brand": "Coca-Cola", "year": 1929}
 {"text": "It's the Real Thing", "brand": "Coca-Cola", "year": 1969}
@@ -15,7 +15,7 @@
 {"text": "Taste the Feeling", "brand": "Coca-Cola", "year": 2016}
 {"text": "Just for the Taste of It", "brand": "Diet Coke", "year": 1982}
 {"text": "The Choice of a New Generation", "brand": "Pepsi", "year": 1984}
-{"text": "Lipsmackin' Thirstquenchin' Acetastin' Motivatin' Goodbuzzin' Cooltalkin' Highwalkin' Fastlivin' Evergivin' Coolfizzin' Pepsi", "brand": "Pepsi", "year": 1973}
+{"text": "Lipsmackin' Thirstquenchin' Acetastin' Motivatin' Goodbuzzin' Cooltalkin' Highwalkin' Fastlivin' Evergivin' Coolfizzin' Pepsi", "brand": "Pepsi", "year": 1973, "kind": "jingle"}
 {"text": "Is It In You?", "brand": "Gatorade", "year": 1997}
 {"text": "Be Like Mike", "brand": "Gatorade", "year": 1991}
 {"text": "How Do You Spell Relief? R-O-L-A-I-D-S", "brand": "Rolaids", "year": "1970s"}
@@ -27,13 +27,13 @@
 {"text": "Look, Ma, No Cavities!", "brand": "Crest", "year": "1950s"}
 {"text": "Snap into a Slim Jim", "brand": "Slim Jim", "year": "1990s"}
 {"text": "Once You Pop, You Can't Stop", "brand": "Pringles", "year": "1990s"}
-{"text": "Just Say No", "brand": "Just Say No campaign", "year": 1982}
+{"text": "Just Say No", "brand": "Just Say No campaign", "year": 1982, "kind": "poster"}
 {"text": "Accelerate Your Life", "brand": "US Navy", "year": 2001}
 {"text": "Hey, You Never Know", "brand": "New York Lottery", "year": 1990}
 {"text": "Two Great Tastes That Taste Great Together", "brand": "Reese's", "year": "1970s"}
 {"text": "There's No Wrong Way to Eat a Reese's", "brand": "Reese's", "year": "1990s"}
-{"text": "I Am Stuck on Band-Aid, 'Cause Band-Aid's Stuck on Me", "brand": "Band-Aid", "year": 1975}
-{"text": "Wouldn't You Really Rather Have a Buick?", "brand": "Buick", "year": "1960s"}
+{"text": "I Am Stuck on Band-Aid, 'Cause Band-Aid's Stuck on Me", "brand": "Band-Aid", "year": 1975, "kind": "jingle"}
+{"text": "Wouldn't You Really Rather Have a Buick?", "brand": "Buick", "year": "1970s"}
 {"text": "Life's Good", "brand": "LG", "year": "2000s"}
 {"text": "Sense and Simplicity", "brand": "Philips", "year": 2004}
 {"text": "Let's Make Things Better", "brand": "Philips", "year": 1995}
@@ -47,7 +47,7 @@
 {"text": "Raise Your Hand If You're Sure", "brand": "Sure", "year": 1984}
 {"text": "Nothing Beats a Great Pair of L'eggs", "brand": "L'eggs", "year": "1970s"}
 {"text": "Let Hertz Put You in the Driver's Seat", "brand": "Hertz", "year": 1959}
-{"text": "Fill It to the Rim with Brim", "brand": "Brim", "year": "1970s"}
+{"text": "Fill It to the Rim with Brim", "brand": "Brim", "year": "1970s", "kind": "jingle"}
 {"text": "Nothing Sucks Like an Electrolux", "brand": "Electrolux", "year": "1960s"}
 {"text": "The Bank That Likes to Say Yes", "brand": "TSB", "year": "1980s"}
 {"text": "Only Smarties Have the Answer", "brand": "Smarties", "year": "1980s"}
@@ -58,10 +58,10 @@
 {"text": "With a Name Like Smucker's, It Has to Be Good", "brand": "Smucker's", "year": 1962}
 {"text": "It's Not Nice to Fool Mother Nature", "brand": "Chiffon", "year": 1971}
 {"text": "Aren't You Glad You Use Dial? Don't You Wish Everybody Did?", "brand": "Dial", "year": 1953}
-{"text": "Flick Your Bic", "brand": "Bic", "year": 1975}
+{"text": "Flick Your Bic", "brand": "Bic", "year": 1975, "kind": "jingle"}
 {"text": "Better Things for Better Living... Through Chemistry", "brand": "DuPont", "year": 1935}
 {"text": "Promise Her Anything, But Give Her Arpège", "brand": "Arpège", "year": "1940s"}
-{"text": "Let's Go Krogering", "brand": "Kroger", "year": "1970s"}
+{"text": "Let's Go Krogering", "brand": "Kroger", "year": "1970s", "kind": "jingle"}
 {"text": "Fall into the Gap", "brand": "Gap", "year": "1970s"}
 {"text": "Get a Piece of the Rock", "brand": "Prudential", "year": "1970s"}
 {"text": "The Quality Goes In Before the Name Goes On", "brand": "Zenith", "year": "1950s"}

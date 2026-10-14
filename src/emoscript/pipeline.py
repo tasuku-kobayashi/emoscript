@@ -27,12 +27,14 @@ from .axis import (
     fit_multi_axis,
     l2_normalize,
     log_loss,
+    paired_auc_bootstrap_ci,
     score,
     score_per_axis,
+    wilson_interval,
 )
 from .dataio import DATA_DIR, load_corpus, texts
 from .embed import DEFAULT_MODEL, EmbedFn, prefix_for
-from .text import normalizer
+from .text import has_letters, normalizer
 
 NegativeKinds = tuple[str, ...]
 
@@ -103,13 +105,21 @@ class AxisModel:
         return self.calibrator.predict_proba(np.asarray(scores))
 
     def threshold_for(self, prob: float = 0.5) -> float | None:
-        """Raw score at which calibrated P(great) crosses ``prob`` (None if uncalibrated)."""
+        """Raw score at which calibrated P(great) crosses ``prob``.
+
+        None when uncalibrated or when the calibrator is degenerate (no usable slope).
+        """
         if self.calibrator is None:
             return None
-        return self.calibrator.score_at(prob)
+        t = self.calibrator.score_at(prob)
+        return None if np.isnan(t) else t
 
     # ---- persistence ----
-    def save(self, path: str | Path) -> None:
+    def save(self, path: str | Path) -> Path:
+        """Write the model; numpy appends ``.npz`` if missing, so the real path is returned."""
+        path = Path(path)
+        if path.suffix != ".npz":
+            path = Path(str(path) + ".npz")
         arrays: dict[str, np.ndarray] = {
             "axes": np.asarray(self.axes, dtype=np.float64),
             "model": np.asarray(self.model_name),
@@ -127,27 +137,28 @@ class AxisModel:
                 labels if labels is not None else np.zeros(len(self.exemplar_texts)), dtype=np.int32
             )
         np.savez_compressed(path, **arrays)
+        return path
 
     @classmethod
     def load(cls, path: str | Path) -> AxisModel:
-        blob = np.load(path, allow_pickle=False)
-        if "axes" in blob:
-            axes = np.asarray(blob["axes"], dtype=np.float64)
-        elif "axis" in blob:  # v0.1 artifact: a single axis vector
-            axes = np.asarray(blob["axis"], dtype=np.float64)[None, :]
-        else:
-            raise ValueError(f"{path}: not an emoscript axis file")
-        model_name = str(blob["model"]) if "model" in blob else DEFAULT_MODEL
-        prefix = str(blob["prefix"]) if "prefix" in blob else prefix_for(model_name)
-        meta = json.loads(str(blob["meta"])) if "meta" in blob else {}
-        calibrator = Calibrator.from_arrays(blob) if "calib_w" in blob else None
-        casing = str(blob["casing"]) if "casing" in blob else "none"
-        exemplars = exemplar_labels = None
-        exemplar_texts: list[str] = []
-        if "ex_E" in blob:
-            exemplars = np.asarray(blob["ex_E"], dtype=np.float64)
-            exemplar_texts = [str(t) for t in blob["ex_texts"]]
-            exemplar_labels = np.asarray(blob["ex_labels"], dtype=int)
+        with np.load(path, allow_pickle=False) as blob:
+            if "axes" in blob:
+                axes = np.asarray(blob["axes"], dtype=np.float64)
+            elif "axis" in blob:  # v0.1 artifact: a single axis vector
+                axes = np.asarray(blob["axis"], dtype=np.float64)[None, :]
+            else:
+                raise ValueError(f"{path}: not an emoscript axis file")
+            model_name = str(blob["model"]) if "model" in blob else DEFAULT_MODEL
+            prefix = str(blob["prefix"]) if "prefix" in blob else prefix_for(model_name)
+            meta = json.loads(str(blob["meta"])) if "meta" in blob else {}
+            calibrator = Calibrator.from_arrays(blob) if "calib_w" in blob else None
+            casing = str(blob["casing"]) if "casing" in blob else "none"
+            exemplars = exemplar_labels = None
+            exemplar_texts: list[str] = []
+            if "ex_E" in blob:
+                exemplars = np.asarray(blob["ex_E"], dtype=np.float64)
+                exemplar_texts = [str(t) for t in blob["ex_texts"]]
+                exemplar_labels = np.asarray(blob["ex_labels"], dtype=int)
         return cls(
             axes=axes,
             model_name=model_name,
@@ -224,6 +235,13 @@ def fit_from_embeddings(
     E_neg = l2_normalize(E_neg)
     if pos_texts is not None and len(pos_texts) != len(E_pos):
         raise ValueError("pos_texts must align with E_pos")
+    if k < 1:
+        raise ValueError("k must be >= 1")
+    if len(E_pos) < max(2, k) or len(E_neg) < 2:
+        raise ValueError(
+            f"need at least max(2, k)={max(2, k)} positives and 2 negatives, "
+            f"got {len(E_pos)} and {len(E_neg)}"
+        )
     axes, labels = fit_multi_axis(E_pos, E_neg, k, seed=seed)
     info: dict = {
         "k": int(k),
@@ -252,15 +270,21 @@ def fit_from_embeddings(
         calibrator = Calibrator().fit(oof_pos, oof_neg)
         p = calibrator.predict_proba(np.concatenate([oof_pos, oof_neg]))
         y = np.concatenate([np.ones(len(oof_pos)), np.zeros(len(oof_neg))])
+        threshold = calibrator.score_at(0.5)
         info["oof"] = {
             "auc": auc(oof_pos, oof_neg),
             "log_loss": log_loss(p, y),
             "brier": brier(p, y),
             "accuracy@0.5": accuracy(p, y),
-            "threshold@0.5": calibrator.score_at(0.5),
+            "threshold@0.5": None if np.isnan(threshold) else threshold,
+            "calibrator_slope": calibrator.slope,
             "pos_score_mean": float(oof_pos.mean()),
             "neg_score_mean": float(oof_neg.mean()),
         }
+        if not calibrator.slope > 1e-9:
+            info["warnings"] = info.get("warnings", []) + [
+                "calibrator is degenerate (non-positive slope): probabilities are not usable"
+            ]
     keep = keep_exemplars and pos_texts is not None
     return AxisModel(
         axes=axes,
@@ -314,7 +338,10 @@ def fit_from_corpus(
         model_name=model_name,
         prefix=prefix_for(model_name) if prefix is None else prefix,
         casing=casing,
-        meta={"negatives": list(negatives), "data_dir": str(Path(data_dir))},
+        meta={
+            "negatives": list(negatives),
+            "data_dir": "bundled" if Path(data_dir).resolve() == DATA_DIR.resolve() else str(data_dir),
+        },
         pos_texts=pos_raw,
         keep_exemplars=keep_exemplars,
     )
@@ -324,20 +351,41 @@ def fit_from_corpus(
 def score_texts(
     model: AxisModel, texts_: list[str], embed_fn: EmbedFn
 ) -> tuple[np.ndarray, np.ndarray | None]:
-    """Raw scores and calibrated probabilities (None when uncalibrated)."""
-    s = model.score(model.embed(texts_, embed_fn))
-    return s, model.predict_proba(s)
+    """Raw scores and calibrated probabilities (None when uncalibrated).
+
+    Inputs with no letters at all (empty, punctuation, numbers, emoji) are not
+    copy and get NaN instead of a score.
+    """
+    texts_ = list(texts_)
+    ok = np.array([has_letters(t) for t in texts_], dtype=bool)
+    s = np.full(len(texts_), np.nan)
+    if ok.any():
+        s[ok] = model.score(model.embed([t for t, o in zip(texts_, ok, strict=True) if o], embed_fn))
+    p = model.predict_proba(s) if model.calibrator is not None else None
+    return s, p
 
 
 # --------------------------------------------------------------------------- evaluation
 def evaluate(
-    model: AxisModel, embed_fn: EmbedFn, data_dir: str | Path = DATA_DIR, *, n_boot: int = 1000
+    model: AxisModel,
+    embed_fn: EmbedFn,
+    data_dir: str | Path = DATA_DIR,
+    *,
+    n_boot: int = 1000,
+    threshold: float = 0.5,
 ) -> dict:
     """Held-out evaluation on the *_test splits (never used for fitting).
 
-    ``auc["quotes"]`` is the quotability control: famous taglines vs famous
-    non-advertising lines. Near 0.5 means the axis measures memorability in
-    general rather than anything specific to advertising.
+    - ``auc[g]``: famous taglines vs group g. ``auc_ci95`` uses a brand-cluster
+      bootstrap for the taglines and a paired bootstrap for the topic-matched
+      rewrites.
+    - ``auc["quotes"]`` is the quotability control: famous taglines vs famous
+      non-advertising lines. Near 0.5 means the axis measures memorable writing
+      in general rather than anything specific to advertising.
+    - ``pass_rate[g]``: share of each group with calibrated p >= ``threshold``;
+      ``junk`` (placeholder / UI strings) should be close to 0.
+    - ``calibration`` is computed over taglines vs hard + generic + topic-matched
+      negatives (every bland group), not just the easy ones.
     """
     corpus = load_corpus(data_dir)
     groups = {
@@ -346,19 +394,27 @@ def evaluate(
         "generic": texts(corpus.generic_test),
         "topic_bland": [r["bland"] for r in corpus.contrast],
         "quotes": texts(corpus.quotes),
+        "junk": texts(corpus.junk),
     }
     S = {g: model.score(model.embed(t, embed_fn)) for g, t in groups.items() if t}
-    neg_groups = [g for g in ("hard", "generic", "topic_bland", "quotes") if g in S]
+    pos_brands = [r.get("brand", i) for i, r in enumerate(corpus.pos_test)]
+    neg_groups = [g for g in ("hard", "generic", "topic_bland", "quotes", "junk") if g in S]
     out: dict = {
         "n": {g: len(t) for g, t in groups.items()},
         "auc": {g: auc(S["pos"], S[g]) for g in neg_groups},
-        "auc_ci95": {g: auc_bootstrap_ci(S["pos"], S[g], n_boot=n_boot) for g in neg_groups},
+        "auc_ci95": {},
         "score_mean": {g: float(s.mean()) for g, s in S.items()},
     }
-    if corpus.contrast and "topic_bland" in S:
-        famous_score = dict(zip(groups["pos"], S["pos"], strict=True))
-        wins = [famous_score[r["famous"]] > s for r, s in zip(corpus.contrast, S["topic_bland"], strict=True)]
-        out["contrast_pair_win_rate"] = float(np.mean(wins))
+    for g in neg_groups:
+        if g == "topic_bland" and len(S[g]) == len(S["pos"]):
+            famous_by_text = dict(zip(groups["pos"], S["pos"], strict=True))
+            fam = np.array([famous_by_text[r["famous"]] for r in corpus.contrast])
+            out["auc_ci95"][g] = paired_auc_bootstrap_ci(fam, S[g], n_boot=n_boot)
+            wins = int((fam > S[g]).sum())
+            out["contrast_pair_win_rate"] = wins / len(fam)
+            out["contrast_pair_win_ci95"] = wilson_interval(wins, len(fam))
+        else:
+            out["auc_ci95"][g] = auc_bootstrap_ci(S["pos"], S[g], pos_groups=pos_brands, n_boot=n_boot)
     # length breakdown of held-out positives (word count)
     lengths = np.array([len(t.split()) for t in groups["pos"]])
     buckets = (
@@ -373,13 +429,17 @@ def evaluate(
                 "auc": auc(S["pos"][mask], S["hard"]),
             }
     if model.calibrator is not None:
-        negs = np.concatenate([S[g] for g in ("hard", "generic") if g in S])
+        P = {g: model.predict_proba(s) for g, s in S.items()}
+        out["pass_rate"] = {g: float((p >= threshold).mean()) for g, p in P.items()}
+        bland = [g for g in ("hard", "generic", "topic_bland") if g in S]
+        negs = np.concatenate([S[g] for g in bland])
         p = model.predict_proba(np.concatenate([S["pos"], negs]))
         y = np.concatenate([np.ones(len(S["pos"])), np.zeros(len(negs))])
         out["calibration"] = {
+            "negatives": bland,
             "log_loss": log_loss(p, y),
             "brier": brier(p, y),
-            "accuracy@0.5": accuracy(p, y),
+            "accuracy@0.5": accuracy(p, y, threshold),
             "threshold@0.5": model.threshold_for(0.5),
         }
     return out

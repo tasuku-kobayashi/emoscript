@@ -9,6 +9,11 @@ Files are JSONL, one object per line:
   rewrite of every held-out tagline (for the topic-vs-style experiment)
 - ``quotes_test.jsonl``                   {"text", "source"}          famous proverbs and
   literary / historical lines that are not advertising (quotability control)
+- ``junk_test.jsonl``                     {"text"}                    placeholder and UI
+  strings ("Lorem Ipsum", "Page Not Found") that a usable scorer must reject
+
+Positive rows may carry ``"kind"`` (tagline by default; headline, jingle,
+motto, poster, billing) so that non-tagline classics stay identifiable.
 """
 
 from __future__ import annotations
@@ -29,7 +34,9 @@ NEGATIVE_SPLITS = (
 )
 CONTRAST_SPLIT = "contrast_pairs_test"
 QUOTES_SPLIT = "quotes_test"  # famous lines that are *not* ads: the quotability control
-ALL_SPLITS = POSITIVE_SPLITS + NEGATIVE_SPLITS + (CONTRAST_SPLIT, QUOTES_SPLIT)
+JUNK_SPLIT = "junk_test"  # placeholder / UI strings that must never pass
+ALL_SPLITS = POSITIVE_SPLITS + NEGATIVE_SPLITS + (CONTRAST_SPLIT, QUOTES_SPLIT, JUNK_SPLIT)
+KINDS = ("tagline", "headline", "jingle", "motto", "poster", "billing")
 
 NEAR_DUPLICATE_JACCARD = 0.7
 
@@ -67,6 +74,7 @@ class Corpus:
     generic_test: list[dict]
     contrast: list[dict] = field(default_factory=list)
     quotes: list[dict] = field(default_factory=list)
+    junk: list[dict] = field(default_factory=list)
 
     def negatives_train(self, kinds: tuple[str, ...] = ("hard", "generic")) -> list[dict]:
         out: list[dict] = []
@@ -81,6 +89,7 @@ def load_corpus(data_dir: str | Path = DATA_DIR) -> Corpus:
     data_dir = Path(data_dir)
     contrast_path = data_dir / f"{CONTRAST_SPLIT}.jsonl"
     quotes_path = data_dir / f"{QUOTES_SPLIT}.jsonl"
+    junk_path = data_dir / f"{JUNK_SPLIT}.jsonl"
     return Corpus(
         pos_train=load_split("slogans_train", data_dir),
         hard_train=load_split("negatives_hard_train", data_dir),
@@ -90,6 +99,7 @@ def load_corpus(data_dir: str | Path = DATA_DIR) -> Corpus:
         generic_test=load_split("negatives_generic_test", data_dir),
         contrast=load_jsonl(contrast_path) if contrast_path.exists() else [],
         quotes=load_jsonl(quotes_path) if quotes_path.exists() else [],
+        junk=load_jsonl(junk_path) if junk_path.exists() else [],
     )
 
 
@@ -152,6 +162,8 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
             seen.add(t)
             if name in POSITIVE_SPLITS and "year" in r and not _valid_year(r["year"]):
                 problems.append(f"{name}:{i}: bad year {r['year']!r} (int or 'YYY0s')")
+            if name in POSITIVE_SPLITS and r.get("kind", "tagline") not in KINDS:
+                problems.append(f"{name}:{i}: unknown kind {r['kind']!r} (one of {', '.join(KINDS)})")
 
     check_rows("slogans_train", ("text", "brand", "year"))
     check_rows("slogans_test", ("text", "brand", "year"))
@@ -159,10 +171,15 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
         check_rows(name, ("text",))
     check_rows(CONTRAST_SPLIT, ("famous", "bland", "brand"), text_key="bland")
     check_rows(QUOTES_SPLIT, ("text", "source"))
+    check_rows(JUNK_SPLIT, ("text",))
     positives = {r.get("text") for n in POSITIVE_SPLITS for r in splits.get(n, [])}
+    negatives_all = {r.get("text") for n in NEGATIVE_SPLITS for r in splits.get(n, [])}
     for r in splits.get(QUOTES_SPLIT, []):
         if r.get("text") in positives:
             problems.append(f"{QUOTES_SPLIT}: quote is also a tagline: {r['text']!r}")
+    for r in splits.get(JUNK_SPLIT, []):
+        if r.get("text") in positives or r.get("text") in negatives_all:
+            problems.append(f"{JUNK_SPLIT}: junk line also in another split: {r['text']!r}")
 
     def cross_check(train: str, test: str) -> None:
         tr = [r["text"] for r in splits.get(train, []) if isinstance(r.get("text"), str)]
@@ -197,3 +214,46 @@ def validate_corpus(data_dir: str | Path = DATA_DIR) -> list[str]:
                 problems.append(f"{CONTRAST_SPLIT}: bland line also in a negatives split: {r['bland']!r}")
 
     return problems
+
+
+_STOP = frozenset(
+    (
+        "a an the and or of to in on for with you your our we it its is are be by at from this that as not"
+    ).split()
+)
+
+
+def _content(s: str) -> frozenset[str]:
+    return frozenset(t for t in _TOKEN.findall(s.lower()) if t not in _STOP)
+
+
+def corpus_warnings(data_dir: str | Path = DATA_DIR, threshold: float = 0.5) -> list[str]:
+    """Softer checks that do not fail the corpus but deserve a look.
+
+    Reports pairs whose *content-word* Jaccard is >= ``threshold``: a famous
+    line next to a negative (the negative may be an accidental paraphrase of a
+    tagline) and train/test siblings below the hard near-duplicate cut-off.
+    """
+    corpus = load_corpus(data_dir)
+    out: list[str] = []
+    pos = [(r["text"], "train") for r in corpus.pos_train] + [(r["text"], "test") for r in corpus.pos_test]
+    neg = (
+        [(r["text"], "hard") for r in corpus.hard_train + corpus.hard_test]
+        + [(r["text"], "generic") for r in corpus.generic_train + corpus.generic_test]
+        + [(r["bland"], "contrast") for r in corpus.contrast]
+    )
+    for pt, ps in pos:
+        cp = _content(pt)
+        if not cp:
+            continue
+        for nt, ns in neg:
+            cn = _content(nt)
+            if cn and len(cp & cn) / len(cp | cn) >= threshold:
+                out.append(f"positive/{ps} vs {ns} negative share content words: {pt!r} / {nt!r}")
+    for a, _ in [p for p in pos if p[1] == "train"]:
+        ca = _content(a)
+        for b, _ in [p for p in pos if p[1] == "test"]:
+            cb = _content(b)
+            if ca and cb and len(ca & cb) / len(ca | cb) >= threshold:
+                out.append(f"train/test taglines share content words: {a!r} / {b!r}")
+    return out

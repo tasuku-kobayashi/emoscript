@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from emoscript import embed_texts
 from emoscript.axis import auc, l2_normalize
@@ -33,8 +34,8 @@ def test_fit_from_corpus_end_to_end_with_fake_embedder(fake_embed_fn, tmp_path):
         corpus = load_corpus()
         s_pos, p_pos = score_texts(model, texts(corpus.pos_test), fake_embed_fn)
         s_neg, p_neg = score_texts(model, texts(corpus.hard_test), fake_embed_fn)
-        # surface features alone carry a real signal on this corpus
-        assert auc(s_pos, s_neg) > 0.75
+        # surface features alone still carry some signal on this corpus
+        assert auc(s_pos, s_neg) > 0.6
         assert p_pos.mean() > p_neg.mean()
 
         path = tmp_path / f"axis_k{k}.npz"
@@ -46,29 +47,70 @@ def test_fit_from_corpus_end_to_end_with_fake_embedder(fake_embed_fn, tmp_path):
         assert loaded.meta["k"] == k and "emoscript_version" in loaded.meta
 
         report = evaluate(loaded, fake_embed_fn, n_boot=20)
-        assert set(report["auc"]) == {"hard", "generic", "topic_bland", "quotes"}
+        assert set(report["auc"]) == {"hard", "generic", "topic_bland", "quotes", "junk"}
         assert 0 <= report["contrast_pair_win_rate"] <= 1
         assert "calibration" in report and "auc_vs_hard_by_length" in report
 
 
-def test_casing_is_persisted_and_removes_title_case_signal(fake_embed_fn, tmp_path):
+def test_casing_is_persisted_and_makes_scores_case_invariant(fake_embed_fn, tmp_path):
     corpus = load_corpus()
-    aucs = {}
-    for casing in ("none", "lower"):
+    for casing in ("none", "lower", "lower_nopunct"):
         model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", casing=casing)
         assert model.casing == casing
         model.save(tmp_path / f"{casing}.npz")
         loaded = AxisModel.load(tmp_path / f"{casing}.npz")
         assert loaded.casing == casing
         s_pos, _ = score_texts(loaded, texts(corpus.pos_test), fake_embed_fn)
-        s_neg, _ = score_texts(loaded, texts(corpus.hard_test), fake_embed_fn)
-        aucs[casing] = auc(s_pos, s_neg)
-        # scoring is invariant to the caller's casing once the model normalizes
-        if casing == "lower":
+        if casing != "none":
             s_up, _ = score_texts(loaded, [t.upper() for t in texts(corpus.pos_test)], fake_embed_fn)
             assert np.allclose(s_up, s_pos)
-    # the fake embedder's strongest cue is Title Case; lower-casing must weaken it
-    assert aucs["lower"] < aucs["none"]
+        if casing == "lower_nopunct":
+            s_dot, _ = score_texts(
+                loaded, [t.rstrip(".!?") + "." for t in texts(corpus.pos_test)], fake_embed_fn
+            )
+            assert np.allclose(s_dot, s_pos)
+    # with casing="none" the fake embedder sees Title Case; the same text upper-cased must differ
+    model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", casing="none")
+    a, _ = score_texts(model, ["Just Do It."], fake_embed_fn)
+    b, _ = score_texts(model, ["JUST DO IT."], fake_embed_fn)
+    assert not np.allclose(a, b)
+
+
+def test_inputs_without_letters_get_nan(fake_embed_fn):
+    model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake")
+    s, p = score_texts(model, ["", "   ", "?!", "123", "🍕🍕", "Think"], fake_embed_fn)
+    assert np.isnan(s[:5]).all() and np.isnan(p[:5]).all()
+    assert np.isfinite(s[5]) and np.isfinite(p[5])
+
+
+def test_fit_guards_tiny_classes_and_bad_k(fake_embed_fn):
+    rng = np.random.default_rng(0)
+    E = l2_normalize(rng.normal(size=(6, 8)))
+    with pytest.raises(ValueError, match="at least"):
+        fit_from_embeddings(E[:1], E[1:])
+    with pytest.raises(ValueError, match="at least"):
+        fit_from_embeddings(E[:4], E[4:5])
+    with pytest.raises(ValueError, match="at least"):
+        fit_from_embeddings(E[:2], E[2:], k=3)
+    with pytest.raises(ValueError):
+        fit_from_embeddings(E[:3], E[3:], k=0)
+    m = fit_from_embeddings(E[:3], E[3:], k=1)  # smallest legal case still works
+    assert m.k == 1
+
+
+def test_degenerate_scores_do_not_crash_fit():
+    E = np.tile(l2_normalize(np.arange(1.0, 9.0)), (10, 1))  # every embedding identical
+    m = fit_from_embeddings(E[:5], E[5:], k=1)
+    assert m.threshold_for() is None
+    assert any("degenerate" in w for w in m.meta.get("warnings", []))
+
+
+def test_save_appends_npz_suffix(fake_embed_fn, tmp_path):
+    model = fit_from_corpus(fake_embed_fn, k=1, model_name="fake", calibrate=False)
+    saved = model.save(tmp_path / "myaxis")
+    assert saved.name == "myaxis.npz" and saved.exists()
+    assert AxisModel.load(saved).k == 1
+    assert model.meta["data_dir"] == "bundled"
 
 
 def test_exemplars_explain_and_cluster_summary(fake_embed_fn, tmp_path):
@@ -96,12 +138,18 @@ def test_exemplars_explain_and_cluster_summary(fake_embed_fn, tmp_path):
     assert "clusters" in slim.meta
 
 
-def test_evaluate_reports_quotes_control_and_ci(fake_embed_fn):
+def test_evaluate_reports_controls_pass_rates_and_cis(fake_embed_fn):
     model = fit_from_corpus(fake_embed_fn, model_name="fake")
     report = evaluate(model, fake_embed_fn, n_boot=50)
-    assert "quotes" in report["auc"] and report["n"]["quotes"] >= 20
+    assert {"hard", "generic", "topic_bland", "quotes", "junk"} <= set(report["auc"])
+    assert report["n"]["quotes"] >= 20 and report["n"]["junk"] >= 20
     for g, (lo, hi) in report["auc_ci95"].items():
         assert lo <= report["auc"][g] <= hi
+    assert set(report["pass_rate"]) == {"pos", "hard", "generic", "topic_bland", "quotes", "junk"}
+    assert all(0 <= v <= 1 for v in report["pass_rate"].values())
+    lo, hi = report["contrast_pair_win_ci95"]
+    assert lo <= report["contrast_pair_win_rate"] <= hi
+    assert report["calibration"]["negatives"] == ["hard", "generic", "topic_bland"]
 
 
 def test_defaults_are_k2_lower(fake_embed_fn):

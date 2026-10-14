@@ -10,6 +10,13 @@ Everything is fitted on the *_train splits and evaluated on the *_test splits
   kNN reference: mean cosine to the 5 nearest training positives minus the
       5 nearest training negatives (not an axis; a sanity ceiling for the
       corpus, used to judge how much the single direction gives up)
+  surface reference: a logistic regression on six cheap features of the raw
+      text (length, words, final full stop, apostrophe, word length, Title
+      Case ratio). If the axis does not beat this row, it has learned
+      typography, not writing.
+
+Also reported: the PASS rate per group for calibrated variants (junk must be
+near 0), and the quotability control (famous taglines vs famous non-ad lines).
 
 Reports, per variant: AUC of held-out taglines vs hard negatives, vs generic
 prose, vs *topic-matched* bland rewrites of the same taglines (the style-vs-
@@ -36,6 +43,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import numpy as np  # noqa: E402
 
 from emoscript.axis import (  # noqa: E402
+    Calibrator,
     accuracy,
     auc,
     auc_bootstrap_ci,
@@ -44,18 +52,22 @@ from emoscript.axis import (  # noqa: E402
     fit_mean_axis,
     l2_normalize,
     log_loss,
+    paired_auc_bootstrap_ci,
     score,
+    wilson_interval,
 )
 from emoscript.dataio import DATA_DIR, load_corpus, texts  # noqa: E402
 from emoscript.embed import DEFAULT_MODEL, make_embed_fn  # noqa: E402
 from emoscript.pipeline import fit_from_embeddings  # noqa: E402
 from emoscript.text import CASINGS, normalizer  # noqa: E402
 
+# Probes are illustrative only (not metrics). They are new lines, not paraphrases of corpus entries.
 PROBES = [
-    ("Think fresh.", "coined, punchy"),
+    ("Sleep like you mean it.", "coined, punchy"),
+    ("The sofa that forgives.", "coined, concrete image"),
+    ("Comfort, redefined for modern living.", "bland ad-speak"),
     ("We sell high quality furniture at low prices.", "bland ad-speak"),
-    ("To be or not to be, that is the question.", "great writing, not ad copy"),
-    ("Melts in your mouth, not in your funnel.", "parody of a famous line"),
+    ("Lorem Ipsum", "placeholder"),
 ]
 
 
@@ -85,9 +97,11 @@ def run(
         "gen_te": texts(corpus.generic_test),
         "topic_te": [r["bland"] for r in corpus.contrast],
         "quotes": texts(corpus.quotes),
+        "junk": texts(corpus.junk),
         "probe": [p for p, _ in PROBES],
     }
     groups = {g: ts for g, ts in groups.items() if ts}
+    pos_brands = [r["brand"] for r in corpus.pos_test]
     all_texts = norm([t for g in groups.values() for t in g])
     E_all = l2_normalize(embed_fn(all_texts))
     E: dict[str, np.ndarray] = {}
@@ -102,9 +116,12 @@ def run(
     def add_variant(name: str, axes: np.ndarray, calibrator=None, oof=None, scorer=None):
         scorer = scorer or (lambda X: score(X, axes))
         s = {
-            g: scorer(E[g]) for g in ("pos_te", "hard_te", "gen_te", "topic_te", "quotes", "probe") if g in E
+            g: scorer(E[g])
+            for g in ("pos_te", "hard_te", "gen_te", "topic_te", "quotes", "junk", "probe")
+            if g in E
         }
         famous_score = dict(zip(groups["pos_te"], s["pos_te"], strict=True))
+        fam_paired = np.array([famous_score[r["famous"]] for r in corpus.contrast])
         wins = [famous_score[r["famous"]] > sc for r, sc in zip(corpus.contrast, s["topic_te"], strict=True)]
         buckets = {}
         for b in ("short<=4w", "mid5-7w", "long>=8w"):
@@ -117,12 +134,17 @@ def run(
             "auc_vs_generic": auc(s["pos_te"], s["gen_te"]),
             "auc_vs_topic_bland": auc(s["pos_te"], s["topic_te"]),
             "auc_vs_quotes": auc(s["pos_te"], s["quotes"]) if "quotes" in s else None,
+            "auc_vs_junk": auc(s["pos_te"], s["junk"]) if "junk" in s else None,
             "auc_ci95": {
-                g: auc_bootstrap_ci(s["pos_te"], s[g], n_boot=n_boot)
-                for g in ("hard_te", "gen_te", "topic_te", "quotes")
-                if g in s
+                **{
+                    g: auc_bootstrap_ci(s["pos_te"], s[g], pos_groups=pos_brands, n_boot=n_boot)
+                    for g in ("hard_te", "gen_te", "quotes", "junk")
+                    if g in s
+                },
+                "topic_te": paired_auc_bootstrap_ci(fam_paired, s["topic_te"], n_boot=n_boot),
             },
             "topic_pair_win_rate": float(np.mean(wins)),
+            "topic_pair_win_ci95": wilson_interval(int(np.sum(wins)), len(wins)),
             "by_length": buckets,
             "mean": {g: float(sc.mean()) for g, sc in s.items()},
             "min_pos": float(s["pos_te"].min()),
@@ -138,19 +160,51 @@ def run(
             ],
         }
         if calibrator is not None:
-            negs = np.concatenate([s["hard_te"], s["gen_te"]])
+            negs = np.concatenate([s["hard_te"], s["gen_te"], s["topic_te"]])
             p = calibrator.predict_proba(np.concatenate([s["pos_te"], negs]))
             y = np.concatenate([np.ones(len(s["pos_te"])), np.zeros(len(negs))])
             v["calibration"] = {
                 "oof_train": oof,
+                "negatives": "hard+generic+topic",
                 "test_log_loss": log_loss(p, y),
                 "test_brier": brier(p, y),
                 "test_accuracy@0.5": accuracy(p, y),
                 "threshold@0.5": calibrator.score_at(0.5),
             }
+            v["pass_rate@0.5"] = {
+                g: float((calibrator.predict_proba(sc) >= 0.5).mean()) for g, sc in s.items() if g != "probe"
+            }
         variants[name] = v
         return s
 
+    def surface_features(ts: list[str]) -> np.ndarray:
+        rows_ = []
+        for t in ts:
+            words = t.split()
+            n = max(len(words), 1)
+            rows_.append(
+                [
+                    len(t) / 100,
+                    len(words) / 20,
+                    float(t.rstrip().endswith(".")),
+                    float("'" in t),
+                    (sum(len(w) for w in words) / n) / 10,
+                    sum(w[:1].isupper() for w in words) / n,
+                ]
+            )
+        return np.array(rows_)
+
+    surface = Calibrator(l2=1.0).fit(
+        surface_features(groups["pos_tr"]),
+        surface_features(groups["hard_tr"] + groups["gen_tr"]),
+    )
+    group_of_matrix = {id(E[g]): g for g in E}
+
+    def surface_scorer(X: np.ndarray) -> np.ndarray:
+        # scored on the RAW text of the same group (before any normalization)
+        return surface.predict_proba(surface_features(groups[group_of_matrix[id(X)]]))
+
+    add_variant("surface features on raw text (not an axis)", None, scorer=surface_scorer)
     add_variant("M1 centroid", fit_mean_axis(E["pos_tr"]))
 
     def knn_scorer(X: np.ndarray, kk: int = 5) -> np.ndarray:
@@ -182,6 +236,9 @@ def run(
             "quotes": list(
                 zip(groups.get("quotes", []), map(float, ranking_scores.get("quotes", [])), strict=True)
             ),
+            "junk": list(
+                zip(groups.get("junk", []), map(float, ranking_scores.get("junk", [])), strict=True)
+            ),
             "probe": list(zip(groups["probe"], map(float, ranking_scores["probe"]), strict=True)),
         },
     }
@@ -209,7 +266,14 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
         )
         if v.get("auc_vs_quotes") is not None:
             line += f"\n  quotability control (vs famous non-ad quotes) {fmt('auc_vs_quotes', 'quotes')}"
+        if v.get("auc_vs_junk") is not None:
+            line += f"   vs junk {fmt('auc_vs_junk', 'junk')}"
+        lo, hi = v["topic_pair_win_ci95"]
+        line += f"\n  pair win rate 95% Wilson [{lo:.2f},{hi:.2f}]"
         print(line)
+        if "pass_rate@0.5" in v:
+            rates = "  ".join(f"{g} {r:.2f}" for g, r in v["pass_rate@0.5"].items())
+            print(f"  PASS rate at p>=0.5: {rates}")
         print(
             "  by length: "
             + "   ".join(f"{b} n={d['n']} AUC {d['auc_vs_hard']:.3f}" for b, d in v["by_length"].items())
@@ -238,6 +302,7 @@ def print_report(res: dict, show_ranking: bool = True) -> None:
             "gen_te": "prose ",
             "topic_te": "topic ",
             "quotes": "quote ",
+            "junk": "junk  ",
             "probe": "probe ",
         }
         rows = sorted(((t, g, s) for g, rows_ in r.items() for t, s in rows_), key=lambda x: -x[2])

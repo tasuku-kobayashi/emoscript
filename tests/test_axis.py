@@ -135,6 +135,69 @@ def test_auc_bootstrap_ci_brackets_point_estimate_and_narrows_with_n():
     assert (hi_b - lo_b) < (hi_s - lo_s)
 
 
+def test_multi_axis_uses_raw_cluster_means_not_unit_centres():
+    from emoscript.axis import kmeans
+
+    rng = np.random.default_rng(5)
+    base = l2_normalize(rng.normal(size=16))
+    pos = l2_normalize(base + rng.normal(scale=0.3, size=(40, 16)))
+    neg = l2_normalize(base + rng.normal(scale=0.3, size=(30, 16)))
+    axes, labels = fit_multi_axis(pos, neg, 2, seed=0)
+    for c in range(2):
+        expect = l2_normalize(pos[labels == c].mean(axis=0) - neg.mean(axis=0))
+        assert np.allclose(axes[c], expect)
+    # the general k-means path at k=1 equals the diff axis exactly
+    _, lab1, _ = kmeans(pos, 1)
+    assert np.allclose(l2_normalize(pos[lab1 == 0].mean(0) - neg.mean(0)), fit_diff_axis(pos, neg))
+    # axes do not lean along the common direction more than the diff axis does
+    common = l2_normalize(np.vstack([pos, neg]).mean(axis=0))
+    assert abs(axes @ common).max() < abs(fit_diff_axis(pos, neg) @ common) + 0.2
+
+
+def test_kmeans_reseeds_empty_clusters_with_distinct_points():
+    X = np.vstack([np.ones((5, 3)), np.zeros((2, 3)), np.full((1, 3), 0.5)])
+    _, labels, _ = kmeans(X, 4, n_init=3, spherical=False)
+    assert len(set(labels)) == 4
+
+
+def test_auc_rejects_nan():
+    with pytest.raises(ValueError, match="NaN"):
+        auc(np.array([0.1, np.nan]), np.array([0.0]))
+
+
+def test_bootstrap_variants_and_wilson():
+    from emoscript.axis import auc_bootstrap_ci, paired_auc_bootstrap_ci, wilson_interval
+
+    rng = np.random.default_rng(0)
+    p, n = rng.normal(0.3, 0.1, 40), rng.normal(0.1, 0.1, 40)
+    groups = np.repeat(np.arange(8), 5)  # 8 "brands" of 5 lines each
+    lo, hi = auc_bootstrap_ci(p, n, pos_groups=groups, n_boot=200)
+    assert lo <= auc(p, n) <= hi
+    lo2, hi2 = paired_auc_bootstrap_ci(p, n, n_boot=200)
+    assert lo2 <= auc(p, n) <= hi2
+    with pytest.raises(ValueError):
+        paired_auc_bootstrap_ci(p, n[:10])
+    lo, hi = wilson_interval(60, 67)
+    assert 0.79 < lo < 0.895 < hi < 0.95
+    assert wilson_interval(0, 10)[0] == 0.0 and wilson_interval(10, 10)[1] == 1.0
+
+
+def test_calibrator_balanced_weights_and_degenerate_slope():
+    rng = np.random.default_rng(1)
+    pos, neg = rng.normal(0.3, 0.05, 300), rng.normal(0.1, 0.05, 30)
+    balanced = Calibrator().fit(pos, neg)
+    unbalanced = Calibrator(balanced=False).fit(pos, neg)
+    # with a 10:1 class ratio the unbalanced threshold is pulled toward the negatives
+    assert balanced.score_at(0.5) > unbalanced.score_at(0.5)
+    assert abs(balanced.score_at(0.5) - 0.2) < 0.03
+    flat = Calibrator().fit(np.full(10, 0.3), np.full(10, 0.3))
+    assert np.isnan(flat.score_at(0.5))
+    with pytest.raises(ValueError):
+        Calibrator().fit(np.array([0.1]), neg)
+    with pytest.raises(ValueError):
+        balanced.score_at(1.0)
+
+
 def test_metric_sanity():
     y = np.array([1, 1, 0, 0])
     perfect = np.array([1.0, 1.0, 0.0, 0.0])

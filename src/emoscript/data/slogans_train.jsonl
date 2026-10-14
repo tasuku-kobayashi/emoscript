@@ -1,7 +1,7 @@
 {"text": "Just Do It.", "brand": "Nike", "year": 1988}
 {"text": "Think Different.", "brand": "Apple", "year": 1997}
 {"text": "I'm Lovin' It", "brand": "McDonald's", "year": 2003}
-{"text": "Because You're Worth It", "brand": "L'Oréal", "year": 1967}
+{"text": "Because You're Worth It", "brand": "L'Oréal", "year": 1971}
 {"text": "The Ultimate Driving Machine", "brand": "BMW", "year": 1974}
 {"text": "A Diamond Is Forever", "brand": "De Beers", "year": 1947}
 {"text": "Melts in Your Mouth, Not in Your Hands", "brand": "M&M's", "year": 1954}
@@ -20,14 +20,14 @@
 {"text": "We Try Harder.", "brand": "Avis", "year": 1962}
 {"text": "It Takes a Licking and Keeps on Ticking", "brand": "Timex", "year": 1956}
 {"text": "Good to the Last Drop", "brand": "Maxwell House", "year": 1917}
-{"text": "Breakfast of Champions", "brand": "Wheaties", "year": 1927}
-{"text": "The King of Beers", "brand": "Budweiser", "year": 1876}
+{"text": "Breakfast of Champions", "brand": "Wheaties", "year": 1933}
+{"text": "The King of Beers", "brand": "Budweiser", "year": "1890s"}
 {"text": "When It Absolutely, Positively Has to Be There Overnight", "brand": "FedEx", "year": 1978}
 {"text": "Let Your Fingers Do the Walking", "brand": "Yellow Pages", "year": 1962}
 {"text": "Nothing Runs Like a Deere", "brand": "John Deere", "year": 1971}
-{"text": "Like a Good Neighbor, State Farm Is There", "brand": "State Farm", "year": 1971}
+{"text": "Like a Good Neighbor, State Farm Is There", "brand": "State Farm", "year": 1971, "kind": "jingle"}
 {"text": "Betcha Can't Eat Just One", "brand": "Lay's", "year": 1963}
-{"text": "Snap! Crackle! Pop!", "brand": "Rice Krispies", "year": 1932}
+{"text": "Snap! Crackle! Pop!", "brand": "Rice Krispies", "year": 1932, "kind": "jingle"}
 {"text": "Drivers Wanted.", "brand": "Volkswagen", "year": 1995}
 {"text": "Don't Leave Home Without It.", "brand": "American Express", "year": 1975}
 {"text": "The Quicker Picker Upper", "brand": "Bounty", "year": 1965}
@@ -37,31 +37,31 @@
 {"text": "Every Little Helps", "brand": "Tesco", "year": 1993}
 {"text": "You're Not You When You're Hungry", "brand": "Snickers", "year": 2010}
 {"text": "Save Money. Live Better.", "brand": "Walmart", "year": 2007}
-{"text": "Challenge Everything.", "brand": "EA Sports", "year": 2000}
+{"text": "Challenge Everything.", "brand": "Electronic Arts", "year": 2000}
 {"text": "You Deserve a Break Today", "brand": "McDonald's", "year": 1971}
-{"text": "Two All-Beef Patties, Special Sauce, Lettuce, Cheese, Pickles, Onions on a Sesame Seed Bun", "brand": "McDonald's", "year": 1974}
+{"text": "Two All-Beef Patties, Special Sauce, Lettuce, Cheese, Pickles, Onions on a Sesame Seed Bun", "brand": "McDonald's", "year": 1974, "kind": "jingle"}
 {"text": "Have It Your Way", "brand": "Burger King", "year": 1974}
 {"text": "Eat Mor Chikin", "brand": "Chick-fil-A", "year": 1995}
 {"text": "Think Outside the Bun", "brand": "Taco Bell", "year": 2001}
 {"text": "Pizza! Pizza!", "brand": "Little Caesars", "year": 1979}
 {"text": "When You're Here, You're Family", "brand": "Olive Garden", "year": 1998}
 {"text": "Nothing Says Lovin' Like Something from the Oven", "brand": "Pillsbury", "year": 1957}
-{"text": "The Best Part of Wakin' Up Is Folgers in Your Cup", "brand": "Folgers", "year": 1984}
-{"text": "Nobody Doesn't Like Sara Lee", "brand": "Sara Lee", "year": 1968}
-{"text": "Double Your Pleasure, Double Your Fun", "brand": "Wrigley's Doublemint", "year": 1959}
+{"text": "The Best Part of Wakin' Up Is Folgers in Your Cup", "brand": "Folgers", "year": 1984, "kind": "jingle"}
+{"text": "Nobody Doesn't Like Sara Lee", "brand": "Sara Lee", "year": 1968, "kind": "jingle"}
+{"text": "Double Your Pleasure, Double Your Fun", "brand": "Wrigley's Doublemint", "year": 1959, "kind": "jingle"}
 {"text": "They're Grrreat!", "brand": "Kellogg's Frosted Flakes", "year": 1952}
 {"text": "Silly Rabbit, Trix Are for Kids", "brand": "Trix", "year": 1959}
 {"text": "Kid Tested. Mother Approved.", "brand": "Kix", "year": 1978}
 {"text": "They're Magically Delicious", "brand": "Lucky Charms", "year": 1964}
 {"text": "Leggo My Eggo", "brand": "Eggo", "year": 1972}
 {"text": "Milk's Favorite Cookie", "brand": "Oreo", "year": 2004}
-{"text": "Sometimes You Feel Like a Nut, Sometimes You Don't", "brand": "Almond Joy & Mounds", "year": 1977}
-{"text": "Gimme a Break", "brand": "Kit Kat", "year": 1986}
+{"text": "Sometimes You Feel Like a Nut, Sometimes You Don't", "brand": "Almond Joy & Mounds", "year": 1977, "kind": "jingle"}
+{"text": "Gimme a Break", "brand": "Kit Kat", "year": 1986, "kind": "jingle"}
 {"text": "Not Going Anywhere for a While? Grab a Snickers.", "brand": "Snickers", "year": "1990s"}
-{"text": "Uh-Oh, SpaghettiOs", "brand": "SpaghettiOs", "year": "1960s"}
+{"text": "Uh-Oh, SpaghettiOs", "brand": "SpaghettiOs", "year": "1960s", "kind": "jingle"}
 {"text": "Soup Is Good Food", "brand": "Campbell's", "year": 1980}
 {"text": "The Great American Chocolate Bar", "brand": "Hershey's", "year": "1970s"}
-{"text": "Oh Thank Heaven for 7-Eleven", "brand": "7-Eleven", "year": 1969}
+{"text": "Oh Thank Heaven for 7-Eleven", "brand": "7-Eleven", "year": 1969, "kind": "jingle"}
 {"text": "Beef. It's What's for Dinner.", "brand": "Beef Checkoff", "year": 1992}
 {"text": "Pork. The Other White Meat.", "brand": "National Pork Board", "year": 1987}
 {"text": "The Incredible, Edible Egg", "brand": "American Egg Board", "year": 1977}
@@ -71,7 +71,7 @@
 {"text": "Do the Dew", "brand": "Mountain Dew", "year": 1993}
 {"text": "The Uncola", "brand": "7 Up", "year": 1967}
 {"text": "Guinness Is Good for You", "brand": "Guinness", "year": 1929}
-{"text": "My Goodness, My Guinness", "brand": "Guinness", "year": 1935}
+{"text": "My Goodness, My Guinness", "brand": "Guinness", "year": 1935, "kind": "jingle"}
 {"text": "Good Things Come to Those Who Wait", "brand": "Guinness", "year": 1996}
 {"text": "Reassuringly Expensive", "brand": "Stella Artois", "year": 1982}
 {"text": "Probably the Best Beer in the World", "brand": "Carlsberg", "year": 1973}
@@ -96,7 +96,7 @@
 {"text": "Rip. Mix. Burn.", "brand": "Apple", "year": 2001}
 {"text": "There's an App for That", "brand": "Apple", "year": 2009}
 {"text": "Intel Inside", "brand": "Intel", "year": 1991}
-{"text": "Think", "brand": "IBM", "year": 1914}
+{"text": "Think", "brand": "IBM", "year": 1914, "kind": "motto"}
 {"text": "Connecting People", "brand": "Nokia", "year": 1992}
 {"text": "Where Do You Want to Go Today?", "brand": "Microsoft", "year": 1994}
 {"text": "Broadcast Yourself", "brand": "YouTube", "year": 2005}
@@ -114,7 +114,7 @@
 {"text": "We Bring Good Things to Life", "brand": "General Electric", "year": 1979}
 {"text": "Imagination at Work", "brand": "General Electric", "year": 2003}
 {"text": "Keeps Going and Going and Going", "brand": "Energizer", "year": 1989}
-{"text": "Lemon.", "brand": "Volkswagen", "year": 1960}
+{"text": "Lemon.", "brand": "Volkswagen", "year": 1960, "kind": "headline"}
 {"text": "Built Ford Tough", "brand": "Ford", "year": 1979}
 {"text": "Have You Driven a Ford Lately?", "brand": "Ford", "year": 1981}
 {"text": "Go Further", "brand": "Ford", "year": 2012}
@@ -128,7 +128,7 @@
 {"text": "The Relentless Pursuit of Perfection", "brand": "Lexus", "year": 1989}
 {"text": "Zoom-Zoom", "brand": "Mazda", "year": 2000}
 {"text": "The Power of Dreams", "brand": "Honda", "year": 2002}
-{"text": "Oh What a Feeling!", "brand": "Toyota", "year": 1978}
+{"text": "Oh What a Feeling!", "brand": "Toyota", "year": 1978, "kind": "jingle"}
 {"text": "The Car in Front Is a Toyota", "brand": "Toyota", "year": "1990s"}
 {"text": "Let's Go Places", "brand": "Toyota", "year": 2012}
 {"text": "Grab Life by the Horns", "brand": "Dodge", "year": 2001}
@@ -139,7 +139,7 @@
 {"text": "Truth in Engineering", "brand": "Audi", "year": 2007}
 {"text": "Let's Motor", "brand": "MINI", "year": 2002}
 {"text": "The Best 4x4xFar", "brand": "Land Rover", "year": "1980s"}
-{"text": "At 60 Miles an Hour the Loudest Noise in This New Rolls-Royce Comes from the Electric Clock", "brand": "Rolls-Royce", "year": 1958}
+{"text": "At 60 Miles an Hour the Loudest Noise in This New Rolls-Royce Comes from the Electric Clock", "brand": "Rolls-Royce", "year": 1958, "kind": "headline"}
 {"text": "Ask the Man Who Owns One", "brand": "Packard", "year": 1901}
 {"text": "Put a Tiger in Your Tank", "brand": "Esso", "year": 1959}
 {"text": "Fly the Friendly Skies", "brand": "United Airlines", "year": 1965}
@@ -162,7 +162,7 @@
 {"text": "What's in Your Wallet?", "brand": "Capital One", "year": 2000}
 {"text": "The Citi Never Sleeps", "brand": "Citibank", "year": 1978}
 {"text": "You're in Good Hands with Allstate", "brand": "Allstate", "year": 1950}
-{"text": "Nationwide Is on Your Side", "brand": "Nationwide", "year": 1965}
+{"text": "Nationwide Is on Your Side", "brand": "Nationwide", "year": 1965, "kind": "jingle"}
 {"text": "Get Met. It Pays.", "brand": "MetLife", "year": 1984}
 {"text": "We Make Money the Old-Fashioned Way. We Earn It.", "brand": "Smith Barney", "year": 1979}
 {"text": "When E.F. Hutton Talks, People Listen", "brand": "E.F. Hutton", "year": "1970s"}
@@ -172,40 +172,40 @@
 {"text": "Let's Build Something Together", "brand": "Lowe's", "year": 2006}
 {"text": "What Can Brown Do for You?", "brand": "UPS", "year": 2002}
 {"text": "When You Care Enough to Send the Very Best", "brand": "Hallmark", "year": 1944}
-{"text": "Say It with Flowers", "brand": "FTD", "year": 1917}
+{"text": "Say It with Flowers", "brand": "Society of American Florists", "year": 1917}
 {"text": "Should've Gone to Specsavers", "brand": "Specsavers", "year": 2003}
 {"text": "It Does Exactly What It Says on the Tin", "brand": "Ronseal", "year": 1994}
 {"text": "It Could Be You", "brand": "National Lottery (UK)", "year": 1994}
-{"text": "The Greatest Show on Earth", "brand": "Ringling Bros. and Barnum & Bailey", "year": 1872}
-{"text": "Often a Bridesmaid, But Never a Bride", "brand": "Listerine", "year": 1925}
-{"text": "Even Your Best Friends Won't Tell You", "brand": "Listerine", "year": "1920s"}
-{"text": "They Laughed When I Sat Down at the Piano, But When I Started to Play!", "brand": "U.S. School of Music", "year": 1927}
+{"text": "The Greatest Show on Earth", "brand": "P. T. Barnum's circus", "year": 1872, "kind": "billing"}
+{"text": "Often a Bridesmaid, But Never a Bride", "brand": "Listerine", "year": 1925, "kind": "headline"}
+{"text": "Even Your Best Friends Won't Tell You", "brand": "Listerine", "year": "1920s", "kind": "headline"}
+{"text": "They Laughed When I Sat Down at the Piano, But When I Started to Play!", "brand": "U.S. School of Music", "year": 1926, "kind": "headline"}
 {"text": "Does She... or Doesn't She?", "brand": "Clairol", "year": 1956}
 {"text": "Which Twin Has the Toni?", "brand": "Toni", "year": "1940s"}
 {"text": "A Little Dab'll Do Ya", "brand": "Brylcreem", "year": "1950s"}
-{"text": "Look Sharp, Feel Sharp, Be Sharp", "brand": "Gillette", "year": "1950s"}
+{"text": "Look Sharp, Feel Sharp, Be Sharp", "brand": "Gillette", "year": "1950s", "kind": "jingle"}
 {"text": "Don't Hate Me Because I'm Beautiful", "brand": "Pantene", "year": 1986}
 {"text": "Easy, Breezy, Beautiful. CoverGirl.", "brand": "CoverGirl", "year": "1990s"}
 {"text": "Nothing Comes Between Me and My Calvins", "brand": "Calvin Klein", "year": 1980}
-{"text": "Hello Boys", "brand": "Wonderbra", "year": 1994}
+{"text": "Hello Boys", "brand": "Wonderbra", "year": 1994, "kind": "poster"}
 {"text": "Splash It All Over", "brand": "Brut", "year": "1970s"}
 {"text": "Choosy Mothers Choose Jif", "brand": "Jif", "year": "1960s"}
 {"text": "Please Don't Squeeze the Charmin", "brand": "Charmin", "year": 1964}
 {"text": "Calgon, Take Me Away!", "brand": "Calgon", "year": "1970s"}
 {"text": "Ring Around the Collar", "brand": "Wisk", "year": 1968}
-{"text": "Plop, Plop, Fizz, Fizz, Oh What a Relief It Is", "brand": "Alka-Seltzer", "year": 1976}
+{"text": "Plop, Plop, Fizz, Fizz, Oh What a Relief It Is", "brand": "Alka-Seltzer", "year": 1976, "kind": "jingle"}
 {"text": "I Can't Believe I Ate the Whole Thing", "brand": "Alka-Seltzer", "year": 1972}
 {"text": "Kills Bugs Dead", "brand": "Raid", "year": 1966}
 {"text": "Be All You Can Be", "brand": "US Army", "year": 1980}
 {"text": "Army Strong", "brand": "US Army", "year": 2006}
-{"text": "I Want You for U.S. Army", "brand": "US Army", "year": 1917}
+{"text": "I Want You for U.S. Army", "brand": "US Army", "year": 1917, "kind": "poster"}
 {"text": "Aim High", "brand": "US Air Force", "year": 1986}
-{"text": "Only You Can Prevent Forest Fires", "brand": "Smokey Bear (US Forest Service)", "year": 1947}
-{"text": "Give a Hoot, Don't Pollute", "brand": "Woodsy Owl (US Forest Service)", "year": 1971}
+{"text": "Only You Can Prevent Forest Fires", "brand": "Smokey Bear (US Forest Service)", "year": 1947, "kind": "poster"}
+{"text": "Give a Hoot, Don't Pollute", "brand": "Woodsy Owl (US Forest Service)", "year": 1971, "kind": "poster"}
 {"text": "A Mind Is a Terrible Thing to Waste", "brand": "United Negro College Fund", "year": 1972}
 {"text": "Friends Don't Let Friends Drive Drunk", "brand": "Ad Council", "year": 1983}
 {"text": "This Is Your Brain on Drugs", "brand": "Partnership for a Drug-Free America", "year": 1987}
 {"text": "Take a Bite Out of Crime", "brand": "McGruff the Crime Dog", "year": 1980}
 {"text": "Click It or Ticket", "brand": "NHTSA", "year": 1993}
 {"text": "Don't Mess with Texas", "brand": "Texas Department of Transportation", "year": 1985}
-{"text": "Would You Be More Careful If It Was You That Got Pregnant?", "brand": "Health Education Council (UK)", "year": 1970}
+{"text": "Would You Be More Careful If It Was You That Got Pregnant?", "brand": "Health Education Council (UK)", "year": 1970, "kind": "poster"}

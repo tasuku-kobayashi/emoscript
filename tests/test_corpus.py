@@ -11,6 +11,7 @@ from emoscript.dataio import (
 
 MIN_COUNTS = {
     "quotes_test": 20,
+    "junk_test": 20,
     "slogans_train": 100,
     "slogans_test": 40,
     "negatives_hard_train": 40,
@@ -41,6 +42,29 @@ def test_contrast_pairs_cover_test_set_and_share_topic_words_rarely():
     # bland rewrites are deliberately not paraphrases: little lexical overlap
     overlaps = [jaccard(r["famous"], r["bland"]) for r in corpus.contrast]
     assert max(overlaps) < 0.5
+
+
+def test_junk_and_kind_fields():
+    corpus = load_corpus()
+    assert len(corpus.junk) >= 20
+    kinds = {r.get("kind", "tagline") for r in corpus.pos_train + corpus.pos_test}
+    assert "tagline" in kinds and "headline" in kinds and "jingle" in kinds
+    # every famous test line that names its brand has a bland pair that names it too
+    skip = {"just", "the", "new", "national", "society"}
+    for r in corpus.contrast:
+        if "campaign" in r["brand"].lower():
+            continue
+        brand_word = r["brand"].split()[0].rstrip("'s").lower()
+        if len(brand_word) > 3 and brand_word not in skip and brand_word in r["famous"].lower():
+            assert brand_word in r["bland"].lower(), r
+
+
+def test_corpus_warnings_are_soft_and_informative():
+    from emoscript.dataio import corpus_warnings
+
+    warnings = corpus_warnings()
+    assert isinstance(warnings, list)
+    assert all("share content words" in w for w in warnings)
 
 
 def test_validate_corpus_detects_leaks(tmp_path):
