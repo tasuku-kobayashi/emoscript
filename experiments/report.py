@@ -29,18 +29,30 @@ def render(reports: list[dict]) -> str:
         out.append(
             f"train {n['pos_tr']} taglines / {n['hard_tr']} hard / {n['gen_tr']} generic · "
             f"test {n['pos_te']} taglines / {n['hard_te']} hard / {n['gen_te']} generic / "
-            f"{n.get('topic_te', 0)} topic-matched / {n.get('quotes', 0)} quotes"
+            f"{n.get('topic_te', 0)} topic-matched / {n.get('quotes', 0)} quotes / {n.get('junk', 0)} junk"
         )
         out.append("")
         out.append(
-            "| variant | AUC vs hard | vs generic | vs topic-matched | pair win | vs quotes | "
-            "AUC long ≥8w | cal. acc@0.5 | log-loss |"
+            "| variant | AUC vs hard | vs generic | vs topic-matched | pair win | vs quotes | vs junk | "
+            "AUC long ≥8w | PASS pos / bland / junk | log-loss |"
         )
-        out.append("|---|---|---|---|---|---|---|---|---|")
+        out.append("|---|---|---|---|---|---|---|---|---|---|")
         for name, v in res["variants"].items():
             ci = v.get("auc_ci95", {})
             long_auc = v["by_length"].get("long>=8w", {}).get("auc_vs_hard")
             cal = v.get("calibration")
+            pr = v.get("pass_rate@0.5")
+            if pr:
+                bland = [pr[g] for g in ("hard_te", "gen_te", "topic_te") if g in pr]
+                pass_cell = (
+                    f"{pr['pos_te']:.2f} / {sum(bland) / len(bland):.2f} / {pr.get('junk', float('nan')):.2f}"
+                )
+            else:
+                pass_cell = "–"
+            win = f"{v['topic_pair_win_rate']:.3f}"
+            if "topic_pair_win_ci95" in v:
+                lo, hi = v["topic_pair_win_ci95"]
+                win += f" [{lo:.2f}, {hi:.2f}]"
             out.append(
                 "| "
                 + " | ".join(
@@ -49,10 +61,11 @@ def render(reports: list[dict]) -> str:
                         fmt_ci(v["auc_vs_hard"], ci.get("hard_te")),
                         fmt_ci(v["auc_vs_generic"], ci.get("gen_te")),
                         fmt_ci(v["auc_vs_topic_bland"], ci.get("topic_te")),
-                        f"{v['topic_pair_win_rate']:.3f}",
+                        win,
                         fmt_ci(v.get("auc_vs_quotes"), ci.get("quotes")),
+                        fmt_ci(v.get("auc_vs_junk"), ci.get("junk")),
                         f"{long_auc:.3f}" if long_auc is not None else "–",
-                        f"{cal['test_accuracy@0.5']:.3f}" if cal else "–",
+                        pass_cell,
                         f"{cal['test_log_loss']:.3f}" if cal else "–",
                     ]
                 )

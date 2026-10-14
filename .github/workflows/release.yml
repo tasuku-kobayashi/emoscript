@@ -35,13 +35,13 @@ jobs:
       - name: Fit prebuilt axes
         run: |
           mkdir -p release
-          emoscript fit --k 1 --out release/emoscript-axis-k1-lower-multilingual-e5-large.npz
-          emoscript fit --k 2 --out release/emoscript-axis-k2-lower-multilingual-e5-large.npz
-          emoscript eval --axis release/emoscript-axis-k1-lower-multilingual-e5-large.npz --json > release/eval-k1.json
-          emoscript eval --axis release/emoscript-axis-k2-lower-multilingual-e5-large.npz --json > release/eval-k2.json
+          emoscript fit --k 1 --out release/emoscript-axis-k1-canonical-multilingual-e5-large.npz
+          emoscript fit --k 2 --out release/emoscript-axis-k2-canonical-multilingual-e5-large.npz
+          emoscript eval --axis release/emoscript-axis-k1-canonical-multilingual-e5-large.npz --json > release/eval-k1.json
+          emoscript eval --axis release/emoscript-axis-k2-canonical-multilingual-e5-large.npz --json > release/eval-k2.json
           python experiments/validate_axis.py --no-ranking --json release/validation-none.json > release/validation-none.txt
-          python experiments/validate_axis.py --no-ranking --casing lower --json release/validation-lower.json > release/validation-lower.txt
-          python experiments/report.py release/validation-none.json release/validation-lower.json > release/RESULTS.md
+          python experiments/validate_axis.py --no-ranking --casing canonical --json release/validation-canonical.json > release/validation-canonical.txt
+          python experiments/report.py release/validation-none.json release/validation-canonical.json > release/RESULTS.md
           cp dist/* release/
           (cd release && sha256sum * > SHA256SUMS)
       - uses: actions/upload-artifact@v4

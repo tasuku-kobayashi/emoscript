@@ -52,8 +52,8 @@ jobs:
       - run: python -m pip install -e ".[dev,embed]"
       - name: Held-out validation, original casing (M1 / M2 / M3 / kNN / multi-axis k=2,3)
         run: python experiments/validate_axis.py --k 1,2,3 --json validation-none.json | tee validation-none.txt
-      - name: Held-out validation, lower-cased (the shipped default)
-        run: python experiments/validate_axis.py --k 1,2,3 --casing lower --json validation-lower.json | tee validation-lower.txt
+      - name: Held-out validation, canonical (the shipped default)
+        run: python experiments/validate_axis.py --k 1,2,3 --casing canonical --json validation-canonical.json | tee validation-canonical.txt
       - name: Fit shippable axes
         run: |
           emoscript fit --k 1 --out axis-k1.npz
@@ -64,7 +64,7 @@ jobs:
         run: |
           {
             echo '## emoscript held-out evaluation'
-            python experiments/report.py validation-none.json validation-lower.json
+            python experiments/report.py validation-none.json validation-canonical.json
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:

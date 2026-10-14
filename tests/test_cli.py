@@ -57,7 +57,7 @@ def test_fetch_axis_downloads_named_asset(monkeypatch, tmp_path, capsys, patched
         "tag_name": "v9.9.9",
         "assets": [
             {
-                "name": "emoscript-axis-k3-lower-multilingual-e5-large.npz",
+                "name": "emoscript-axis-k3-canonical-multilingual-e5-large.npz",
                 "browser_download_url": "https://example.invalid/k3.npz",
             }
         ],
@@ -77,7 +77,6 @@ def test_fetch_axis_downloads_named_asset(monkeypatch, tmp_path, capsys, patched
     out = tmp_path / "fetched.npz"
     assert cli.main(["fetch-axis", "--k", "3", "--out", str(out), "--repo", "o/r"]) == 0
     assert seen["api"].endswith("/repos/o/r/releases/latest") and seen["dl"].endswith("k3.npz")
-    assert "emoscript-axis-k3-lower-multilingual-e5-large.npz" in release["assets"][0]["name"] or True
     assert "k=3" in capsys.readouterr().out
     assert cli.main(["fetch-axis", "--k", "1", "--out", str(out), "--tag", "v1"]) == 1
     assert "available" in capsys.readouterr().out

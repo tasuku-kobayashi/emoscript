@@ -391,21 +391,23 @@ def fit_from_corpus(
     embed_fn: EmbedFn,
     data_dir: str | Path = DATA_DIR,
     *,
-    k: int = 2,
+    k: int = 1,
     negatives: NegativeKinds = ("hard", "generic"),
     calibrate: bool = True,
     n_folds: int = 5,
     seed: int = 0,
     model_name: str = DEFAULT_MODEL,
     prefix: str | None = None,
-    casing: str = "lower",
+    casing: str = "canonical",
     keep_exemplars: bool = True,
 ) -> AxisModel:
     """Fit from the bundled (or a custom) corpus: train splits only.
 
-    Defaults (k=2, casing="lower") are the configuration that was most stable
-    across k-means seeds and most robust to how candidates are capitalised;
-    see README "Evaluation" for the numbers behind that choice.
+    Defaults (k=1, casing="canonical", calibrator L2=1) were chosen by
+    brand-grouped nested cross-validation on the training split only
+    (``experiments/select_settings.py``); the held-out test split was not
+    consulted. With the short and Title-Case negatives of v0.2 a single diff
+    axis beats the multi-axis variants on out-of-fold log-loss and AUC.
     """
     corpus = load_corpus(data_dir)
     norm = normalizer(casing)

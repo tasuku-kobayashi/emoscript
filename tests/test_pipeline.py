@@ -209,9 +209,12 @@ def test_evaluate_reports_controls_pass_rates_and_cis(fake_embed_fn):
     assert report["calibration"]["negatives"] == ["hard", "generic", "topic_bland"]
 
 
-def test_defaults_are_k2_lower(fake_embed_fn):
+def test_defaults_are_k1_canonical(fake_embed_fn):
     model = fit_from_corpus(fake_embed_fn, model_name="fake")
-    assert model.k == 2 and model.casing == "lower"
+    assert model.k == 1 and model.casing == "canonical"
+    a, _ = score_texts(model, ['1. Tagline: "Just Do It."'], fake_embed_fn)
+    b, _ = score_texts(model, ["just do it"], fake_embed_fn)
+    assert np.allclose(a, b)
 
 
 def test_uncalibrated_model(fake_embed_fn, tmp_path):
