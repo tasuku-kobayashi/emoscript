@@ -34,9 +34,17 @@ Renamed from `copyaxis` to `emoscript` (import path, CLI, docs).
   "Tagline:" labels; also `lower`, `lower_nopunct`, `sentence`, `none`.
 - `AxisModel` with `save` / `load` (`.npz`, reads v0.1 files), exemplars for
   `explain`, the famous-line catalogue for `near_famous`, cluster summaries.
-- Defaults k=1, canonical, L2=1 chosen by brand-grouped nested CV on the
-  training split (`experiments/select_settings.py`); the test split was not
-  consulted.
+- Negative families (ad-speak, short, questions/numbers/B2B, UI,
+  topic-descriptive, nonsense, prose) weighted equally in the negative
+  centroid (`--no-balance-negatives` for one vote per line).
+- Defaults k=1, canonical, L2=1, balanced families chosen by brand-grouped
+  nested CV on the training split (`experiments/select_settings.py`); the
+  test split was evaluated once per corpus version.
+- Guards decide: blocking input flags (no letters, single word, over 17
+  words, placeholder, LLM chatter) and verbatim famous-line copies make a
+  row not pass and sort it last; parodies and possible riffs are warnings.
+  `--brief` ranks by style + relevance (z-scored over unblocked rows) and
+  `--min-rel` gates on relevance; each line is embedded once.
 - Pluggable embedding function; fastembed is an optional extra.
 
 ### Tooling
