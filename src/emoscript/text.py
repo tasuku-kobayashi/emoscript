@@ -44,7 +44,8 @@ _LABEL = re.compile(
 )
 _PLACEHOLDER = re.compile(
     r"\{\{.*?\}\}|\$\{.*?\}|<[A-Z][A-Z _-]{1,30}>|\[(?:insert|your|tagline|brand|slogan)[^\]]*\]"
-    r"|^\s*todo\b[:\s]|^\s*tbd\b|lorem ipsum"
+    r"|^\s*todo\s*:?\s*$|^\s*todo:\s*(?:write|add|insert|tagline|slogan|headline|copy)\b"
+    r"|^\s*tbd\s*:?\s*$|^\s*tbd:\s*(?:tagline|slogan|headline|copy)\b|lorem ipsum"
     r"|^\W*(?:(?:your|the|a|an|new|catchy|best|insert) )?"
     r"(?:tagline|slogan|headline|copy|text|title|name|brand|logo|content|description|body)s? goes here\W*$"
     r"|^\s*(?:insert|add|enter) \w+ here\s*[.!]?$"
@@ -53,15 +54,18 @@ _PLACEHOLDER = re.compile(
     re.I,
 )
 # Text a chat model emits around (or instead of) the lines it was asked for.
+_COPY_WORDS = r"(?:tagline|slogan|headline|option|idea|cop(?:y|ies)|suggestion|version|line)s?"
 _LLM_CHATTER = re.compile(
+    # an assistant-style opener that goes on to talk about the lines it is producing, or ends in a colon
     r"^(?:sure|certainly|okay|of course|absolutely|got it)(?: thing)?[!,.:]\s+(?:here|i|below|these)\b"
-    r"|^here(?:'s| is| are) (?:\w+ ){0,4}(?:tagline|slogan|headline)s?\b"
+    r"(?:.*\b" + _COPY_WORDS + r"\b|.*:\s*$)"
+    r"|^here(?:'s| is| are) (?:\w+ ){0,4}" + _COPY_WORDS + r"\b"
     r"|^here you go[:!]"
-    r"|^as an? (?:ai|language model|assistant)\b"
-    r"|^i(?:'m| am) (?:sorry|afraid)(?:,? but| i can|,? i cannot)\b"
-    r"|^sorry,? (?:but )?i can(?:'t|not)\b"
-    r"|^i (?:can(?:'t|not)|am unable to) (?:help (?:you |with )|assist|"
-    r"(?:write|generate|create|provide|come up with) (?:a |an |the |any |that|this|slogan|tagline))"
+    r"|^as an? (?:ai|language model)\b"
+    r"|^i(?:'m| am) (?:sorry|afraid),? but i can(?:'t|not)\b"
+    r"|^sorry,? (?:but )?i can(?:'t|not) (?:write|generate|create|provide|do that|help with)\b"
+    r"|^i (?:can(?:'t|not)|am unable to) (?:write|generate|create|provide|come up with) "
+    r"(?:a |an |the |any |that|this|slogan|tagline)"
     r"|^error[:\s]+(?:\d{3}\s*$|rate limit|loading|message|code)",
     re.I,
 )

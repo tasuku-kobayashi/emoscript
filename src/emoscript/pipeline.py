@@ -64,6 +64,10 @@ class AxisModel:
     # (nonsense, UI strings). The calibrator then reads [style, sense] and a line
     # must look like great copy AND like a message to score a high probability.
     sense_axis: np.ndarray | None = None
+    # One-feature calibrator on the sense score alone (famous vs nonsense + UI, balanced,
+    # out-of-fold). P(message) >= 0.5 is the sense GATE: the two-feature calibrator gave the
+    # sense axis almost no weight, so a soft feature changed nothing; the gate does.
+    sense_gate: Calibrator | None = None
     _famous_cache: tuple | None = field(default=None, repr=False, compare=False)
 
     @property
@@ -126,6 +130,17 @@ class AxisModel:
         if self.sense_axis is None:
             return s[:, None]
         return np.column_stack([s, self.sense_score(E)])
+
+    def sense_proba(self, E: np.ndarray) -> np.ndarray | None:
+        """P(this is a message, not nonsense) from the sense score; None without a gate."""
+        if self.sense_axis is None or self.sense_gate is None:
+            return None
+        return self.sense_gate.predict_proba(self.sense_score(E))
+
+    def passes_sense_gate(self, E: np.ndarray, threshold: float = 0.5) -> np.ndarray:
+        """Boolean per row; all True when the model has no sense gate."""
+        p = self.sense_proba(E)
+        return np.ones(np.atleast_2d(E).shape[0], dtype=bool) if p is None else p >= threshold
 
     def proba_from_embeddings(self, E: np.ndarray, prior: float = 0.5) -> np.ndarray | None:
         """Calibrated P(great copy) from embeddings (works for 1- and 2-feature models)."""
@@ -258,6 +273,8 @@ class AxisModel:
             arrays.update(self.calibrator.to_arrays())
         if self.sense_axis is not None:
             arrays["sense_axis"] = np.asarray(self.sense_axis, dtype=np.float64)
+        if self.sense_gate is not None:
+            arrays.update({"gate_" + k: v for k, v in self.sense_gate.to_arrays().items()})
         if self.famous_texts:
             arrays["famous_texts"] = np.asarray(self.famous_texts)
             arrays["famous_brands"] = np.asarray(self.famous_brands or [""] * len(self.famous_texts))
@@ -294,6 +311,11 @@ class AxisModel:
             famous_texts = [str(t) for t in blob["famous_texts"]] if "famous_texts" in blob else []
             famous_brands = [str(t) for t in blob["famous_brands"]] if "famous_brands" in blob else []
             sense_axis = np.asarray(blob["sense_axis"], dtype=np.float64) if "sense_axis" in blob else None
+            sense_gate = None
+            if "gate_calib_w" in blob:
+                sense_gate = Calibrator.from_arrays(
+                    {k[5:]: blob[k] for k in blob.files if k.startswith("gate_")}
+                )
         return cls(
             axes=axes,
             model_name=model_name,
@@ -307,6 +329,7 @@ class AxisModel:
             famous_texts=famous_texts,
             famous_brands=famous_brands,
             sense_axis=sense_axis,
+            sense_gate=sense_gate,
         )
 
 
@@ -470,11 +493,22 @@ def fit_from_embeddings(
     sense_axis = fit_sense_axis(E_pos, E_neg, sense_weights) if sense_weights is not None else None
     info["sense_axis"] = sense_axis is not None
     calibrator = None
+    sense_gate = None
     if calibrate:
         oof_pos, oof_neg = cross_fit_scores(
             E_pos, E_neg, k, n_folds=n_folds, seed=seed, neg_weights=neg_weights, sense_weights=sense_weights
         )
         calibrator = Calibrator().fit(oof_pos, oof_neg)
+        if sense_axis is not None:
+            in_sense = np.asarray(sense_weights) > 0
+            sense_gate = Calibrator().fit(oof_pos[:, 1], oof_neg[in_sense, 1])
+            gate_p = sense_gate.predict_proba(np.concatenate([oof_pos[:, 1], oof_neg[:, 1]]))
+            info["sense_gate_oof"] = {
+                "famous_pass_rate": float((gate_p[: len(oof_pos)] >= 0.5).mean()),
+                "nonsense_pass_rate": float((gate_p[len(oof_pos) :][in_sense] >= 0.5).mean()),
+                "other_negative_pass_rate": float((gate_p[len(oof_pos) :][~in_sense] >= 0.5).mean()),
+                "threshold_sense_score": sense_gate.score_at(0.5),
+            }
         p = calibrator.predict_proba(np.concatenate([oof_pos, oof_neg]))
         y = np.concatenate([np.ones(len(oof_pos)), np.zeros(len(oof_neg))])
         style_pos = oof_pos if oof_pos.ndim == 1 else oof_pos[:, 0]
@@ -508,6 +542,7 @@ def fit_from_embeddings(
         exemplar_texts=list(pos_texts) if keep else [],
         exemplar_labels=labels if keep else None,
         sense_axis=sense_axis,
+        sense_gate=sense_gate,
     )
 
 
@@ -739,21 +774,20 @@ def evaluate(
         }
     if model.calibrator is not None:
         P = {g: model.proba_from_embeddings(EMB[g]) for g in S}
-        out["pass_rate"] = {g: float((p >= threshold).mean()) for g, p in P.items()}
+        G = {g: model.passes_sense_gate(EMB[g]) for g in S}
+        out["pass_rate"] = {g: float(((p >= threshold) & G[g]).mean()) for g, p in P.items()}
+        if model.sense_gate is not None:
+            out["sense_gate_pass_rate"] = {g: float(G[g].mean()) for g in S}
+            out["pass_rate_without_gate"] = {g: float((p >= threshold).mean()) for g, p in P.items()}
         if "good_copy" in P and "junk" in P:
             out["good_copy"]["auc_proba_vs_junk"] = auc(P["good_copy"], P["junk"])
             # the scorer is built for tagline-length lines; show the register split explicitly
             gw = np.array([len(t.split()) for t in groups["good_copy"]])
             short = gw <= 6
+            ok_g = (P["good_copy"] >= threshold) & G["good_copy"]
             out["good_copy"]["by_register"] = {
-                "tagline_length<=6w": {
-                    "n": int(short.sum()),
-                    "pass_rate": float((P["good_copy"][short] >= threshold).mean()),
-                },
-                "longer>6w": {
-                    "n": int((~short).sum()),
-                    "pass_rate": float((P["good_copy"][~short] >= threshold).mean()),
-                },
+                "tagline_length<=6w": {"n": int(short.sum()), "pass_rate": float(ok_g[short].mean())},
+                "longer>6w": {"n": int((~short).sum()), "pass_rate": float(ok_g[~short].mean())},
             }
         # what a CLI user actually sees: a line with an input flag (placeholder, single
         # word, wrapped, ...) or a near-famous warning is not an unqualified PASS
@@ -769,7 +803,7 @@ def evaluate(
                     for x, nf in zip(t, near, strict=True)
                 ]
             )
-            guarded[g] = float(((P[g] >= threshold) & ~flagged).mean())
+            guarded[g] = float(((P[g] >= threshold) & G[g] & ~flagged).mean())
         out["pass_rate_after_guards"] = guarded
         bland = [g for g in ("hard", "generic", "topic_bland") if g in S]
         p = np.concatenate([P["pos"]] + [P[g] for g in bland])

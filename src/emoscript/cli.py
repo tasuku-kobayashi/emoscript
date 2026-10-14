@@ -68,11 +68,18 @@ def cmd_fit(args) -> int:
     )
     if oof:
         thr = oof.get("threshold@0.5")
-        thr_s = f"{thr:+.4f}" if thr is not None else "n/a"
+        thr_s = f"{thr:+.4f}" if thr is not None else "n/a (two-feature calibrator)"
         print(
             f"  out-of-fold: AUC {oof['auc']:.3f}  log-loss {oof['log_loss']:.3f}  "
             f"acc@0.5 {oof['accuracy@0.5']:.3f}  threshold(p=0.5) {thr_s}"
         )
+        g = model.meta.get("sense_gate_oof")
+        if g:
+            print(
+                f"  sense gate (out-of-fold): famous pass {g['famous_pass_rate']:.2f}  "
+                f"nonsense pass {g['nonsense_pass_rate']:.2f}  "
+                f"other negatives pass {g['other_negative_pass_rate']:.2f}"
+            )
     for w in model.meta.get("warnings", []):
         print(f"  WARNING: {w}")
     return 0
@@ -97,6 +104,8 @@ def cmd_score(args) -> int:
         raise SystemExit("--prior must be strictly between 0 and 1")
     if args.min_rel is not None and not args.brief:
         raise SystemExit("--min-rel needs --brief")
+    if args.top_rel is not None and (not args.brief or not 0 < args.top_rel <= 1):
+        raise SystemExit("--top-rel needs --brief and a fraction in (0, 1]")
     if args.brief is not None and not any(ch.isalpha() for ch in args.brief):
         raise SystemExit("--brief must contain words")
     model = AxisModel.load(args.axis)
@@ -115,6 +124,17 @@ def cmd_score(args) -> int:
         relevance = np.full(len(texts), np.nan)
         if ok.any():
             relevance[ok] = E @ model.embed([args.brief], embed_fn)[0]
+    sense_p = np.full(len(texts), np.nan)
+    gate_ok = np.ones(len(texts), dtype=bool)
+    if ok.any() and model.sense_gate is not None:
+        sense_p[ok] = model.sense_proba(E)
+        if not args.no_sense_gate:
+            gate_ok[ok] = model.passes_sense_gate(E)
+    rel_cut = None
+    if relevance is not None and args.top_rel is not None:
+        valid_rel = relevance[ok]
+        if len(valid_rel):
+            rel_cut = float(np.quantile(valid_rel, 1 - args.top_rel))
     explanations = model.explain(E, n=args.neighbors) if args.explain and ok.any() else None
     exp_index = np.cumsum(ok) - 1
     if args.no_famous_check:
@@ -140,6 +160,8 @@ def cmd_score(args) -> int:
             row["nearest"] = [{"text": a, "cos": b} for a, b in ex["nearest"]]
         if relevance is not None:
             row["brief_relevance"] = _finite(relevance[i])
+        if model.sense_gate is not None:
+            row["sense"] = _finite(sense_p[i])
         if flags[i]:
             row["flags"] = flags[i]
         if near[i] is not None:
@@ -151,6 +173,10 @@ def cmd_score(args) -> int:
             blocked.append("near_famous:copy")
         if relevance is not None and args.min_rel is not None and not skipped and relevance[i] < args.min_rel:
             blocked.append("off_brief")
+        if rel_cut is not None and not skipped and relevance[i] < rel_cut:
+            blocked.append("off_brief")
+        if not gate_ok[i]:
+            blocked.append("sense_gate")
         if probs is not None:
             row["prob"] = _finite(probs[i])
             row["pass"] = (not skipped) and bool(probs[i] >= args.threshold) and not blocked
@@ -183,6 +209,8 @@ def cmd_score(args) -> int:
         return 0
     for r in rows:
         rel = f"  rel={r['brief_relevance']:.2f}" if r.get("brief_relevance") is not None else ""
+        if r.get("sense") is not None:
+            rel += f"  sense={r['sense']:.2f}"
         if r["score"] is None:
             print(f"   n/a   skipped ({r['skipped']})  {r['text']}")
         elif "prob" in r:
@@ -252,6 +280,9 @@ def cmd_eval(args) -> int:
     if "pass_rate" in report:
         rates = "  ".join(f"{g} {v:.2f}" for g, v in report["pass_rate"].items())
         print(f"  PASS rate at p>=0.5:             {rates}")
+        if "sense_gate_pass_rate" in report:
+            rates = "  ".join(f"{g} {v:.2f}" for g, v in report["sense_gate_pass_rate"].items())
+            print(f"  sense gate alone passes:         {rates}")
         rates = "  ".join(f"{g} {v:.2f}" for g, v in report["pass_rate_after_guards"].items())
         print(f"  ... after input flags / famous:  {rates}")
     for name, v in report.get("auc_vs_hard_by_length", {}).items():
@@ -400,6 +431,18 @@ def build_parser() -> argparse.ArgumentParser:
         "0.75-0.90; read the rel= column of a few known-good lines to pick a value)",
     )
     p.add_argument("--no-famous-check", action="store_true", help="skip the near-famous-line warning")
+    p.add_argument(
+        "--no-sense-gate",
+        action="store_true",
+        help="do not require P(message) >= 0.5 on the sense axis for PASS (the gate is what stops nonsense)",
+    )
+    p.add_argument(
+        "--top-rel",
+        type=float,
+        default=None,
+        help="with --brief: only the top FRACTION of this batch by relevance can PASS "
+        "(relative to the batch, unlike --min-rel)",
+    )
     p.set_defaults(fn=cmd_score)
 
     p = sub.add_parser("eval", help="evaluate a fitted axis on the held-out splits")
