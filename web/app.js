@@ -187,7 +187,7 @@ function heroRing(p) {
   );
 }
 
-function infoRow(label, sub, value, unit = "", asText = false) {
+function infoRow(label, sub, value, unit = "", asText = false, hint = "", bar = null) {
   if (value == null || value === "") return null;
   const row = document.createElement("div");
   row.className = "info-row";
@@ -197,6 +197,24 @@ function infoRow(label, sub, value, unit = "", asText = false) {
   sb.className = "sub";
   sb.textContent = sub;
   dt.appendChild(sb);
+  if (hint) {
+    const h = document.createElement("span");
+    h.className = "hint";
+    h.textContent = hint;
+    dt.appendChild(h);
+  }
+  if (bar) {
+    // diverging bar centred on zero: negative = bland side, positive = famous side
+    const b = document.createElement("span");
+    b.className = "bar";
+    const f = document.createElement("span");
+    f.className = "bar-fill";
+    const frac = Math.max(-1, Math.min(1, bar.value / bar.span));
+    f.style.left = frac < 0 ? `${50 + frac * 50}%` : "50%";
+    f.style.width = `${Math.abs(frac) * 50}%`;
+    b.appendChild(f);
+    dt.appendChild(b);
+  }
   const dd = document.createElement("dd");
   if (asText) {
     dd.className = "text";
@@ -237,11 +255,27 @@ function showHero(r, opts, calibrated) {
     const nf = r.near_famous;
     rows.push(infoRow("Famous line", NEAR_LABEL[nf.severity], `“${nf.text}”${nf.brand ? ` — ${nf.brand}` : ""}`, "", true));
   }
-  rows.push(infoRow("Reads as a message", "sense", pctOf(r.sense), "%"));
-  if (opts.brief !== null) rows.push(infoRow("On brief", "relevance", pctOf(r.brief_relevance), "%"));
-  rows.push(infoRow("Style score", "cosine to the axis", r.score == null ? null : (r.score >= 0 ? "+" : "") + r.score.toFixed(3)));
-  if (opts.brief !== null && r.rank_score != null) rows.push(infoRow("Rank score", "style + relevance", r.rank_score.toFixed(2)));
-  if (r.flags) rows.push(infoRow("Flags", "input checks", r.flags.join(", "), "", true));
+  rows.push(
+    infoRow("Reads as a message", "sense", pctOf(r.sense), "%", false, "high: a line with a point · low: fragment, label or UI text · under 50% is out"),
+  );
+  if (opts.brief !== null) {
+    rows.push(infoRow("On brief", "relevance", pctOf(r.brief_relevance), "%", false, "high: about the brief · low: off topic"));
+  }
+  rows.push(
+    infoRow(
+      "Style score",
+      "cosine to the famous-copy direction",
+      r.score == null ? null : (r.score >= 0 ? "+" : "") + r.score.toFixed(3),
+      "",
+      false,
+      "+ famous-copy side · − bland ad-speak side · typical range −0.3 … +0.3",
+      r.score == null ? null : { value: r.score, span: 0.3 },
+    ),
+  );
+  if (opts.brief !== null && r.rank_score != null) {
+    rows.push(infoRow("Rank score", "style + relevance", r.rank_score.toFixed(2), "", false, "within this batch · 0 = average · higher is better"));
+  }
+  if (r.flags) rows.push(infoRow("Flags", "input checks", r.flags.join(", "), "", true, "what the line looked like before scoring"));
   for (const row of rows) if (row) info.appendChild(row);
 }
 
