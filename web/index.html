@@ -18,10 +18,10 @@
       <details class="pop" id="help">
         <summary aria-label="How to read the results">?</summary>
         <div class="pop-body">
-          <p><strong>The ring is the chance a line sits with famous taglines rather than bland ad-speak.</strong> Above the threshold (50% by default) it passes.</p>
+          <p><strong>The grade says how close a line sits to famous taglines, on seven steps:</strong> Excellent · Great · Good · Fair · Average · Weak · Flat. Excellent and Great are where famous lines land; Flat is where product descriptions land. The ring is the calibrated chance the line is great copy rather than bland ad-speak; above the threshold (50% by default) it passes.</p>
           <ul>
-            <li><strong>Green</strong>: passes. <strong>Amber</strong>: close. <strong>Red</strong>: reads as ordinary copy.</li>
-            <li><strong>Gray</strong>: disqualified before scoring. Tap the line to see why (copies a famous line, not a message, placeholder, chat-bot text, too long).</li>
+            <li><strong>Green</strong>: Good or better. <strong>Amber</strong>: Fair / Average. <strong>Red</strong>: Weak / Flat.</li>
+            <li><strong>Gray, “Out”</strong>: disqualified before grading. Tap the line to see why (copies a famous line, not a message, placeholder, chat-bot text, too long).</li>
             <li>Add a <em>brief</em> and lines that drift off topic lose their place in the ranking.</li>
             <li>Tap any line for the raw numbers: cosine <em>score</em>, <em>sense</em> (does it read as a message), <em>relevance</em> to the brief.</li>
           </ul>
@@ -75,8 +75,12 @@
     <section id="results" hidden>
       <div id="hero" class="hero">
         <div class="hero-ring" id="hero-ring"></div>
-        <div class="hero-num"><span id="hero-pct">–</span><span class="unit">%</span></div>
-        <div class="hero-label">great-copy score<br /><span class="sub">名コピー度</span></div>
+        <div class="hero-center">
+          <div class="hero-grade" id="hero-grade">–</div>
+          <div class="hero-p"><span id="hero-pct">–</span>% great copy</div>
+        </div>
+        <div class="hero-label">great-copy grade<br /><span class="sub">名コピー度</span></div>
+        <div class="scale" id="hero-scale" aria-hidden="true"></div>
         <p class="hero-line" id="hero-line"></p>
         <div class="hero-verdict" id="hero-verdict"></div>
       </div>

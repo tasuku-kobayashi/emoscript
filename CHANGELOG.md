@@ -35,7 +35,11 @@
   beside it), an information list (sense, relevance, style score, famous-line
   match, why it is out) and a ranking of all lines with their scores; tapping
   a line puts it in the hero. Options and explanations sit behind the ? and ⚙
-  buttons. Dark mode.
+  buttons. Dark mode. The headline is a seven-step grade on the style score
+  (Excellent ≥ +0.15, Great ≥ +0.10, Good ≥ +0.05, Fair ≥ 0, Average ≥ −0.05,
+  Weak ≥ −0.12, Flat), cut on the browser model's held-out distribution; the
+  calibrated p and the pass verdict sit under it, and each information row
+  says what high and low mean.
 
 ### Fixed
 - `placeholder` flag: the `<BRAND>` pattern was case-insensitive, so

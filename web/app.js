@@ -161,6 +161,26 @@ const BLOCK_REASON = {
   no_letters: "no words",
 };
 
+// Seven grades on the style score (cosine to the famous-copy direction). Cut points from
+// the held-out distribution of the browser model: famous lines sit at +0.08 median and
+// 45% clear +0.10; hard negatives at -0.135 median and 81% below -0.05.
+const GRADES = [
+  ["Excellent", 0.15],
+  ["Great", 0.1],
+  ["Good", 0.05],
+  ["Fair", 0.0],
+  ["Average", -0.05],
+  ["Weak", -0.12],
+  ["Flat", -Infinity],
+];
+function gradeOf(score) {
+  for (let i = 0; i < GRADES.length; i++) if (score >= GRADES[i][1]) return { word: GRADES[i][0], level: GRADES.length - i };
+  return { word: "Flat", level: 1 };
+}
+function gradeClass(level) {
+  return level >= 5 ? "pass" : level >= 3 ? "close" : "no";
+}
+
 // State of a row -> (css class, word). Color never stands alone: the word says it too.
 function verdictOf(r, threshold) {
   if (r.score === null) return ["off", "No words"];
@@ -168,9 +188,9 @@ function verdictOf(r, threshold) {
     const why = r.blocked_by.map((b) => BLOCK_REASON[b] || b);
     return ["off", "Out: " + why[0]];
   }
-  if (r.pass) return ["pass", "Passes"];
-  if (r.prob >= Math.min(0.3, threshold)) return ["close", "Close"];
-  return ["no", "Ordinary"];
+  const g = gradeOf(r.score);
+  const word = r.pass ? "Passes" : r.prob >= Math.min(0.3, threshold) ? "Close" : "Does not pass";
+  return [gradeClass(g.level), word, g];
 }
 
 const HERO_R = 104;
@@ -234,11 +254,22 @@ function infoRow(label, sub, value, unit = "", asText = false, hint = "", bar = 
 
 function showHero(r, opts, calibrated) {
   const hero = $("hero");
-  const [cls, word] = calibrated ? verdictOf(r, opts.threshold) : [r.score === null ? "off" : "close", ""];
+  const [cls, word, g] = calibrated ? verdictOf(r, opts.threshold) : [r.score === null ? "off" : "close", "", null];
   hero.className = `hero ${cls}`;
   const p = calibrated && r.prob != null ? r.prob : null;
   heroRing(p);
+  const grade = $("hero-grade");
+  const gw = g ? g.word : r.score === null ? "–" : "Out";
+  grade.textContent = gw;
+  grade.classList.toggle("long", gw.length > 7);
   $("hero-pct").textContent = p == null ? "–" : String(Math.round(p * 100));
+  const scale = $("hero-scale");
+  scale.innerHTML = "";
+  for (let i = 1; i <= GRADES.length; i++) {
+    const seg = document.createElement("span");
+    if (g && i <= g.level) seg.className = "on";
+    scale.appendChild(seg);
+  }
   $("hero-line").textContent = r.text;
   const v = $("hero-verdict");
   v.innerHTML = "";
@@ -285,7 +316,7 @@ function render(rows, opts, calibrated) {
   let selected = 0;
   const items = rows.map((r, i) => {
     const li = document.createElement("li");
-    const [cls, word] = calibrated ? verdictOf(r, opts.threshold) : [r.score === null ? "off" : "close", ""];
+    const [cls, word, g] = calibrated ? verdictOf(r, opts.threshold) : [r.score === null ? "off" : "close", "", null];
     li.className = `row ${cls}`;
     const rank = document.createElement("span");
     rank.className = "rank";
@@ -302,13 +333,13 @@ function render(rows, opts, calibrated) {
     text.append(line, verdict);
     const num = document.createElement("div");
     num.className = "num";
-    num.textContent = calibrated && r.prob != null ? String(Math.round(r.prob * 100)) : "–";
-    if (calibrated && r.prob != null) {
-      const u = document.createElement("span");
-      u.className = "unit";
-      u.textContent = "%";
-      num.appendChild(u);
-    }
+    const gl = document.createElement("span");
+    gl.className = "grade";
+    gl.textContent = g ? g.word : r.score === null ? "–" : "Out";
+    const pl = document.createElement("span");
+    pl.className = "p";
+    pl.textContent = calibrated && r.prob != null ? `${Math.round(r.prob * 100)}%` : "";
+    num.append(gl, pl);
     li.append(rank, text, num);
     li.addEventListener("click", () => {
       selected = i;
